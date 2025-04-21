@@ -27,8 +27,16 @@ public struct MyGameParticipateFeature {
         
         // About Filter
         var isAvailableParticipateRoomSelected: Bool = false
-        var numOfCategory: Int = 0
-        var isCategoryFilterSelected: Bool = false
+        var numOfCategory: Int {
+            selectedCategoryTitles.count
+        }
+        var isCategoryFilterSelected: Bool {
+            return !selectedCategoryTitles.isEmpty
+        }
+        
+        @PresentationState var categorySheet: MyGameParticipateCategorySheetFeature.State?
+        
+        var selectedCategoryTitles: [String] = []
     }
     
     public enum Action: BindableAction {
@@ -38,6 +46,7 @@ public struct MyGameParticipateFeature {
         case availableParticipateRoomFilterTapped
         case categoryFilterTapped
         case searchBarClearButtonTapped
+        case categorySheet(PresentationAction<MyGameParticipateCategorySheetFeature.Action>)
     }
     
     public var body: some ReducerOf<Self> {
@@ -50,18 +59,36 @@ public struct MyGameParticipateFeature {
                 return .none
             case .resetFilterButtonTapped:
                 state.isAvailableParticipateRoomSelected = false
-                state.isCategoryFilterSelected = false
+                state.selectedCategoryTitles = []
                 return .none
             case .availableParticipateRoomFilterTapped:
                 state.isAvailableParticipateRoomSelected.toggle()
                 return .none
             case .categoryFilterTapped:
-                state.isCategoryFilterSelected = true
+                state.categorySheet = .init(selectedCategoryTitles: state.selectedCategoryTitles)
                 return .none
             case .searchBarClearButtonTapped:
                 state.searchText = ""
                 return .none
+            case .categorySheet(let categorySheetAction):
+                switch categorySheetAction {
+                case .presented(let sheetAction):
+                    switch sheetAction {
+                    case .passSelectedCategories(let selectedCategories):
+                        state.selectedCategoryTitles = selectedCategories
+                        state.categorySheet = nil
+                        
+                        return .none
+                    default:
+                        return .none
+                    }
+                case .dismiss:
+                    return .none
+                }
             }
+        }
+        .ifLet(\.$categorySheet, action: \.categorySheet) {
+            MyGameParticipateCategorySheetFeature()
         }
     }
 }

@@ -59,7 +59,7 @@ public struct MyGameAddCategoryView: View {
             categories: viewStore.categories.map {
                 ChipsGridModel(title: $0.rawValue, emoji: $0.emoji)
             },
-            selectedTitle: viewStore.selectedCategory?.rawValue,
+            selectedTitle: selectedCategory,
             tapAction: { categoryTitle in
                 viewStore.send(.categoryTapped(categoryTitle))
             }
@@ -89,5 +89,10 @@ public struct MyGameAddCategoryView: View {
         }
         .padding(.bottom, 16)
         .hPadding(20)
+    }
+    
+    private var selectedCategory: [String]? {
+        let nullStringValue = viewStore.selectedCategory?.rawValue
+        return nullStringValue.map{ [$0] }
     }
 }

@@ -10,7 +10,7 @@ import Foundation
 
 public struct DynamicWidthChipsGridView: View {
     let categories: [ChipsGridModel]
-    let selectedTitle: String?
+    let selectedTitle: [String]?
     let tapAction: (String) -> Void
     @State private var chipWidths: [String: CGFloat] = [:]
     private let spacingOfEachItems: CGFloat = 10
@@ -18,7 +18,7 @@ public struct DynamicWidthChipsGridView: View {
     
     public init(
         categories: [ChipsGridModel],
-        selectedTitle: String?,
+        selectedTitle: [String]?,
         tapAction: @escaping (String) -> Void
     ) {
         self.categories = categories
@@ -40,7 +40,9 @@ public struct DynamicWidthChipsGridView: View {
                                     emoji: category.emoji,
                                     title: category.title,
                                     isSelected: Binding(
-                                        get: { selectedTitle == category.title },
+                                        get: {
+                                            selectedTitle?.contains(category.title) ?? false
+                                        },
                                         set: { _ in
                                             tapAction(category.title)
                                         }
