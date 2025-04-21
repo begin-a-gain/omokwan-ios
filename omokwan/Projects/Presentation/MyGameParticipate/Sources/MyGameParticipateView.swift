@@ -20,6 +20,10 @@ public struct MyGameParticipateView: View {
     
     public var body: some View {
         myGameParticipateBody
+        .sheet(store: store.scope(state: \.$categorySheet, action: \.categorySheet)) { store in
+            MyGameParticipateCategorySheetView(store: store)
+                .modifier(CommonSheetModifier(detent: [.medium]))
+        }
     }
     
     private var myGameParticipateBody: some View {
