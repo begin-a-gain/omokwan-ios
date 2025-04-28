@@ -22,6 +22,7 @@ public struct MyGameAddFeature {
         public enum AlertCase {
             case password
             case create
+            case leave
         }
         var alertCase: AlertCase?
         var alertState: AlertFeature.State = .init()
@@ -80,6 +81,9 @@ public struct MyGameAddFeature {
         case createAlertCancelButtonTapped
         case createAlertConfirmButtonTapped
         case createRoomComplete(String)
+        case backButtonTapped
+        case leaveAlertCloseButtonTapped
+        case leaveAlertLeaveButtonTapped
     }
     
     public var body: some ReducerOf<Self> {
@@ -200,6 +204,15 @@ public struct MyGameAddFeature {
                 ])
             case .createRoomComplete:
                 return .none
+            case .backButtonTapped:
+                return .send(.showAlert(.leave))
+            case .leaveAlertCloseButtonTapped:
+                return .send(.alertAction(.dismiss))
+            case .leaveAlertLeaveButtonTapped:
+                return .merge([
+                    .send(.alertAction(.dismiss)),
+                    .send(.navigateToBack)
+                ])
             }
         }
         .ifLet(\.$repeatDaySheet, action: \.repeatDaySheet) {

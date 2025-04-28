@@ -48,6 +48,8 @@ public struct MyGameAddView: View {
                         passwordAlertView
                     case .create:
                         createAlertView
+                    case .leave:
+                        leaveAlertView
                     }
                 }
             }
@@ -60,7 +62,7 @@ public struct MyGameAddView: View {
                 title: "대국 만들기",
                 leadingIcon: OImages.icArrowLeft.swiftUIImage,
                 leadingIconAction: {
-                    viewStore.send(.navigateToBack)
+                    viewStore.send(.backButtonTapped)
                 }
             )
             Spacer().height(24)
@@ -335,6 +337,23 @@ private extension MyGameAddView {
             },
             secondaryButtonAction: {
                 viewStore.send(.createAlertConfirmButtonTapped)
+            }
+        )
+    }
+    
+    var leaveAlertView: some View {
+        OAlert(
+            type: .default,
+            title: "저장하지 않고 나가시겠습니까?",
+            content: """
+            모든 입력사항이 사라집니다.
+            대국 시작하기를 눌러 저장해주세요.
+            """,
+            primaryButtonAction: {
+                viewStore.send(.leaveAlertCloseButtonTapped)
+            },
+            secondaryButtonAction: {
+                viewStore.send(.leaveAlertLeaveButtonTapped)
             }
         )
     }
