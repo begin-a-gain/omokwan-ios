@@ -82,8 +82,10 @@ struct MyGameAddPasswordField: View {
     }
     
     private var strokeColor: Color {
-        text.isEmpty
-            ? OColors.stroke02.swiftUIColor
-            : OColors.strokeFocus.swiftUIColor
+        if focusedField == focusedFieldType {
+            OColors.strokeFocus.swiftUIColor
+        } else {
+            OColors.stroke02.swiftUIColor
+        }
     }
 }
