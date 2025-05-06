@@ -20,6 +20,9 @@ public struct MyGameParticipateView: View {
     
     public var body: some View {
         myGameParticipateBody
+        .onAppear {
+            viewStore.send(.onAppear)
+        }
         .sheet(store: store.scope(state: \.$categorySheet, action: \.categorySheet)) { store in
             MyGameParticipateCategorySheetView(store: store)
                 .modifier(CommonSheetModifier(detent: [.medium]))
@@ -36,7 +39,7 @@ public struct MyGameParticipateView: View {
                 }
             )
             participateHeaderView
-            Spacer()
+            roomScrollView
         }
         .background(OColors.uiDisable01.swiftUIColor)
     }
@@ -146,5 +149,19 @@ private extension MyGameParticipateView {
                 viewStore.send(.categoryFilterTapped)
             }
         )
+    }
+}
+
+// MARK: About Room Scroll View
+private extension MyGameParticipateView {
+    var roomScrollView: some View {
+        ScrollView {
+            LazyVStack(spacing: 0) {
+                ForEach(viewStore.gameRoomInformationList, id: \.self) { roomInfo in
+                    GameRoomCardView(roomInfo: roomInfo)
+                }
+            }.clipShape(RoundedRectangle(cornerRadius: 8))
+            .padding(20)
+        }
     }
 }

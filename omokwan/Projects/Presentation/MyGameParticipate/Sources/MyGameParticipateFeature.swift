@@ -6,6 +6,7 @@
 //
 
 import ComposableArchitecture
+import Domain
 
 @Reducer
 public struct MyGameParticipateFeature {
@@ -37,9 +38,11 @@ public struct MyGameParticipateFeature {
         @PresentationState var categorySheet: MyGameParticipateCategorySheetFeature.State?
         
         var selectedCategoryTitles: [String] = []
+        var gameRoomInformationList: [GameRoomInformation] = []
     }
     
     public enum Action: BindableAction {
+        case onAppear
         case binding(BindingAction<State>)
         case navigateToBack
         case resetFilterButtonTapped
@@ -54,6 +57,50 @@ public struct MyGameParticipateFeature {
         Reduce { state, action in
             switch action {
             case .binding:
+                return .none
+            case .onAppear:
+                state.gameRoomInformationList = [
+                    .init(
+                        title: "30분 이상 아침 달리기 하기",
+                        isPrivateRoom: true,
+                        currentNumOfPeople: 3,
+                        maxNumOfPeople: 5,
+                        category: GameCategory.diet,
+                        createRoomDate: .now,
+                        hostName: "빡빡이",
+                        roomStatus: .available
+                    ),
+                    .init(
+                        title: "30분 이상 아침 달리기 하기",
+                        isPrivateRoom: true,
+                        currentNumOfPeople: 3,
+                        maxNumOfPeople: 5,
+                        category: GameCategory.diet,
+                        createRoomDate: .now,
+                        hostName: "빡빡이",
+                        roomStatus: .unavailable
+                    ),
+                    .init(
+                        title: "30분",
+                        isPrivateRoom: true,
+                        currentNumOfPeople: 3,
+                        maxNumOfPeople: 2,
+                        category: GameCategory.diet,
+                        createRoomDate: .now,
+                        hostName: "ㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇ",
+                        roomStatus: .participating
+                    ),
+                    .init(
+                        title: "30분 이상 아침 달리기 하기",
+                        isPrivateRoom: true,
+                        currentNumOfPeople: 3,
+                        maxNumOfPeople: 5,
+                        category: GameCategory.diet,
+                        createRoomDate: .now,
+                        hostName: "dddddddddddd",
+                        roomStatus: .unavailable
+                    )
+                ]
                 return .none
             case .navigateToBack:
                 return .none
