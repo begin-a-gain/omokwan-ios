@@ -9,6 +9,7 @@ import MyGame
 import MyGameAdd
 import MyGameParticipate
 import ComposableArchitecture
+import GameDetail
 
 // MARK: MyGame Navigation
 extension MainCoordinatorFeature {
@@ -66,6 +67,9 @@ extension MainCoordinatorFeature {
         switch action {
         case .navigateToBack:
             _ = state.path.popLast()
+            return .none
+        case .navigateToGameDetail(let roomInfo):
+            state.path.append(.gameDetail(GameDetailFeature.State(roomInfo: roomInfo)))
             return .none
         default:
             return .none

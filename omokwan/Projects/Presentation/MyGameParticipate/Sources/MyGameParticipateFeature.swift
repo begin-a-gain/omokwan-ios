@@ -61,6 +61,7 @@ public struct MyGameParticipateFeature {
         case showDoubleCheckAlert(GameRoomInformation)
         case alertAction(AlertFeature.Action)
         case alertParticipateButtonTapped(GameRoomInformation)
+        case navigateToGameDetail(GameRoomInformation)
     }
     
     public var body: some ReducerOf<Self> {
@@ -160,11 +161,13 @@ public struct MyGameParticipateFeature {
                     // TODO: 비공개코드 alert 필요
                     return .none
                 } else {
-                    // TODO: 정보 들고 Navigate
                     return .merge([
-                        .send(.alertAction(.dismiss))
+                        .send(.alertAction(.dismiss)),
+                        .send(.navigateToGameDetail(roomInfo))
                     ])
                 }
+            case .navigateToGameDetail:
+                return .none
             }
         }
         .ifLet(\.$categorySheet, action: \.categorySheet) {
