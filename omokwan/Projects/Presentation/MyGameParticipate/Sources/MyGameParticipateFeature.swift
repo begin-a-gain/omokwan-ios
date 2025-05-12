@@ -7,6 +7,7 @@
 
 import ComposableArchitecture
 import Domain
+import Base
 
 @Reducer
 public struct MyGameParticipateFeature {
@@ -14,6 +15,12 @@ public struct MyGameParticipateFeature {
     
     public struct State: Equatable {
         public init() {}
+        
+        public enum AlertCase: Equatable {
+            case participateDoubleCheck(GameRoomInformation)
+        }
+        var alertCase: AlertCase?
+        var alertState: AlertFeature.State = .init()
         
         enum CategoryFilterType {
             case availableRoom
@@ -50,18 +57,24 @@ public struct MyGameParticipateFeature {
         case categoryFilterTapped
         case searchBarClearButtonTapped
         case categorySheet(PresentationAction<MyGameParticipateCategorySheetFeature.Action>)
+        case participateButtonTapped(GameRoomInformation)
+        case showDoubleCheckAlert(GameRoomInformation)
+        case alertAction(AlertFeature.Action)
+        case alertParticipateButtonTapped(GameRoomInformation)
     }
     
     public var body: some ReducerOf<Self> {
         BindingReducer()
         Reduce { state, action in
             switch action {
+            case .alertAction:
+                return .none
             case .binding:
                 return .none
             case .onAppear:
                 state.gameRoomInformationList = [
                     .init(
-                        title: "30분 이상 아침 달리기 하기",
+                        title: "30분 이상 아침 달리기 하기(잠금o)",
                         isPrivateRoom: true,
                         currentNumOfPeople: 3,
                         maxNumOfPeople: 5,
@@ -71,14 +84,14 @@ public struct MyGameParticipateFeature {
                         roomStatus: .available
                     ),
                     .init(
-                        title: "30분 이상 아침 달리기 하기",
-                        isPrivateRoom: true,
+                        title: "운동하기(잠금x)",
+                        isPrivateRoom: false,
                         currentNumOfPeople: 3,
                         maxNumOfPeople: 5,
                         category: GameCategory.diet,
                         createRoomDate: .now,
-                        hostName: "빡빡이",
-                        roomStatus: .unavailable
+                        hostName: "오목왕빡빡이",
+                        roomStatus: .available
                     ),
                     .init(
                         title: "30분",
@@ -132,10 +145,33 @@ public struct MyGameParticipateFeature {
                 case .dismiss:
                     return .none
                 }
+            case .participateButtonTapped(let roomInfo):
+                switch roomInfo.roomStatus {
+                case .available:
+                    return .send(.showDoubleCheckAlert(roomInfo))
+                default:
+                    return .none
+                }
+            case .showDoubleCheckAlert(let roomInfo):
+                state.alertCase = .participateDoubleCheck(roomInfo)
+                return .send(.alertAction(.present))
+            case .alertParticipateButtonTapped(let roomInfo):
+                if roomInfo.isPrivateRoom {
+                    // TODO: 비공개코드 alert 필요
+                    return .none
+                } else {
+                    // TODO: 정보 들고 Navigate
+                    return .merge([
+                        .send(.alertAction(.dismiss))
+                    ])
+                }
             }
         }
         .ifLet(\.$categorySheet, action: \.categorySheet) {
             MyGameParticipateCategorySheetFeature()
+        }
+        Scope(state: \.alertState, action: \.alertAction) {
+            AlertFeature()
         }
     }
 }

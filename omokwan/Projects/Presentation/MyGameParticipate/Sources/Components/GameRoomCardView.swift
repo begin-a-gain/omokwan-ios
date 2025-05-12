@@ -11,9 +11,14 @@ import Domain
 
 struct GameRoomCardView: View {
     let roomInfo: GameRoomInformation
+    let buttonAction: () -> Void
     
-    init(roomInfo: GameRoomInformation) {
+    init(
+        roomInfo: GameRoomInformation,
+        buttonAction: @escaping () -> Void
+    ) {
         self.roomInfo = roomInfo
+        self.buttonAction = buttonAction
     }
     
     var body: some View {
@@ -72,7 +77,7 @@ private extension GameRoomCardView {
             
             verticalDividerView
             matchDayView
-        }
+        }.greedyWidth(.leading)
     }
     
     var peopleCountView: some View  {
@@ -99,7 +104,8 @@ private extension GameRoomCardView {
     
     var matchDayView: some View {
         OText(
-            "대국+\(roomInfo.createRoomDate.timeIntervalSinceNow)일 째",
+            "대국+1일 째",
+//            "대국+\(roomInfo.createRoomDate.timeIntervalSinceNow)일 째",
             token: .caption,
             color: OColors.text01.swiftUIColor
         )
@@ -147,7 +153,7 @@ private extension GameRoomCardView {
     
     var buttonView: some View {
         Button {
-            
+            buttonAction()
         } label: {
             OText(
                 buttonTitle,
@@ -158,6 +164,6 @@ private extension GameRoomCardView {
             .hPadding(16)
             .background(buttonColor)
             .cornerRadius(8)
-        }
+        }.disabled(roomInfo.roomStatus != .available)
     }
 }
