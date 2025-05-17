@@ -46,3 +46,26 @@ public extension View {
         clipShape(RoundedCorner(radius: radius, corners: corners))
     }
 }
+
+// About Toast
+public extension View {
+    func oToast(
+        isPresented: Binding<Bool>,
+        message: String,
+        bottomPadding: CGFloat = 24,
+        backgroundColor: Color = OColors.uiBackground2.swiftUIColor,
+        textColor: Color = OColors.textOn01.swiftUIColor,
+        dismissDuration: TimeInterval = 3.0
+    ) -> some View {
+        self.modifier(
+            OToastViewModifier(
+                isPresented: isPresented,
+                message: message,
+                bottomPadding: bottomPadding,
+                backgroundColor: backgroundColor,
+                textColor: textColor,
+                dismissDuration: dismissDuration
+            )
+        )
+    }
+}
