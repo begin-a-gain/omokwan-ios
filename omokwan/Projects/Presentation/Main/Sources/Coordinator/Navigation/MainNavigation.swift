@@ -76,3 +76,17 @@ extension MainCoordinatorFeature {
         }
     }
 }
+
+
+// MARK: GameDetail Navigation
+extension MainCoordinatorFeature {
+    func gameDetailNavigation(_ state: inout State, _ action: GameDetailFeature.Action) -> Effect<Action> {
+        switch action {
+        case .navigateToBack:
+            _ = state.path.popLast()
+            return .none
+        default:
+            return .none
+        }
+    }
+}
