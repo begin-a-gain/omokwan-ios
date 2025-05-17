@@ -26,6 +26,7 @@ struct MainBottomTabBarView: View {
             CenterPlusFloatingActionButton() {
                 viewStore.send(.addGameButtonTapped)
             }
+            .offset(y: -36)
        }
         .height(MainConstants.bottomTabBarHeight, .top)
         .greedyWidth()
@@ -115,7 +116,6 @@ private struct CenterPlusFloatingActionButton: View {
                 Circle()
                     .frame(64, 64)
                     .padding(4)
-                    .offset(y: -36)
                 
                 OImages.icPlus.swiftUIImage
                     .renderingMode(.template)
@@ -124,7 +124,6 @@ private struct CenterPlusFloatingActionButton: View {
                     .padding(16)
                     .background(OColors.oPrimary.swiftUIColor)
                     .clipShape(Circle())
-                    .offset(y: -36)
             }
         }
     }

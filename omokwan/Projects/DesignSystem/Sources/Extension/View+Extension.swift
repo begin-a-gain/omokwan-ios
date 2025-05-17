@@ -40,3 +40,9 @@ public extension View {
         frame(height: height, alignment: alignment)
     }
 }
+
+public extension View {
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
+}

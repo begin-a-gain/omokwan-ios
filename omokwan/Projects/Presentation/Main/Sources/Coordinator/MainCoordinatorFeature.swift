@@ -91,6 +91,8 @@ public struct MainCoordinatorFeature {
                 return myGameAddNavigation(&state, myGameAddAction)
             case .path(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.myGameParticipate(let myGameParticipateAction))):
                 return myGameParticipateNavigation(&state, myGameParticipateAction)
+            case .path(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.gameDetail(let gameDetailAction))):
+                return gameDetailNavigation(&state, gameDetailAction)
             case .path:
                 return .none
             }

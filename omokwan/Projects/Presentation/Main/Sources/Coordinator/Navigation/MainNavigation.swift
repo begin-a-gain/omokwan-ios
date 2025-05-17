@@ -9,6 +9,7 @@ import MyGame
 import MyGameAdd
 import MyGameParticipate
 import ComposableArchitecture
+import GameDetail
 
 // MARK: MyGame Navigation
 extension MainCoordinatorFeature {
@@ -63,6 +64,23 @@ extension MainCoordinatorFeature {
 // MARK: MyGameParticipate Navigation
 extension MainCoordinatorFeature {
     func myGameParticipateNavigation(_ state: inout State, _ action: MyGameParticipateFeature.Action) -> Effect<Action> {
+        switch action {
+        case .navigateToBack:
+            _ = state.path.popLast()
+            return .none
+        case .navigateToGameDetail(let roomInfo):
+            state.path.append(.gameDetail(GameDetailFeature.State(roomInfo: roomInfo)))
+            return .none
+        default:
+            return .none
+        }
+    }
+}
+
+
+// MARK: GameDetail Navigation
+extension MainCoordinatorFeature {
+    func gameDetailNavigation(_ state: inout State, _ action: GameDetailFeature.Action) -> Effect<Action> {
         switch action {
         case .navigateToBack:
             _ = state.path.popLast()

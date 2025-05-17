@@ -10,6 +10,7 @@ import SwiftUI
 import MyGame
 import MyGameAdd
 import MyGameParticipate
+import GameDetail
 
 public struct MainCoordinatorRootView: View {
     let store: StoreOf<MainCoordinatorFeature>
@@ -40,6 +41,13 @@ public struct MainCoordinatorRootView: View {
             case .myGameParticipate:
                 CaseLet(\MainCoordinatorFeature.MainPath.State.myGameParticipate, action: MainCoordinatorFeature.MainPath.Action.myGameParticipate) { store in
                     MyGameParticipateView(store: store)
+                }
+            case .gameDetail:
+                CaseLet(
+                    \MainCoordinatorFeature.MainPath.State.gameDetail,
+                     action: MainCoordinatorFeature.MainPath.Action.gameDetail
+                ) { store in
+                    GameDetailView(store: store)
                 }
             }
         }
