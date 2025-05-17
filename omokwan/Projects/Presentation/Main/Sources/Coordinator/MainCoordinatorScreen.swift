@@ -20,6 +20,7 @@ extension MainCoordinatorFeature {
             case myGameAddCategory(MyGameAddCategoryFeature.State)
             case myGameParticipate(MyGameParticipateFeature.State)
             case gameDetail(GameDetailFeature.State)
+            case gameDetailSetting(GameDetailSettingFeature.State)
         }
 
         public enum Action {
@@ -28,6 +29,7 @@ extension MainCoordinatorFeature {
             case myGameAddCategory(MyGameAddCategoryFeature.Action)
             case myGameParticipate(MyGameParticipateFeature.Action)
             case gameDetail(GameDetailFeature.Action)
+            case gameDetailSetting(GameDetailSettingFeature.Action)
         }
         
         public var body: some ReducerOf<Self> {
@@ -45,6 +47,9 @@ extension MainCoordinatorFeature {
             }
             Scope(state: \.gameDetail, action: \.gameDetail) {
                 GameDetailFeature()
+            }
+            Scope(state: \.gameDetailSetting, action: \.gameDetailSetting) {
+                GameDetailSettingFeature()
             }
         }
     }

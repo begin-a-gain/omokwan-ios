@@ -49,6 +49,13 @@ public struct MainCoordinatorRootView: View {
                 ) { store in
                     GameDetailView(store: store)
                 }
+            case .gameDetailSetting:
+                CaseLet(
+                    \MainCoordinatorFeature.MainPath.State.gameDetailSetting,
+                     action: MainCoordinatorFeature.MainPath.Action.gameDetailSetting
+                ) { store in
+                    GameDetailSettingView(store: store)
+                }
             }
         }
     }

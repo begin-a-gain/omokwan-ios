@@ -85,6 +85,21 @@ extension MainCoordinatorFeature {
         case .navigateToBack:
             _ = state.path.popLast()
             return .none
+        case .menuButtonTapped:
+            state.path.append(.gameDetailSetting(.init()))
+            return .none
+        default:
+            return .none
+        }
+    }
+}
+
+extension MainCoordinatorFeature {
+    func gameDetailSettingNavigation(_ state: inout State, _ action: GameDetailSettingFeature.Action) -> Effect<Action> {
+        switch action {
+        case .navigateToBack:
+            _ = state.path.popLast()
+            return .none
         default:
             return .none
         }
