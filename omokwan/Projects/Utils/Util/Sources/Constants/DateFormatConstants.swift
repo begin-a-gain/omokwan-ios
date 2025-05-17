@@ -10,4 +10,7 @@ public struct DateFormatConstants {
     public static let calendarHeaderFormat = "M월"
     public static let calendarDayDateFormatter = "MMMM yyyy dd"
     public static let classDetailSelectedDateFormat = "M월 d일(E)"
+    public static let scrollHeaderFormat = "yyyy. M월"
+    public static let scrollCalendarFormat = "yyyyMMdd"
+    public static let detailGameSectionRowDateFormat = "dd"
 }
