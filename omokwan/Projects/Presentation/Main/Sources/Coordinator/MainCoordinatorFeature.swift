@@ -38,6 +38,8 @@ public struct MainCoordinatorFeature {
                 return myGameParticipateNavigation(&state, myGameParticipateAction)
             case .path(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.gameDetail(let gameDetailAction))):
                 return gameDetailNavigation(&state, gameDetailAction)
+            case .path(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.gameDetailSetting(let gameDetailSettingAction))):
+                return gameDetailSettingNavigation(&state, gameDetailSettingAction)
             case .path:
                 return .none
             case .mainAction(let mainAction):
