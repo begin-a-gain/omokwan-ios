@@ -8,6 +8,8 @@
 import SwiftUI
 import DesignSystem
 import ComposableArchitecture
+import Base
+import Domain
 
 public struct MyGameParticipateView: View {
     let store: StoreOf<MyGameParticipateFeature>
@@ -26,6 +28,16 @@ public struct MyGameParticipateView: View {
         .sheet(store: store.scope(state: \.$categorySheet, action: \.categorySheet)) { store in
             MyGameParticipateCategorySheetView(store: store)
                 .modifier(CommonSheetModifier(detent: [.medium]))
+        }
+        .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {
+            Group {
+                if let alertCase = viewStore.alertCase {
+                    switch alertCase {
+                    case .participateDoubleCheck(let roomInfo):
+                        participateDoubleCheckAlertView(roomInfo: roomInfo)
+                    }
+                }
+            }
         }
     }
     
@@ -158,10 +170,32 @@ private extension MyGameParticipateView {
         ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(viewStore.gameRoomInformationList, id: \.self) { roomInfo in
-                    GameRoomCardView(roomInfo: roomInfo)
+                    GameRoomCardView(
+                        roomInfo: roomInfo,
+                        buttonAction: {
+                            viewStore.send(.participateButtonTapped(roomInfo))
+                        }
+                    )
                 }
             }.clipShape(RoundedRectangle(cornerRadius: 8))
             .padding(20)
         }
+    }
+}
+
+private extension MyGameParticipateView {
+    func participateDoubleCheckAlertView(roomInfo: GameRoomInformation) -> some View {
+        OAlert(
+            type: .default,
+            title: "대국에 참여하시겠습니까?",
+            content: "'\(roomInfo.title)' 대국을 시작해보세요.",
+            primaryButtonAction: {
+                viewStore.send(.alertAction(.dismiss))
+            },
+            secondaryButtonAction: {
+                viewStore.send(.alertParticipateButtonTapped(roomInfo))
+            }
+        )
+
     }
 }
