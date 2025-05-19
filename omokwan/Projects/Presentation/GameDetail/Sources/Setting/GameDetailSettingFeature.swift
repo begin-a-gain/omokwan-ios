@@ -16,19 +16,29 @@ public struct GameDetailSettingFeature {
     
     public struct State: Equatable {
         public init() {}
+        
+        @BindingState var gameName: String = ""
+        var maxNumOfPeople: Int = 5
     }
     
-    public enum Action {
+    public enum Action: BindableAction {
         case onAppear
         case navigateToBack
+        case binding(BindingAction<State>)
+        case maxNumOfPeopleButtonTapped
     }
     
     public var body: some ReducerOf<Self> {
+        BindingReducer()
         Reduce { state, action in
             switch action {
             case .onAppear:
                 return .none
             case .navigateToBack:
+                return .none
+            case .binding:
+                return .none
+            case .maxNumOfPeopleButtonTapped:
                 return .none
             }
         }
