@@ -50,6 +50,9 @@ private extension GameDetailSettingView {
                 
                 defaultSetting
                     .padding(.bottom, 24)
+                
+                otherSetting
+                    .padding(.bottom, 24)
             }
         }
         .hPadding(20)
@@ -160,5 +163,57 @@ private extension GameDetailSettingView {
 
 // MARK: Other Settings
 private extension GameDetailSettingView {
+    var otherSetting: some View {
+        VStack(spacing: 6) {
+            OText(
+                "기타 설정",
+                token: .subtitle_02
+            )
+            .hPadding(16)
+            .greedyWidth(.leading)
+            VStack(spacing: 0) {
+                gameCategoryView
+                StrokeDivider(color: OColors.stroke02.swiftUIColor)
+                OInputToggleField(
+                    title: "리마인드 알림",
+                    additionalInfo: "오전 9:00",
+                    isSelected: .constant(false)
+                )
+                StrokeDivider(color: OColors.stroke02.swiftUIColor)
+                OInputToggleField(
+                    title: "비공개",
+                    selectAreaAction: {
+                        viewStore.send(.privateRoomCodeButtonTapped)
+                    },
+                    additionalInfo: "코드 : \(viewStore.privateRoomPassword ?? "-")",
+                    isSelected: Binding(
+                        get: { viewStore.isPrivateRoomSelected },
+                        set: { newValue in
+                            viewStore.send(.privateRoomToggleButtonTapped)
+                        }
+                    )
+                )
+
+            }
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(OColors.stroke02.swiftUIColor, lineWidth: 1.0))
+        }
+    }
     
+    var gameCategoryView: some View {
+        OInputField(
+            title: "대국 카테고리",
+            value: selectedCategoryString,
+            buttonAction: {
+                viewStore.send(.gameCategorySettingButtonTapped)
+            }
+        )
+    }
+
+    var selectedCategoryString: String {
+        if let category = viewStore.selectedCategory {
+            return category.rawValue
+        } else {
+            return "선택"
+        }
+    }
 }

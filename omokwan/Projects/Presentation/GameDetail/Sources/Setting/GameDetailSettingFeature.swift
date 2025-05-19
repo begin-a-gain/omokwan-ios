@@ -19,6 +19,9 @@ public struct GameDetailSettingFeature {
         
         @BindingState var gameName: String = ""
         var maxNumOfPeople: Int = 5
+        var selectedCategory: GameCategory?
+        var privateRoomPassword: String?
+        @BindingState var isPrivateRoomSelected: Bool = false
     }
     
     public enum Action: BindableAction {
@@ -26,6 +29,9 @@ public struct GameDetailSettingFeature {
         case navigateToBack
         case binding(BindingAction<State>)
         case maxNumOfPeopleButtonTapped
+        case gameCategorySettingButtonTapped
+        case privateRoomCodeButtonTapped
+        case privateRoomToggleButtonTapped
     }
     
     public var body: some ReducerOf<Self> {
@@ -39,6 +45,12 @@ public struct GameDetailSettingFeature {
             case .binding:
                 return .none
             case .maxNumOfPeopleButtonTapped:
+                return .none
+            case .gameCategorySettingButtonTapped:
+                return .none
+            case .privateRoomCodeButtonTapped:
+                return .none
+            case .privateRoomToggleButtonTapped:
                 return .none
             }
         }
