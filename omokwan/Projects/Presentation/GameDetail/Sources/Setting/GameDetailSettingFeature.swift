@@ -22,6 +22,7 @@ public struct GameDetailSettingFeature {
         var selectedCategory: GameCategory?
         var privateRoomPassword: String?
         @BindingState var isPrivateRoomSelected: Bool = false
+        let isHost: Bool = true
     }
     
     public enum Action: BindableAction {
@@ -32,6 +33,9 @@ public struct GameDetailSettingFeature {
         case gameCategorySettingButtonTapped
         case privateRoomCodeButtonTapped
         case privateRoomToggleButtonTapped
+        case inviteButtonTapped
+        case hostChangeButtonTapped
+        case exitButtonTapped
     }
     
     public var body: some ReducerOf<Self> {
@@ -51,6 +55,12 @@ public struct GameDetailSettingFeature {
             case .privateRoomCodeButtonTapped:
                 return .none
             case .privateRoomToggleButtonTapped:
+                return .none
+            case .inviteButtonTapped:
+                return .none
+            case .hostChangeButtonTapped:
+                return .none
+            case .exitButtonTapped:
                 return .none
             }
         }
