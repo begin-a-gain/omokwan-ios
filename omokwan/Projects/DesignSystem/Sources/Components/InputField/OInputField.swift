@@ -9,12 +9,12 @@ import SwiftUI
 
 public struct OInputField: View {
     let title: String
-    let value: String
+    let value: String?
     let buttonAction: () -> Void
     
     public init(
         title: String,
-        value: String,
+        value: String? = nil,
         buttonAction: @escaping () -> Void
     ) {
         self.title = title
@@ -33,11 +33,13 @@ public struct OInputField: View {
                 Button {
                     buttonAction()
                 } label: {
-                    OText(
-                        value,
-                        token: .subtitle_03,
-                        color: OColors.text02.swiftUIColor
-                    )
+                    if let value = value {
+                        OText(
+                            value,
+                            token: .subtitle_03,
+                            color: OColors.text02.swiftUIColor
+                        )
+                    }
                     OImages.icArrowRight.swiftUIImage.resizedToFit(16,16).vPadding(2)
                 }
             }

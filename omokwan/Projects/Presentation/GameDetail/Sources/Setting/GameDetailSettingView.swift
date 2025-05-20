@@ -53,10 +53,22 @@ private extension GameDetailSettingView {
                 
                 otherSetting
                     .padding(.bottom, 24)
+                
+                gameManagementView
+                    .padding(.bottom, 24)
+                
+                OButton(
+                    title: "대국 나가기",
+                    status: .error,
+                    type: .default
+                ) {
+                    viewStore.send(.exitButtonTapped)
+                }
             }
         }
         .hPadding(20)
         .vPadding(24)
+        .scrollIndicators(.hidden)
     }
 }
 
@@ -215,5 +227,45 @@ private extension GameDetailSettingView {
         } else {
             return "선택"
         }
+    }
+}
+
+// MARK: Game Management
+private extension GameDetailSettingView {
+    var gameManagementView: some View {
+        VStack(spacing: 6) {
+            OText(
+                "대국 관리",
+                token: .subtitle_02
+            )
+            .hPadding(16)
+            .greedyWidth(.leading)
+            VStack(spacing: 0) {
+                if viewStore.isHost {
+                    inviteView
+                    StrokeDivider(color: OColors.stroke02.swiftUIColor)
+                }
+                gameHostChangeView
+            }
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(OColors.stroke02.swiftUIColor, lineWidth: 1.0))
+        }
+    }
+    
+    var inviteView: some View {
+        OInputField(
+            title: "초대하기",
+            buttonAction: {
+                viewStore.send(.inviteButtonTapped)
+            }
+        )
+    }
+    
+    var gameHostChangeView: some View {
+        OInputField(
+            title: "대국장 변경하기",
+            buttonAction: {
+                viewStore.send(.hostChangeButtonTapped)
+            }
+        )
     }
 }
