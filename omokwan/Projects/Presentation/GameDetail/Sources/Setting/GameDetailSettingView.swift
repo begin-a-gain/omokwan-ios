@@ -8,6 +8,7 @@
 import ComposableArchitecture
 import SwiftUI
 import DesignSystem
+import Base
 
 public struct GameDetailSettingView: View {
     let store: StoreOf<GameDetailSettingFeature>
@@ -25,6 +26,10 @@ public struct GameDetailSettingView: View {
     
     public var body: some View {
         settingBody
+            .sheet(store: store.scope(state: \.$maxPeopleCountSheet, action: \.maxPeopleCountSheet)) { store in
+                MaxPeopleCountView(store: store)
+                    .modifier(CommonSheetModifier(detent: [.medium]))
+            }
     }
     
     private var settingBody: some View {

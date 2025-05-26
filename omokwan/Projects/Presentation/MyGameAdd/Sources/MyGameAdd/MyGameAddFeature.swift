@@ -44,7 +44,7 @@ public struct MyGameAddFeature {
         @BindingState var isRemindAlarmSelected: Bool = false
         
         @PresentationState var repeatDaySheet: MyGameRepeatDaySheetFeature.State?
-        @PresentationState var maxNumOfPeopleSheet: MyGameMaxNumOfPeopleSheetFeature.State?
+        @PresentationState var maxPeopleCountSheet: MaxPeopleCountFeature.State?
         @PresentationState var gameCategorySheet: MyGameCategorySheetFeature.State?
         
         // MARK: 비공개 설정
@@ -68,7 +68,7 @@ public struct MyGameAddFeature {
         case maxNumOfPeopleButtonTapped
         case gameCategorySettingButtonTapped
         case repeatDaySheet(PresentationAction<MyGameRepeatDaySheetFeature.Action>)
-        case maxNumOfPeopleSheet(PresentationAction<MyGameMaxNumOfPeopleSheetFeature.Action>)
+        case maxPeopleCountSheet(PresentationAction<MaxPeopleCountFeature.Action>)
         case gameCategorySheet(PresentationAction<MyGameCategorySheetFeature.Action>)
         case privateRoomToggleButtonTapped
         case alertAction(AlertFeature.Action)
@@ -115,14 +115,14 @@ public struct MyGameAddFeature {
                 state.isSelectedDirectSelectionList[index].toggle()
                 return .none
             case .maxNumOfPeopleButtonTapped:
-                state.maxNumOfPeopleSheet = .init(selectedMaxNumOfPeopleCount: state.maxNumOfPeople)
+                state.maxPeopleCountSheet = .init(selectedMaxNumOfPeopleCount: state.maxNumOfPeople)
                 return .none
-            case .maxNumOfPeopleSheet(let action):
-                switch action {
+            case .maxPeopleCountSheet(let sheetAction):
+                switch sheetAction {
                 case .presented(let presentAction):
                     switch presentAction {
                     case .selectButtonTapped(let value):
-                        state.maxNumOfPeopleSheet = nil
+                        state.maxPeopleCountSheet = nil
                         state.maxNumOfPeople = value
                         return .none
                     default:
@@ -218,8 +218,8 @@ public struct MyGameAddFeature {
         .ifLet(\.$repeatDaySheet, action: \.repeatDaySheet) {
             MyGameRepeatDaySheetFeature()
         }
-        .ifLet(\.$maxNumOfPeopleSheet, action: \.maxNumOfPeopleSheet) {
-            MyGameMaxNumOfPeopleSheetFeature()
+        .ifLet(\.$maxPeopleCountSheet, action: \.maxPeopleCountSheet) {
+            MaxPeopleCountFeature()
         }
         .ifLet(\.$gameCategorySheet, action: \.gameCategorySheet) {
             MyGameCategorySheetFeature()

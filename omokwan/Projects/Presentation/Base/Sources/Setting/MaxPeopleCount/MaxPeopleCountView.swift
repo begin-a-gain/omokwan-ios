@@ -1,33 +1,38 @@
 //
-//  MyGameMaxNumOfPeopleSheetView.swift
-//  MyGameAdd
+//  MaxPeopleCountView.swift
+//  Base
 //
-//  Created by 김동준 on 12/7/24
+//  Created by 김동준 on 5/26/25
 //
 
 import ComposableArchitecture
 import SwiftUI
 import DesignSystem
 
-struct MyGameMaxNumOfPeopleSheetView: View {
-    let store: StoreOf<MyGameMaxNumOfPeopleSheetFeature>
-    @ObservedObject var viewStore: ViewStoreOf<MyGameMaxNumOfPeopleSheetFeature>
+public struct MaxPeopleCountView: View {
+    let store: StoreOf<MaxPeopleCountFeature>
+    @ObservedObject var viewStore: ViewStoreOf<MaxPeopleCountFeature>
     
-    init(store: StoreOf<MyGameMaxNumOfPeopleSheetFeature>) {
+    public init(store: StoreOf<MaxPeopleCountFeature>) {
         self.store = store
         self.viewStore = ViewStore(store, observe: { $0 })
     }
     
-    var body: some View {
+    public var body: some View {
         OSheetView(
             title: "최대 인원 수",
             sheetContent: sheetContent,
             buttonAction: {
-                viewStore.send(.selectButtonTapped(viewStore.selectedMaxNumOfPeopleCount))
+                viewStore.send(
+                    .selectButtonTapped(viewStore.selectedMaxNumOfPeopleCount)
+                )
             }
         )
     }
-    private var sheetContent: some View {
+}
+
+private extension MaxPeopleCountView {
+    var sheetContent: some View {
         Picker("", selection: viewStore.$selectedMaxNumOfPeopleCount) {
             ForEach(viewStore.maxNumOfPeopleAllCases, id: \.self) {
                 OText("\($0)")

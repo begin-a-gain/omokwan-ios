@@ -9,6 +9,7 @@ import ComposableArchitecture
 import Domain
 import Foundation
 import Util
+import Base
 
 @Reducer
 public struct GameDetailSettingFeature {
@@ -23,6 +24,7 @@ public struct GameDetailSettingFeature {
         var privateRoomPassword: String?
         @BindingState var isPrivateRoomSelected: Bool = false
         let isHost: Bool = true
+        @PresentationState var maxPeopleCountSheet: MaxPeopleCountFeature.State?
     }
     
     public enum Action: BindableAction {
@@ -36,6 +38,7 @@ public struct GameDetailSettingFeature {
         case inviteButtonTapped
         case hostChangeButtonTapped
         case exitButtonTapped
+        case maxPeopleCountSheet(PresentationAction<MaxPeopleCountFeature.Action>)
     }
     
     public var body: some ReducerOf<Self> {
@@ -49,6 +52,7 @@ public struct GameDetailSettingFeature {
             case .binding:
                 return .none
             case .maxNumOfPeopleButtonTapped:
+                state.maxPeopleCountSheet = .init(selectedMaxNumOfPeopleCount: state.maxNumOfPeople)
                 return .none
             case .gameCategorySettingButtonTapped:
                 return .none
@@ -62,7 +66,24 @@ public struct GameDetailSettingFeature {
                 return .none
             case .exitButtonTapped:
                 return .none
+            case .maxPeopleCountSheet(let sheetAction):
+                switch sheetAction {
+                case .presented(let presentAction):
+                    switch presentAction {
+                    case .selectButtonTapped(let value):
+                        state.maxPeopleCountSheet = nil
+                        state.maxNumOfPeople = value
+                        return .none
+                    default:
+                        return .none
+                    }
+                default:
+                    return .none
+                }
             }
+        }
+        .ifLet(\.$maxPeopleCountSheet, action: \.maxPeopleCountSheet) {
+            MaxPeopleCountFeature()
         }
     }
 }
