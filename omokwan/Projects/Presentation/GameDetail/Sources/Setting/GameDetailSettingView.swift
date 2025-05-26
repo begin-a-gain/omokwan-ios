@@ -34,6 +34,16 @@ public struct GameDetailSettingView: View {
                 GameCategorySelectView(store: store)
                     .modifier(CommonSheetModifier(detent: [.medium]))
             }
+            .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {
+                Group {
+                    if let alertCase = viewStore.alertCase {
+                        switch alertCase {
+                        case .password:
+                            passwordAlertView
+                        }
+                    }
+                }
+            }
     }
     
     private var settingBody: some View {
@@ -274,6 +284,28 @@ private extension GameDetailSettingView {
             title: "대국장 변경하기",
             buttonAction: {
                 viewStore.send(.hostChangeButtonTapped)
+            }
+        )
+    }
+}
+
+// MARK: About Alert
+private extension GameDetailSettingView {
+    var passwordAlertView: some View {
+        PasswordView(
+            title: "대국 코드 설정",
+            thousandsPlace: viewStore.$thousandsPlace,
+            hundredsPlace: viewStore.$hundredsPlace,
+            tensPlace: viewStore.$tensPlace,
+            onesPlace: viewStore.$onesPlace,
+            primaryButtonAction: {
+                viewStore.send(.alertAction(.dismiss))
+            },
+            secondaryButtonAction: {
+                viewStore.send(.passwordAlertConfirmButtonTapped)
+            },
+            refreshAction: {
+                viewStore.send(.passwordRefresh)
             }
         )
     }

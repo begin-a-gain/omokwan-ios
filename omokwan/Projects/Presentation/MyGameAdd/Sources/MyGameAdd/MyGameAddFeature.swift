@@ -27,14 +27,6 @@ public struct MyGameAddFeature {
         var alertCase: AlertCase?
         var alertState: AlertFeature.State = .init()
         
-        // MARK: Password Focus Field
-        public enum PasswordFocusField {
-            case thousandsPlace
-            case hundredsPlace
-            case tensPlace
-            case onesPlace
-        }
-        
         @BindingState var gameName: String = ""
         var selectedRepeatDay: MyGameAddRepeatDayType = .weekday
         var directSelectionTypeList: [MyGameAddDirectSelectionDayType] = MyGameAddDirectSelectionDayType.allCases

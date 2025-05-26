@@ -14,8 +14,6 @@ public struct MyGameAddView: View {
     let store: StoreOf<MyGameAddFeature>
     @ObservedObject var viewStore: ViewStoreOf<MyGameAddFeature>
     @FocusState private var focusedField: MyGameAddTextFieldType?
-    @FocusState private var passwordFocusedField: PasswordFocusField?
-    typealias PasswordFocusField = MyGameAddFeature.State.PasswordFocusField
     
     private enum MyGameAddTextFieldType {
         case gameName
@@ -278,53 +276,22 @@ private struct DirectSelectionCircleCircleStrokeModifier: ViewModifier {
 // MARK: About Alert
 private extension MyGameAddView {
     var passwordAlertView: some View {
-        OAlertContentView(
-            type: .default,
+        PasswordView(
+            title: "대국 코드 설정",
+            thousandsPlace: viewStore.$thousandsPlace,
+            hundredsPlace: viewStore.$hundredsPlace,
+            tensPlace: viewStore.$tensPlace,
+            onesPlace: viewStore.$onesPlace,
             primaryButtonAction: {
-                passwordFocusedField = nil
                 viewStore.send(.passwordAlertCancelButtonTapped)
             },
             secondaryButtonAction: {
                 viewStore.send(.passwordAlertConfirmButtonTapped)
             },
-            content: {
-                VStack(spacing: 16) {
-                    OText(
-                        "대국 코드 설정",
-                        token: .headline
-                    )
-                    HStack(spacing: 8) {
-                        MyGameAddPasswordField(
-                            text: viewStore.$thousandsPlace,
-                            focusedField: $passwordFocusedField,
-                            focusedFieldType: .thousandsPlace,
-                            refreshAction: { viewStore.send(.passwordRefresh) }
-                        )
-                        MyGameAddPasswordField(
-                            text: viewStore.$hundredsPlace,
-                            focusedField: $passwordFocusedField,
-                            focusedFieldType: .hundredsPlace,
-                            refreshAction: { viewStore.send(.passwordRefresh) }
-                        )
-                        MyGameAddPasswordField(
-                            text: viewStore.$tensPlace,
-                            focusedField: $passwordFocusedField,
-                            focusedFieldType: .tensPlace,
-                            refreshAction: { viewStore.send(.passwordRefresh) }
-                        )
-                        MyGameAddPasswordField(
-                            text: viewStore.$onesPlace,
-                            focusedField: $passwordFocusedField,
-                            focusedFieldType: .onesPlace,
-                            refreshAction: { viewStore.send(.passwordRefresh) }
-                        )
-                    }
-                }.vPadding(4)
+            refreshAction: {
+                viewStore.send(.passwordRefresh)
             }
-        ).onAppear {
-            passwordFocusedField = .thousandsPlace
-            viewStore.send(.passwordRefresh)
-        }
+        )
     }
     
     var createAlertView: some View {
