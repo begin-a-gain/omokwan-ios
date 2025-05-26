@@ -36,8 +36,8 @@ public struct MyGameAddView: View {
             MaxPeopleCountView(store: store)
                 .modifier(CommonSheetModifier(detent: [.medium]))
         }
-        .sheet(store: store.scope(state: \.$gameCategorySheet, action: \.gameCategorySheet)) { store in
-            MyGameCategorySheetView(store: store)
+        .sheet(store: store.scope(state: \.$gameCategorySelectSheet, action: \.gameCategorySelectSheet)) { store in
+            GameCategorySelectView(store: store)
                 .modifier(CommonSheetModifier(detent: [.medium]))
         }
         .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {

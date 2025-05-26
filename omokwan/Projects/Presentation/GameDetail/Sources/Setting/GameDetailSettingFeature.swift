@@ -25,6 +25,7 @@ public struct GameDetailSettingFeature {
         @BindingState var isPrivateRoomSelected: Bool = false
         let isHost: Bool = true
         @PresentationState var maxPeopleCountSheet: MaxPeopleCountFeature.State?
+        @PresentationState var gameCategorySelectSheet: GameCategorySelectFeature.State?
     }
     
     public enum Action: BindableAction {
@@ -39,6 +40,7 @@ public struct GameDetailSettingFeature {
         case hostChangeButtonTapped
         case exitButtonTapped
         case maxPeopleCountSheet(PresentationAction<MaxPeopleCountFeature.Action>)
+        case gameCategorySelectSheet(PresentationAction<GameCategorySelectFeature.Action>)
     }
     
     public var body: some ReducerOf<Self> {
@@ -55,7 +57,22 @@ public struct GameDetailSettingFeature {
                 state.maxPeopleCountSheet = .init(selectedMaxNumOfPeopleCount: state.maxNumOfPeople)
                 return .none
             case .gameCategorySettingButtonTapped:
+                state.gameCategorySelectSheet = .init(selectedCategory: state.selectedCategory)
                 return .none
+            case .gameCategorySelectSheet(let sheetAction):
+                switch sheetAction {
+                case .presented(let presentAction):
+                    switch presentAction {
+                    case .selectButtonTapped(let value):
+                        state.gameCategorySelectSheet = nil
+                        state.selectedCategory = value
+                        return .none
+                    default:
+                        return .none
+                    }
+                default:
+                    return .none
+                }
             case .privateRoomCodeButtonTapped:
                 return .none
             case .privateRoomToggleButtonTapped:
@@ -84,6 +101,9 @@ public struct GameDetailSettingFeature {
         }
         .ifLet(\.$maxPeopleCountSheet, action: \.maxPeopleCountSheet) {
             MaxPeopleCountFeature()
+        }
+        .ifLet(\.$gameCategorySelectSheet, action: \.gameCategorySelectSheet) {
+            GameCategorySelectFeature()
         }
     }
 }

@@ -45,7 +45,7 @@ public struct MyGameAddFeature {
         
         @PresentationState var repeatDaySheet: MyGameRepeatDaySheetFeature.State?
         @PresentationState var maxPeopleCountSheet: MaxPeopleCountFeature.State?
-        @PresentationState var gameCategorySheet: MyGameCategorySheetFeature.State?
+        @PresentationState var gameCategorySelectSheet: GameCategorySelectFeature.State?
         
         // MARK: 비공개 설정
         @BindingState var isPrivateRoomSelected: Bool = false
@@ -69,7 +69,7 @@ public struct MyGameAddFeature {
         case gameCategorySettingButtonTapped
         case repeatDaySheet(PresentationAction<MyGameRepeatDaySheetFeature.Action>)
         case maxPeopleCountSheet(PresentationAction<MaxPeopleCountFeature.Action>)
-        case gameCategorySheet(PresentationAction<MyGameCategorySheetFeature.Action>)
+        case gameCategorySelectSheet(PresentationAction<GameCategorySelectFeature.Action>)
         case privateRoomToggleButtonTapped
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
@@ -132,14 +132,14 @@ public struct MyGameAddFeature {
                     return .none
                 }
             case .gameCategorySettingButtonTapped:
-                state.gameCategorySheet = .init(selectedCategory: state.selectedCategory)
+                state.gameCategorySelectSheet = .init(selectedCategory: state.selectedCategory)
                 return .none
-            case .gameCategorySheet(let action):
-                switch action {
+            case .gameCategorySelectSheet(let sheetAction):
+                switch sheetAction {
                 case .presented(let presentAction):
                     switch presentAction {
                     case .selectButtonTapped(let value):
-                        state.gameCategorySheet = nil
+                        state.gameCategorySelectSheet = nil
                         state.selectedCategory = value
                         return .none
                     default:
@@ -221,8 +221,8 @@ public struct MyGameAddFeature {
         .ifLet(\.$maxPeopleCountSheet, action: \.maxPeopleCountSheet) {
             MaxPeopleCountFeature()
         }
-        .ifLet(\.$gameCategorySheet, action: \.gameCategorySheet) {
-            MyGameCategorySheetFeature()
+        .ifLet(\.$gameCategorySelectSheet, action: \.gameCategorySelectSheet) {
+            GameCategorySelectFeature()
         }
         Scope(state: \.alertState, action: \.alertAction) {
             AlertFeature()

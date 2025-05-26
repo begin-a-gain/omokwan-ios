@@ -1,24 +1,24 @@
 //
-//  MyGameCategorySheetView.swift
-//  MyGameAdd
+//  GameCategorySelectView.swift
+//  Base
 //
-//  Created by 김동준 on 12/7/24
+//  Created by 김동준 on 5/26/25
 //
 
 import ComposableArchitecture
 import SwiftUI
 import DesignSystem
 
-struct MyGameCategorySheetView: View {
-    let store: StoreOf<MyGameCategorySheetFeature>
-    @ObservedObject var viewStore: ViewStoreOf<MyGameCategorySheetFeature>
+public struct GameCategorySelectView: View {
+    let store: StoreOf<GameCategorySelectFeature>
+    @ObservedObject var viewStore: ViewStoreOf<GameCategorySelectFeature>
     
-    init(store: StoreOf<MyGameCategorySheetFeature>) {
+    public init(store: StoreOf<GameCategorySelectFeature>) {
         self.store = store
         self.viewStore = ViewStore(store, observe: { $0 })
     }
     
-    var body: some View {
+    public var body: some View {
         OSheetView(
             title: "대국 카테고리",
             sheetContent: sheetContent,
@@ -30,8 +30,10 @@ struct MyGameCategorySheetView: View {
             }
         )
     }
-    
-    private var sheetContent: some View {
+}
+
+private extension GameCategorySelectView {
+    var sheetContent: some View {
         DynamicWidthChipsGridView(
             categories: viewStore.categories.map {
                 ChipsGridModel(title: $0.rawValue, emoji: $0.emoji)
@@ -45,7 +47,7 @@ struct MyGameCategorySheetView: View {
         .hPadding(20)
     }
     
-    private var selectedCategory: [String]? {
+    var selectedCategory: [String]? {
         let nullStringValue = viewStore.selectedCategory?.rawValue
         return nullStringValue.map{ [$0] }
     }
