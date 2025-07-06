@@ -11,81 +11,95 @@ import Domain
 public struct ApiService {
     public init() {}
     
-    func callApiService(
-        httpMethod: HttpMethod,
-        endPoint: String,
-        queryParameter: Encodable? = nil,
-        body: Encodable? = nil
-    ) async -> Result<Data, NetworkError> {
+    func call<T: Decodable>(_ endPoint: EndPoint<T>) async throws -> T {
         do {
-            guard var url = URL(string: "\(BaseUrl.environment.rawValue)\(endPoint)") else {
-                return .failure(NetworkError.requestURLNotExistError)
+            guard var url = URL(string: "http://\(BaseUrl.current)\(endPoint.path)") else {
+                throw (RemoteNetworkError.requestURLNotExistError)
             }
             
-            if let queryParameter = queryParameter {
-                guard let queryDictionary = try? queryParameter.toDictionary() else {
-                    return .failure(NetworkError.queryParameterError)
-                }
-                
-                let queryItems = getQueryParameter(queryDictionary: queryDictionary)
+            if let queryParameters = endPoint.queryParameters {
+                let queryItems = try getQueryParameter(queryParameters)
                 url.append(queryItems: queryItems)
             }
             
-            var urlRequest = URLRequest(url: url)
-            urlRequest.httpMethod = httpMethod.rawValue
-            urlRequest.timeoutInterval = 60
-            urlRequest.allHTTPHeaderFields = getHeaders()
+            var urlRequest = endPoint.makeURLRequest(url: url)
             
-            if let body = body {
+            if let body = endPoint.requestBody {
                 guard let httpBody = try? JSONEncoder().encode(body) else {
                     throw NetworkError.bodyEncodingError
                 }
                 urlRequest.httpBody = httpBody
-                print("🤩😅🤣😂🙄🫠🥰😏😐🤥🤮🤓🤩😅🤣😂🙄🫠🥰😏😐🤥🤮🤓\n🥰[HTTP BODY] = \(body)\n🤩😅🤣😂🙄🫠🥰😏😐🤥🤮🤓🤩😅🤣😂🙄🫠🥰😏😐🤥🤮🤓\n")
-                print("🐵🐯🐭😾🐶🐷🐴🐟🐠🐡🦈🐬🦦🦐🦍🐧🐙🐊🐸🐔🐼🦄🦉🐿️\n🥰[HTTP HEADER] = \(String(describing: urlRequest.allHTTPHeaderFields))\n🐵🐯🐭😾🐶🐷🐴🐟🐠🐡🦈🐬🦦🦐🦍🐧🐙🐊🐸🐔🐼🦄🦉🐿️\n")
             }
             
             let (data, response) = try await URLSession.shared.data(for: urlRequest)
             
             guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
-                return .failure(NetworkError.responseError)
-            }
-
-            print("🎵🎼🎸🥁🎹🎻🎷🎤📯🪘📻🪗🎵🎼🎸🥁🎹🎻🎷🎤📯🪘📻🪗\n🎸[RequestURL] = \(url)\n🎸[StatusCode] = \(statusCode) / [HTTPMethod] = \(httpMethod.rawValue)\n🎵🎼🎸🥁🎹🎻🎷🎤📯🪘📻🪗🎵🎼🎸🥁🎹🎻🎷🎤📯🪘📻🪗\n")
-
-            if let str = String(data: data, encoding: .utf8) {
-                print("🧡❤️💚💙🖤🤎💛💝💖💕💗💓🧡❤️💚💙🖤🤎💛💝💖💕💗💓\n❤️[Sucessfully Decoded String Data]\n\(str)\n🧡❤️💚💙🖤🤎💛💝💖💕💗💓🧡❤️💚💙🖤🤎💛💝💖💕💗💓\n")
+                throw RemoteNetworkError.responseError
             }
             
-            let range = 200..<300
-            if (range.contains(statusCode)) {
-                return .success(data)
-            } else {
-                let error = networkErrorHandling(statusCode)
-                return .failure(error)
+            switch statusCode {
+            case 200...299:
+                do {
+                    let decodedResponse = try JSONDecoder().decode(T.self, from: data)
+                    return decodedResponse
+                } catch let error as DecodingError {
+                    throw RemoteNetworkError.decodingError(error)
+                } catch {
+                    throw RemoteNetworkError.unKnownError
+                }
+            case 401:
+                throw RemoteNetworkError.unAuthorizationError
+            case 403:
+                throw RemoteNetworkError.forbidden
+            case 404:
+                throw RemoteNetworkError.notFound
+            case 400:
+                throw RemoteNetworkError.badRequest
+            case 400...499:
+                throw RemoteNetworkError.clientError
+            case 503:
+                throw RemoteNetworkError.serverMaintenanceError
+            case 504:
+                throw RemoteNetworkError.gatewayTimeout
+            case 500:
+                throw RemoteNetworkError.internalServerError
+            case 500...599:
+                throw RemoteNetworkError.serverUnknownError
+            default:
+                throw RemoteNetworkError.unKnownError
             }
-        } catch URLError.Code.notConnectedToInternet, URLError.notConnectedToInternet {
-            return .failure(NetworkError.internetConnectionError)
-        } catch URLError.timedOut {
-            return .failure(NetworkError.timeout)
+        } catch let error as URLError {
+            switch error.code {
+            case .timedOut, .networkConnectionLost:
+                throw RemoteNetworkError.timeout
+            default:
+                throw RemoteNetworkError.urlError(error)
+            }
+        } catch let error as RemoteNetworkError {
+            throw error
         } catch {
-            return .failure(NetworkError.unKnownError)
+            throw RemoteNetworkError.unKnownError
         }
     }
 }
 
-extension ApiService {
-    private func getHeaders() -> [String: String] {
-        let accessToken: String = ""
-        let tokenString: String = accessToken.isEmpty ? "" : "Bearer \(accessToken)"
-        return  [
-            "Authorization": tokenString,
-            "Content-Type": "application/json; charset=utf-8",
-            "Accept-Charset": "UTF-8"
-        ]
+// MARK: Query Parameter
+private extension ApiService {
+    func getQueryParameter(_ queryParameter: Encodable) throws -> [URLQueryItem] {
+        do {
+            guard let queryDictionary = try? queryParameter.toDictionary() else {
+                throw RemoteNetworkError.queryParameterError
+            }
+            
+            let queryItems = getURLQueryItems(queryDictionary: queryDictionary)
+            
+            return queryItems
+        } catch {
+            throw RemoteNetworkError.queryParameterError
+        }
     }
     
-    private func getQueryParameter(queryDictionary: [String: Any]) -> [URLQueryItem] {
+    func getURLQueryItems(queryDictionary: [String: Any]) -> [URLQueryItem] {
         var queryList: [URLQueryItem] = []
         
         queryDictionary.forEach { key, value in
@@ -94,21 +108,30 @@ extension ApiService {
         
         return queryList
     }
-    
-    private func networkErrorHandling(_ status: Int) -> NetworkError {
-        switch (status) {
-        case 400:
-            return .badRequest
-        case 401:
-            return .unAuthorizationError
-        case 403:
-            return .forbidden
-        case 404:
-            return .notFound
-        case 500..<600:
-            return .internalServerError
-        default:
-            return .unKnownError
-        }
-    }
 }
+
+// MARK: URLRequest
+//private extension ApiService {
+//    func makeURLRequest(url: URL, endPoint: EndPoint) -> URLRequest {
+//        var urlRequest = URLRequest(url: url)
+//        urlRequest.timeoutInterval = 30
+//        urlRequest.httpMethod = endPoint.method.rawValue
+//        if let headers = endPoint.headers {
+//            headers.forEach { key, value in
+//                urlRequest.setValue(value, forHTTPHeaderField: key)
+//            }
+//        }
+//
+//        return urlRequest
+//    }
+//    
+//    func getHeaders() -> [String: String] {
+//        let accessToken: String = ""
+//        let tokenString: String = accessToken.isEmpty ? "" : "Bearer \(accessToken)"
+//        return  [
+//            "Authorization": tokenString,
+//            "Content-Type": "application/json; charset=utf-8",
+//            "Accept-Charset": "UTF-8"
+//        ]
+//    }
+//}
