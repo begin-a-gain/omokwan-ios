@@ -6,6 +6,6 @@
 //
 
 public protocol SocialRepositoryProtocol {
-    func signInWithKakao() async -> Result<String, NetworkError>
+    func signInWithKakao() async -> Result<String, KakaoSignInError>
     func signInWithApple() async -> Result<String, AppleSignInError>
 }

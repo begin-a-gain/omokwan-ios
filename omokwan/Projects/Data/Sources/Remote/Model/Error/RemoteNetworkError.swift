@@ -33,4 +33,5 @@ enum RemoteNetworkError: Error {
     case requestURLNotExistError
     case timeout
     case internetConnectionError
+    case responseDataNilError
 }

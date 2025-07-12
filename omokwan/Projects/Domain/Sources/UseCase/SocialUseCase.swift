@@ -8,13 +8,8 @@
 import DI
 import Dependencies
 
-public protocol SocialUseCaseProtocol {
-    func signInWithKakao() async -> Result<String, NetworkError>
-    func signInWithApple() async -> Result<String, AppleSignInError>
-}
-
 public struct SocialUseCase {
-    public let signInWithKakao: () async -> Result<String, NetworkError>
+    public let signInWithKakao: () async -> Result<String, KakaoSignInError>
     public let signInWithApple: () async -> Result<String, AppleSignInError>
 }
 
