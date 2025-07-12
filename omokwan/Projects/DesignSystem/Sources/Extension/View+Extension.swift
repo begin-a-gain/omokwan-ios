@@ -69,3 +69,10 @@ public extension View {
         )
     }
 }
+
+// About Loading
+public extension View {
+    func oLoading(isPresent: Bool) -> some View {
+        modifier(OLoadingModifier(isPresent: isPresent))
+    }
+}
