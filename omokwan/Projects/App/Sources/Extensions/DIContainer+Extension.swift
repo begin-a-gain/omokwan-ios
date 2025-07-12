@@ -15,6 +15,7 @@ extension DIContainer {
         registerSocialService()
         registerAccountDependency()
         registerSocialDependency()
+        registerServerDependency() // for ServerUsecase
     }
     
     private func registerApiService() {
@@ -42,4 +43,10 @@ extension DIContainer {
             return SocialRepository(socialService: socialService)
         }
     }
-}
+    
+    private func registerServerDependency() {
+        container.register(ServerRepositoryProtocol.self) { resolver in
+            let apiService: ApiService = resolver.resolve()
+            return ServerRepository(apiService: apiService)
+        }
+    }}
