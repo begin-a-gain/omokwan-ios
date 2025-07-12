@@ -14,8 +14,17 @@ public struct AccountRepository: AccountRepositoryProtocol {
         self.apiService = apiService
     }
     
-    public func postSignIn() async -> Result<Bool, NetworkError> {
-        // for test
-        return .success(true)
+    public func postSignIn(provider: String, accessToken: String) async -> Result<SignInResult, NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<SignInResponse>>.postSignIn(
+                provider: provider,
+                requestBody: SignInRequest(accessToken: accessToken)
+            )
+            let result = try await apiService.call(endPoint)
+            guard let response = result.data else { return .failure(.unKnownError) }
+            return .success(SignInMapper.toSignInResult(response))
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
     }
 }

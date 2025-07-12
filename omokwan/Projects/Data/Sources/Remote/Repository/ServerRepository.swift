@@ -18,7 +18,7 @@ public struct ServerRepository: ServerRepositoryProtocol {
         do {
             let endPoint = EndPoint<RemoteResponseModel<Bool>>.getHealthCheck()
             let result = try await apiService.call(endPoint)
-            guard let value = result.data else { return .failure(.responseError) }
+            guard let value = result.data else { return .failure(.unKnownError) }
 
             // TODO: splash 작업할 때, return 값 변경 예정
             return .success(true)
