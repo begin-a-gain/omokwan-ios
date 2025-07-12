@@ -6,19 +6,29 @@
 //
 
 import DI
+import Dependencies
 
-public protocol AccountUseCaseProtocol {
-    func signIn() async -> Result<Bool, NetworkError>
+public struct AccountUseCase {
+    public let signIn: (_ provider: SocialSignProvider, _ accessToken: String) async -> Result<SignInResult, NetworkError>
 }
 
-public struct AccountUseCase: AccountUseCaseProtocol {
-    let repository: AccountRepositoryProtocol
-    
-    public init(repository: AccountRepositoryProtocol) {
-        self.repository = repository
-    }
+extension AccountUseCase: DependencyKey {
+    public static var liveValue: AccountUseCase = {
+        let repository: AccountRepositoryProtocol = DIContainer.shared.resolve()
+        return AccountUseCase(
+            signIn: { provider, accessToken in
+                await repository.postSignIn(
+                    provider: provider.rawValue,
+                    accessToken: accessToken
+                )
+            }
+        )
+    }()
+}
 
-    public func signIn() async -> Result<Bool, NetworkError> {
-        await repository.postSignIn()
+extension DependencyValues {
+    public var accountUseCase: AccountUseCase {
+        get { self[AccountUseCase.self] }
+        set { self[AccountUseCase.self] = newValue }
     }
 }

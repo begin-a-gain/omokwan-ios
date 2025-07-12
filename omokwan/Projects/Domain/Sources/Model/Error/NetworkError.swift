@@ -10,5 +10,5 @@ public enum NetworkError: Error {
     case unAuthorizationError
     case unKnownError
     case timeout
-    case responseError
+    case clientError // 400대 에러
 }

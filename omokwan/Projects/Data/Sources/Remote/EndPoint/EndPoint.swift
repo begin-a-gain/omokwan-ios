@@ -31,4 +31,8 @@ extension EndPoint {
     static func getHealthCheck() -> EndPoint<T> {
         return EndPoint(path: "/actuator/health", method: .GET)
     }
+    
+    static func postSignIn(provider: String, requestBody: SignInRequest) -> EndPoint<T> {
+        return EndPoint(path: "/auth/login/\(provider)", method: .POST, requestBody: requestBody)
+    }
 }

@@ -21,6 +21,7 @@ public struct SignInView: View {
     public var body: some View {
         signInBody
             .navigationBarBackButtonHidden(true)
+            .oLoading(isPresent: viewStore.isLoading)
     }
     
     private var signInBody: some View {
