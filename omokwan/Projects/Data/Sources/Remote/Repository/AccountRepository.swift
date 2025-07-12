@@ -27,4 +27,15 @@ public struct AccountRepository: AccountRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func postNicknameDuplicated(nickname: String) async -> Result<Void, NetworkError> {
+        do {
+            let requestBody: NicknameValidationRequest = .init(nickname: nickname)
+            let endPoint = EndPoint<RemoteResponseModel<Bool>>.postNicknameDuplicated(requestBody: requestBody)
+            let _ = try await apiService.call(endPoint)
+            return .success(())
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }
