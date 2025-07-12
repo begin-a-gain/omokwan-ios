@@ -26,15 +26,23 @@ public struct ApiService {
             
             if let body = endPoint.requestBody {
                 guard let httpBody = try? JSONEncoder().encode(body) else {
-                    throw NetworkError.bodyEncodingError
+                    throw RemoteNetworkError.bodyEncodingError
                 }
                 urlRequest.httpBody = httpBody
+                print("🤩😅🤣😂🙄🫠🥰😏😐🤥🤮🤓🤩😅🤣😂🙄🫠🥰😏😐🤥🤮🤓\n🥰[HTTP BODY] = \(body)\n🤩😅🤣😂🙄🫠🥰😏😐🤥🤮🤓🤩😅🤣😂🙄🫠🥰😏😐🤥🤮🤓\n")
+                print("🐵🐯🐭😾🐶🐷🐴🐟🐠🐡🦈🐬🦦🦐🦍🐧🐙🐊🐸🐔🐼🦄🦉🐿️\n🥰[HTTP HEADER] = \(urlRequest.allHTTPHeaderFields)\n🐵🐯🐭😾🐶🐷🐴🐟🐠🐡🦈🐬🦦🦐🦍🐧🐙🐊🐸🐔🐼🦄🦉🐿️\n")
             }
             
             let (data, response) = try await URLSession.shared.data(for: urlRequest)
             
             guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
                 throw RemoteNetworkError.responseError
+            }
+
+            print("🎵🎼🎸🥁🎹🎻🎷🎤📯🪘📻🪗🎵🎼🎸🥁🎹🎻🎷🎤📯🪘📻🪗\n🎸[RequestURL] = \(url)\n🎸[StatusCode] = \(statusCode) / [HTTPMethod] = \(endPoint.method)\n🎵🎼🎸🥁🎹🎻🎷🎤📯🪘📻🪗🎵🎼🎸🥁🎹🎻🎷🎤📯🪘📻🪗\n")
+
+            if let str = String(data: data, encoding: .utf8) {
+                print("🧡❤️💚💙🖤🤎💛💝💖💕💗💓🧡❤️💚💙🖤🤎💛💝💖💕💗💓\n❤️[Sucessfully Decoded String Data]\n\(str)\n🧡❤️💚💙🖤🤎💛💝💖💕💗💓🧡❤️💚💙🖤🤎💛💝💖💕💗💓\n")
             }
             
             switch statusCode {

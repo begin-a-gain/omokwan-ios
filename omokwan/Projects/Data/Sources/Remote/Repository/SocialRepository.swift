@@ -15,13 +15,18 @@ public struct SocialRepository: SocialRepositoryProtocol {
     }
     
     @MainActor
-    public func signInWithKakao() async -> Result<String, NetworkError> {
-        let result = await socialService.signInWithKakao()
-        guard let result else {
-            return .failure(.badRequest)
+    public func signInWithKakao() async -> Result<String, KakaoSignInError> {
+        do {
+            let result = try await socialService.signInWithKakao()
+            guard let accessToken = result else {
+                return .failure(KakaoSignInError.tokenNilError)
+            }
+            return .success(accessToken)
+        } catch let error as RemoteKakaoSignInError {
+            return .failure(KakaoSignInError.error(error))
+        } catch {
+            return .failure(KakaoSignInError.unKnownError)
         }
-        
-        return .success(result)
     }
     
     public func signInWithApple() async -> Result<String, AppleSignInError> {
