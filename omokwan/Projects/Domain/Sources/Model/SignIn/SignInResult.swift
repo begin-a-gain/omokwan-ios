@@ -6,8 +6,8 @@
 //
 
 public struct SignInResult {
-    let accessToken: String
-    let signUpComplete: Bool
+    public let accessToken: String
+    public let signUpComplete: Bool
     
     public init(
         accessToken: String,
