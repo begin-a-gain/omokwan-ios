@@ -8,8 +8,12 @@
 import Foundation
 import Domain
 
-public struct ApiService {
-    public init() {}
+public final class ApiService {
+    private let localRepositoryProtocol: LocalRepositoryProtocol
+    
+    public init(localRepositoryProtocol: LocalRepositoryProtocol) {
+        self.localRepositoryProtocol = localRepositoryProtocol
+    }
     
     func call<T: Decodable>(_ endPoint: EndPoint<T>) async throws -> T {
         do {
@@ -22,7 +26,10 @@ public struct ApiService {
                 url.append(queryItems: queryItems)
             }
             
-            var urlRequest = endPoint.makeURLRequest(url: url)
+            var urlRequest = endPoint.makeURLRequest(
+                url: url,
+                accessToken: localRepositoryProtocol.getAccessToken() ?? ""
+            )
             
             if let body = endPoint.requestBody {
                 guard let httpBody = try? JSONEncoder().encode(body) else {

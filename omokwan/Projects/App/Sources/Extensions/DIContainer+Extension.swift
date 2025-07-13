@@ -11,16 +11,25 @@ import Domain
 
 extension DIContainer {
     func register() {
-        registerApiService()
+        registerKeyChainStorage()
+        registerApiServiceDependency()
         registerSocialService()
         registerAccountDependency()
         registerSocialDependency()
-        registerServerDependency() // for ServerUsecase
+        registerServerDependency()
+        registerLocalStorageDependency()
     }
     
-    private func registerApiService() {
-        container.register(ApiService.self) { _ in
-            ApiService()
+    private func registerKeyChainStorage() {
+        container.register(KeyChainStorage.self) { _ in
+            KeyChainStorage()
+        }
+    }
+    
+    private func registerApiServiceDependency() {
+        container.register(ApiService.self) { resolver in
+            let localRepositoryProtocol: LocalRepositoryProtocol = resolver.resolve()
+            return ApiService(localRepositoryProtocol: localRepositoryProtocol)
         }
     }
     
@@ -49,4 +58,12 @@ extension DIContainer {
             let apiService: ApiService = resolver.resolve()
             return ServerRepository(apiService: apiService)
         }
-    }}
+    }
+    
+    private func registerLocalStorageDependency() {
+        container.register(LocalRepositoryProtocol.self) { resolver in
+            let keyChainStorage: KeyChainStorage = resolver.resolve()
+            return LocalRepository(keyChainStorage: keyChainStorage)
+        }
+    }
+}
