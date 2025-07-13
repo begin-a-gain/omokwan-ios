@@ -8,7 +8,7 @@
 import Foundation
 
 extension EndPoint {
-    func makeURLRequest(url: URL) -> URLRequest {
+    func makeURLRequest(url: URL, accessToken: String) -> URLRequest {
         var urlRequest = URLRequest(url: url)
         urlRequest.timeoutInterval = 30
         urlRequest.httpMethod = self.method.rawValue
@@ -17,7 +17,7 @@ extension EndPoint {
                 urlRequest.setValue(value, forHTTPHeaderField: key)
             }
         }
-        let accessToken: String = ""
+        
         let tokenString: String = accessToken.isEmpty ? "" : "Bearer \(accessToken)"
         
         urlRequest.setValue(tokenString, forHTTPHeaderField: "Authorization")
