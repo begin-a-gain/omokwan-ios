@@ -15,7 +15,7 @@ protocol KeyChainStorageProtocol {
     func delete(key: String) throws
 }
 
-public final class KeyChainStorage: KeyChainStorageProtocol {
+public final class KeyChainStorage: KeyChainStorageProtocol, TokenProvider {
     public init() {}
     
     func save(key: String, data: String) throws {
@@ -79,5 +79,11 @@ private extension KeyChainStorage {
             kSecClass: kSecClassGenericPassword,
             kSecAttrAccount: key
         ]
+    }
+}
+
+public extension KeyChainStorage {
+    func getAccessToken() -> String {
+        return (try? read(key: KeyChainStorageKeys.ACCESS_TOKEN)) ?? ""
     }
 }

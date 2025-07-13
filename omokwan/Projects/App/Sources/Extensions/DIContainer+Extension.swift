@@ -21,15 +21,20 @@ extension DIContainer {
     }
     
     private func registerKeyChainStorage() {
+        let keyChainStorage = KeyChainStorage()
+        
         container.register(KeyChainStorage.self) { _ in
-            KeyChainStorage()
+            keyChainStorage
+        }
+        container.register(TokenProvider.self) { _ in
+            keyChainStorage
         }
     }
     
     private func registerApiServiceDependency() {
         container.register(ApiService.self) { resolver in
-            let localRepositoryProtocol: LocalRepositoryProtocol = resolver.resolve()
-            return ApiService(localRepositoryProtocol: localRepositoryProtocol)
+            let tokenProvider: TokenProvider = resolver.resolve()
+            return ApiService(tokenProvider: tokenProvider)
         }
     }
     
