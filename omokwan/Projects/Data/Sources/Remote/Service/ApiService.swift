@@ -9,10 +9,10 @@ import Foundation
 import Domain
 
 public final class ApiService {
-    private let localRepositoryProtocol: LocalRepositoryProtocol
+    private let tokenProvider: TokenProvider
     
-    public init(localRepositoryProtocol: LocalRepositoryProtocol) {
-        self.localRepositoryProtocol = localRepositoryProtocol
+    public init(tokenProvider: TokenProvider) {
+        self.tokenProvider = tokenProvider
     }
     
     func call<T: Decodable>(_ endPoint: EndPoint<T>) async throws -> T {
@@ -28,7 +28,7 @@ public final class ApiService {
             
             var urlRequest = endPoint.makeURLRequest(
                 url: url,
-                accessToken: localRepositoryProtocol.getAccessToken() ?? ""
+                accessToken: tokenProvider.getAccessToken()
             )
             
             if let body = endPoint.requestBody {
