@@ -13,6 +13,7 @@ public struct SignInFeature: Reducer {
     @Dependency(\.socialUseCase) var socialUseCase
     @Dependency(\.serverUseCase) var serverUseCase
     @Dependency(\.accountUseCase) var accountUseCase
+    @Dependency(\.localUseCase) var localUseCase
 
     public init() {}
     
@@ -100,6 +101,8 @@ private extension SignInFeature {
         let response = await accountUseCase.signIn(provider, accessToken)
         switch response {
         case let .success(signInResult):
+            _ = localUseCase.setAccessToken(signInResult.accessToken)
+            
             if signInResult.signUpComplete {
                 // TODO: Main 화면 이동 + 각종 작업 처리(미리 유저 정보 뽑기 등)
                 return .noAction

@@ -43,4 +43,8 @@ extension EndPoint {
     static func postNicknameDuplicated(requestBody: NicknameValidationRequest) -> EndPoint<T> {
         return EndPoint(path: "/users/nicknames/validations", method: .POST, requestBody: requestBody)
     }
+    
+    static func putNickname(requestBody: UpdateNicknameRequest) -> EndPoint<T> {
+        return EndPoint(path: "/users/nicknames", method: .PUT, requestBody: requestBody)
+    }
 }

@@ -38,4 +38,15 @@ public struct AccountRepository: AccountRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func putNickname(nickname: String) async -> Result<Void, NetworkError> {
+        do {
+            let requestBody: UpdateNicknameRequest = .init(nickname: nickname)
+            let endPoint = EndPoint<RemoteResponseModel<String>>.putNickname(requestBody: requestBody)
+            let _ = try await apiService.call(endPoint)
+            return .success(())
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }

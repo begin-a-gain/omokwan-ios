@@ -46,6 +46,8 @@ public struct SignUpFeature: Reducer {
         case validNickname
         case checkNicknameValidation(String)
         case checkNicknameDuplicated(String)
+        case nicknameUpdateCompleted
+        case navigateToSignUpDone
     }
     
     public var body: some ReducerOf<Self> {
@@ -84,7 +86,11 @@ public struct SignUpFeature: Reducer {
                     await send(checkNicknameDuplicated(nickname))
                 }
             case .nextButtonTapped:
-                return .none
+                state.isLoading = true
+                let nickname = state.nickname
+                return .run { send in
+                    await send(updateNickname(nickname))
+                }
             case .navigateToBack:
                 return .none
             case .noAction:
@@ -93,6 +99,11 @@ public struct SignUpFeature: Reducer {
             case .validNickname:
                 state.isLoading = false
                 state.nicknameValidStatus = .valid
+                return .none
+            case .nicknameUpdateCompleted:
+                state.isLoading = false
+                return .send(.navigateToSignUpDone)
+            case .navigateToSignUpDone:
                 return .none
             }
         }
@@ -105,6 +116,17 @@ private extension SignUpFeature {
         switch response {
         case .success:
             return .validNickname
+        case let .failure(error):
+            // TODO: 에러 정해지면 작업
+            return .noAction
+        }
+    }
+    
+    func updateNickname(_ nickname: String) async -> Action {
+        let response = await accountUseCase.updateNickname(nickname)
+        switch response {
+        case .success:
+            return .nicknameUpdateCompleted
         case let .failure(error):
             // TODO: 에러 정해지면 작업
             return .noAction

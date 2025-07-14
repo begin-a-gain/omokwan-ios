@@ -66,11 +66,11 @@ private extension RootCoordinatorFeature {
 private extension RootCoordinatorFeature {
     private func signUpNavigation(_ state: inout State, _ action: SignUpFeature.Action) -> Effect<Action> {
         switch action {
-        case .nextButtonTapped:
-            state.path.append(.signUpDone(SignUpDoneFeature.State()))
-            return .none
         case .navigateToBack:
             _ = state.path.popLast()
+            return .none
+        case .navigateToSignUpDone:
+            state.path.append(.signUpDone(SignUpDoneFeature.State()))
             return .none
         default:
             return .none
