@@ -12,7 +12,7 @@ import Domain
 import Util
 
 public struct SignUpFeature: Reducer {
-    @Dependency(\.accountUseCase) var accountUseCase
+    @Dependency(\.accountUseCase) private var accountUseCase
 
     public init() {}
     

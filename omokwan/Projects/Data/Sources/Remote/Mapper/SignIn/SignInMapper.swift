@@ -8,7 +8,11 @@
 import Domain
 
 struct SignInMapper {
-    static func toSignInResult(_ response: SignInResponse) -> SignInResult {
+    static func toSignInResult(_ response: SignInResponse?) throws -> SignInResult {
+        guard let response = response else {
+            throw RemoteNetworkError.responseDataNilError
+        }
+        
         return SignInResult(
             accessToken: response.accessToken ?? "",
             signUpComplete: response.signUpComplete ?? false

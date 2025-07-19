@@ -20,9 +20,8 @@ public struct AccountRepository: AccountRepositoryProtocol {
                 provider: provider,
                 requestBody: SignInRequest(accessToken: accessToken)
             )
-            let result = try await apiService.call(endPoint)
-            guard let response = result.data else { return .failure(.unKnownError) }
-            return .success(SignInMapper.toSignInResult(response))
+            let response = try await apiService.call(endPoint)
+            return .success(try SignInMapper.toSignInResult(response.data))
         } catch {
             return .failure(ErrorMapper.toNetworkError(error))
         }
@@ -45,6 +44,16 @@ public struct AccountRepository: AccountRepositoryProtocol {
             let endPoint = EndPoint<RemoteResponseModel<String>>.putNickname(requestBody: requestBody)
             let _ = try await apiService.call(endPoint)
             return .success(())
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
+    
+    public func getUserInfo() async -> Result<UserInfo, NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<UserInfoResponse>>.getUserInfo()
+            let response = try await apiService.call(endPoint)
+            return .success(try UserMapper.toUserInfo(response.data))
         } catch {
             return .failure(ErrorMapper.toNetworkError(error))
         }

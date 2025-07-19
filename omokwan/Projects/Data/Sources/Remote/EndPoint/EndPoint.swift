@@ -47,4 +47,8 @@ extension EndPoint {
     static func putNickname(requestBody: UpdateNicknameRequest) -> EndPoint<T> {
         return EndPoint(path: "/users/nicknames", method: .PUT, requestBody: requestBody)
     }
+    
+    static func getUserInfo() -> EndPoint<T> {
+        return EndPoint(path: "/users/info", method: .GET)
+    }
 }
