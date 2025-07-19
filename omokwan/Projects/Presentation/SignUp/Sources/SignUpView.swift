@@ -26,6 +26,7 @@ public struct SignUpView: View {
     
     public var body: some View {
         signUpBody
+            .oLoading(isPresent: viewStore.isLoading)
     }
     
     private var signUpBody: some View {
@@ -66,17 +67,28 @@ public struct SignUpView: View {
             .greedyWidth(.leading)
             .padding(.bottom, 24)
             OTextField<SignUpTextFieldType>(
-                text: Binding(
-                    get: { viewStore.state.nickname },
-                    set: { newValue in
-                        viewStore.send(.setNickname(newValue))
-                    }
-                ),
+                text: viewStore.$nickname,
                 focusedField: $focusedField,
                 focusedFieldType: .nickname,
                 placeholder: "ex.오목완",
+                errorMessage: mappingNicknameErrorMessage(viewStore.nicknameValidStatus),
                 textMaxCount: 10
             )
+        }
+    }
+}
+
+private extension SignUpView {
+    func mappingNicknameErrorMessage(_ status: SignUpFeature.State.NicknameValidStatus?) -> String {
+        guard let status = status else { return "" }
+        
+        switch status {
+        case .empty, .valid:
+            return ""
+        case .duplicated:
+            return "이미 사용중인 아이디 입니다."
+        case .invalidFormat:
+            return "2~10글자 사이의 한글 혹은 영문만 사용해주세요."
         }
     }
 }

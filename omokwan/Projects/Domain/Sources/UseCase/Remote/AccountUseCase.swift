@@ -10,6 +10,9 @@ import Dependencies
 
 public struct AccountUseCase {
     public let signIn: (_ provider: SocialSignProvider, _ accessToken: String) async -> Result<SignInResult, NetworkError>
+    public let checkNicknameDuplicated: (_ nickname: String) async -> Result<Void, NetworkError>
+    public let updateNickname: (_ nickname: String) async -> Result<Void, NetworkError>
+    public let fetchUserInfo: () async -> Result<UserInfo, NetworkError>
 }
 
 extension AccountUseCase: DependencyKey {
@@ -21,6 +24,15 @@ extension AccountUseCase: DependencyKey {
                     provider: provider.rawValue,
                     accessToken: accessToken
                 )
+            },
+            checkNicknameDuplicated: { nickname in
+                await repository.postNicknameDuplicated(nickname: nickname)
+            },
+            updateNickname: { nickname in
+                await repository.putNickname(nickname: nickname)
+            },
+            fetchUserInfo: {
+                await repository.getUserInfo()
             }
         )
     }()

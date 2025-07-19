@@ -13,7 +13,7 @@ let dependencyInfo: [DependencyInformation: [DependencyInformation]] = [
     .Data: [.Domain, .KakaoSDKUser],
     .Root: [.SignIn, .SignUp, .Main],
     .SignIn: [.Domain, .Base],
-    .SignUp: [.Domain, .Base],
+    .SignUp: [.Domain, .Base, .Util],
     .Main: [.MyGame, .MyGameAdd, .MyGameParticipate, .GameDetail],
     .DI: [.Swinject],
     .Base: [.DesignSystem, .ComposableArchitecture],

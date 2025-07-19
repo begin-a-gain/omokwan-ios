@@ -27,12 +27,28 @@ struct EndPoint<T>: EndPointProtocol {
     }
 }
 
+// MARK: Server
 extension EndPoint {
     static func getHealthCheck() -> EndPoint<T> {
         return EndPoint(path: "/actuator/health", method: .GET)
     }
-    
+}
+
+// MARK: Account
+extension EndPoint {
     static func postSignIn(provider: String, requestBody: SignInRequest) -> EndPoint<T> {
         return EndPoint(path: "/auth/login/\(provider)", method: .POST, requestBody: requestBody)
+    }
+    
+    static func postNicknameDuplicated(requestBody: NicknameValidationRequest) -> EndPoint<T> {
+        return EndPoint(path: "/users/nicknames/validations", method: .POST, requestBody: requestBody)
+    }
+    
+    static func putNickname(requestBody: UpdateNicknameRequest) -> EndPoint<T> {
+        return EndPoint(path: "/users/nicknames", method: .PUT, requestBody: requestBody)
+    }
+    
+    static func getUserInfo() -> EndPoint<T> {
+        return EndPoint(path: "/users/info", method: .GET)
     }
 }

@@ -68,12 +68,12 @@ private extension RootFeature {
 private extension RootFeature {
     private func signUpNavigation(_ state: inout State, _ action: SignUpFeature.Action) -> Effect<Action> {
         switch action {
-        case .nextButtonTapped:
-            state.navigationPath = .init()
-            state.path = .signUpDone(.init())
-            return .none
         case .navigateToBack:
             _ = state.navigationPath.popLast()
+            return .none
+        case .navigateToSignUpDone:
+            state.navigationPath = .init()
+            state.path = .signUpDone(.init())
             return .none
         default:
             return .none
@@ -87,6 +87,11 @@ private extension RootFeature {
         switch action {
         case .navigateToMain:
             state.path = .main(.init())
+            return .none
+        case .signInAgain:
+            state.path = .signIn(.init())
+            return .none
+        default:
             return .none
         }
     }
