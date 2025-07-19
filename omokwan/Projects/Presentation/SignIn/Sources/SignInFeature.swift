@@ -9,11 +9,12 @@ import Domain
 import Base
 import ComposableArchitecture
 
-public struct SignInFeature: Reducer {
-    @Dependency(\.socialUseCase) var socialUseCase
-    @Dependency(\.serverUseCase) var serverUseCase
-    @Dependency(\.accountUseCase) var accountUseCase
-    @Dependency(\.localUseCase) var localUseCase
+@Reducer
+public struct SignInFeature {
+    @Dependency(\.socialUseCase) private var socialUseCase
+    @Dependency(\.serverUseCase) private var serverUseCase
+    @Dependency(\.accountUseCase) private var accountUseCase
+    @Dependency(\.localUseCase) private var localUseCase
 
     public init() {}
     
@@ -21,6 +22,7 @@ public struct SignInFeature: Reducer {
         public init() {}
         
         var isLoading: Bool = false
+        @Shared(.userInfo) var userInfo = UserInfo()
     }
     
     public enum Action {
@@ -33,6 +35,9 @@ public struct SignInFeature: Reducer {
         case navigateToSignUp
         case shouldSignUp
         case noAction
+        case fetchUserInfo
+        case userInfoFetched(UserInfo)
+        case navigateToMain
     }
     
     public var body: some ReducerOf<Self> {
@@ -71,6 +76,16 @@ public struct SignInFeature: Reducer {
                 // TODO: 추후 제거 액션
                 state.isLoading = false
                 return .none
+            case .fetchUserInfo:
+                return .run { send in
+                    await send(fetchUserInfo())
+                }
+            case .userInfoFetched(let userInfo):
+                state.isLoading = false
+                setUserInfo(&state, userInfo)
+                return .send(.navigateToMain)
+            case .navigateToMain:
+                return .none
             }
         }
     }
@@ -104,8 +119,7 @@ private extension SignInFeature {
             _ = localUseCase.setAccessToken(signInResult.accessToken)
             
             if signInResult.signUpComplete {
-                // TODO: Main 화면 이동 + 각종 작업 처리(미리 유저 정보 뽑기 등)
-                return .noAction
+                return .fetchUserInfo
             } else {
                 return .shouldSignUp
             }
@@ -113,5 +127,22 @@ private extension SignInFeature {
             // TODO: 에러 정해지면 작업
             return .noAction
         }
+    }
+    
+    func fetchUserInfo() async -> Action {
+        let response = await accountUseCase.fetchUserInfo()
+        switch response {
+        case .success(let userInfo):
+            return .userInfoFetched(userInfo)
+        case .failure(let error):
+            // TODO: 에러 정해지면 작업
+            return .noAction
+        }
+    }
+    
+    func setUserInfo(_ state: inout State, _ info: UserInfo) {
+        state.userInfo.id = info.id
+        state.userInfo.email = info.email
+        state.userInfo.nickname = info.nickname
     }
 }

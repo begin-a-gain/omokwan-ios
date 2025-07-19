@@ -15,6 +15,7 @@ public struct SignUpDoneFeature: Reducer {
     
     public struct State: Equatable {
         var isLoading: Bool = false
+        @Shared(.userInfo) var userInfo = UserInfo()
 
         public init() {}
     }
@@ -36,8 +37,7 @@ public struct SignUpDoneFeature: Reducer {
                 }
             case .userInfoFetched(let userInfo):
                 state.isLoading = false
-                print("## userInfo = \(userInfo)")
-                // TODO: UserManager 에 set
+                setUserInfo(&state, userInfo)
                 return .send(.navigateToMain)
             case .signInAgain:
                 state.isLoading = false
@@ -58,5 +58,11 @@ private extension SignUpDoneFeature {
         case .failure(let error):
             return .signInAgain
         }
+    }
+    
+    func setUserInfo(_ state: inout State, _ info: UserInfo) {
+        state.userInfo.id = info.id
+        state.userInfo.email = info.email
+        state.userInfo.nickname = info.nickname
     }
 }
