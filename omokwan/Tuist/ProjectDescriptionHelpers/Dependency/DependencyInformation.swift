@@ -8,7 +8,7 @@
 import Foundation
 
 let dependencyInfo: [DependencyInformation: [DependencyInformation]] = [
-    .App: [.Root, .DI, .Data, .KakaoSDKUser],
+    .Omokwan: [.Root, .DI, .Data, .KakaoSDKUser],
     .Domain: [.DI, .ComposableArchitecture],
     .Data: [.Domain, .KakaoSDKUser],
     .Root: [.SignIn, .SignUp, .Main],
@@ -23,8 +23,8 @@ let dependencyInfo: [DependencyInformation: [DependencyInformation]] = [
     .GameDetail: [.Base, .Util, .Domain]
 ]
 
-public enum DependencyInformation: String {
-    case App = "App"
+public enum DependencyInformation: String, Sendable {
+    case Omokwan = "Omokwan"
     case SignIn = "SignIn"
     case SignUp = "SignUp"
     case Domain = "Domain"
