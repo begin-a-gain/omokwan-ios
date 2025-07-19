@@ -18,12 +18,14 @@ extension RootFeature {
             case signIn(SignInFeature.State)
             case signUp(SignUpFeature.State)
             case signUpDone(SignUpDoneFeature.State)
+            case main(MainCoordinatorFeature.State)
         }
 
         public enum Action {
             case signIn(SignInFeature.Action)
             case signUp(SignUpFeature.Action)
             case signUpDone(SignUpDoneFeature.Action)
+            case main(MainCoordinatorFeature.Action)
         }
         
         public var body: some ReducerOf<Self> {
@@ -35,6 +37,9 @@ extension RootFeature {
             }
             Scope(state: \.signUpDone, action: \.signUpDone) {
                 SignUpDoneFeature()
+            }
+            Scope(state: \.main, action: \.main) {
+                MainCoordinatorFeature()
             }
         }
     }

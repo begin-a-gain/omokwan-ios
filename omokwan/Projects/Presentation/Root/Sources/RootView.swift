@@ -9,6 +9,7 @@ import SwiftUI
 import ComposableArchitecture
 import SignIn
 import SignUp
+import Main
 
 public struct RootView: View {
     private let store: StoreOf<RootFeature>
@@ -18,10 +19,18 @@ public struct RootView: View {
     }
     
     public var body: some View {
-        NavigationStackStore(store.scope(state: \.navigationPath, action: \.navigatePathAction)) {
-            rootView
-        } destination: { store in
-            destinationView(store)
+        let pathStore = store.scope(state: \.path, action: \.path)
+        switch pathStore.state {
+        case .main:
+            if let mainStore = pathStore.scope(state: \.main, action: \.main) {
+                MainCoordinatorRootView(store: mainStore)
+            }
+        default:
+            NavigationStackStore(store.scope(state: \.navigationPath, action: \.navigatePathAction)) {
+                rootView
+            } destination: { store in
+                destinationView(store)
+            }
         }
     }
 }
@@ -43,6 +52,8 @@ private extension RootView {
             if let signUpDoneStore = pathStore.scope(state: \.signUpDone, action: \.signUpDone) {
                 SignUpDoneView(store: signUpDoneStore)
             }
+        default:
+            EmptyView()
         }
     }
 }
@@ -63,6 +74,8 @@ private extension RootView {
             CaseLet(\RootFeature.RootPath.State.signUpDone, action: RootFeature.RootPath.Action.signUpDone) { store in
                 SignUpDoneView(store: store)
             }
+        default:
+            EmptyView()
         }
     }
 }

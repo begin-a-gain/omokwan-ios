@@ -86,7 +86,7 @@ private extension RootFeature {
     private func signUpDoneNavigation(_ state: inout State, _ action: SignUpDoneFeature.Action) -> Effect<Action> {
         switch action {
         case .navigateToMain:
-            // TODO: Go To Main
+            state.path = .main(.init())
             return .none
         }
     }
