@@ -7,7 +7,7 @@
 
 import ProjectDescription
 
-public struct EnvironmentSettings {
+public struct EnvironmentSettings : Sendable{
     public let name: String
     public let organizationName: String
     public let deploymentTargets: DeploymentTargets
@@ -15,7 +15,7 @@ public struct EnvironmentSettings {
     public let destinations: Destinations
     
     public static let `default` = EnvironmentSettings(
-        name: "App",
+        name: "Omokwan",
         organizationName: "begin-a-gain",
         deploymentTargets: .iOS("16.0"),
         platform: .iOS,
