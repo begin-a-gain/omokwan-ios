@@ -11,7 +11,8 @@ import Foundation
 import Domain
 import Util
 
-public struct SignUpFeature: Reducer {
+@Reducer
+public struct SignUpFeature {
     @Dependency(\.accountUseCase) private var accountUseCase
 
     public init() {}

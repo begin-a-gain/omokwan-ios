@@ -58,6 +58,9 @@ private extension RootFeature {
         case .navigateToSignUp:
             state.navigationPath.append(.signUp(SignUpFeature.State()))
             return .none
+        case .navigateToMain:
+            state.path = .main(.init())
+            return .none
         default:
             return .none
         }
