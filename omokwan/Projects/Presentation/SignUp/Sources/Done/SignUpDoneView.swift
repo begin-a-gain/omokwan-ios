@@ -19,6 +19,12 @@ public struct SignUpDoneView: View {
     }
     
     public var body: some View {
+        signUpDoneBody
+            .navigationBarBackButtonHidden(true)
+            .oLoading(isPresent: viewStore.isLoading)
+    }
+    
+    private var signUpDoneBody: some View {
         VStack(spacing: 0) {
             Spacer().height(164)
             Rectangle()
@@ -32,9 +38,9 @@ public struct SignUpDoneView: View {
                 status: .default,
                 type: .default,
                 action: {
-                    viewStore.send(.navigateToMain)
+                    viewStore.send(.startButtonTapped)
                 }
             ).padding(20)
-        }.navigationBarBackButtonHidden(true)
+        }
     }
 }

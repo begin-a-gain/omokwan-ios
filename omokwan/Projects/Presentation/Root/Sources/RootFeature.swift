@@ -88,6 +88,11 @@ private extension RootFeature {
         case .navigateToMain:
             state.path = .main(.init())
             return .none
+        case .signInAgain:
+            state.path = .signIn(.init())
+            return .none
+        default:
+            return .none
         }
     }
 }
