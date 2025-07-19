@@ -22,10 +22,10 @@ struct RootApp: App {
     
     var body: some Scene {
         WindowGroup {
-            RootCoordinatorView(
-                store: Store(initialState: RootCoordinatorFeature.State(), reducer: {
-                    RootCoordinatorFeature()
-                })
+            RootView(
+                store: Store(initialState: RootFeature.State()) {
+                    RootFeature()
+                }
             )
             .onAppear(perform: UIApplication.shared.addTapGestureRecognizer)
             .onOpenURL(perform: { url in

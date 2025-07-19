@@ -1,8 +1,8 @@
 // swift-tools-version: 5.9
-import PackageDescription
+@preconcurrency import PackageDescription
 
 #if TUIST
-    import ProjectDescription
+@preconcurrency import ProjectDescription
 
     let packageSettings = PackageSettings(
         productTypes: [:],
@@ -20,8 +20,6 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/Swinject/Swinject.git", from: "2.9.1"),
         .package(url: "https://github.com/kakao/kakao-ios-sdk.git", from: "2.20.0"),
-        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.12.1"),
-        .package(url: "https://github.com/pointfreeco/swift-dependencies", exact: "1.3.9"),
-        .package(url: "https://github.com/pointfreeco/swift-case-paths", exact: "1.5.6")
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.15.1"),
     ]
 )
