@@ -1,8 +1,8 @@
 //
-//  RootCoordinatorScreen.swift
+//  RootPath.swift
 //  Root
 //
-//  Created by 김동준 on 11/20/24
+//  Created by 김동준 on 7/19/25
 //
 
 import ComposableArchitecture
@@ -10,19 +10,22 @@ import SignIn
 import SignUp
 import Main
 
-extension RootCoordinatorFeature {
+extension RootFeature {
     @Reducer
     public struct RootPath {
+        @ObservableState
         public enum State: Equatable {
             case signIn(SignInFeature.State)
             case signUp(SignUpFeature.State)
             case signUpDone(SignUpDoneFeature.State)
+            case main(MainCoordinatorFeature.State)
         }
 
         public enum Action {
             case signIn(SignInFeature.Action)
             case signUp(SignUpFeature.Action)
             case signUpDone(SignUpDoneFeature.Action)
+            case main(MainCoordinatorFeature.Action)
         }
         
         public var body: some ReducerOf<Self> {
@@ -34,6 +37,9 @@ extension RootCoordinatorFeature {
             }
             Scope(state: \.signUpDone, action: \.signUpDone) {
                 SignUpDoneFeature()
+            }
+            Scope(state: \.main, action: \.main) {
+                MainCoordinatorFeature()
             }
         }
     }

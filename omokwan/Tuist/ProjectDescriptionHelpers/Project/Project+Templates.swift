@@ -67,7 +67,6 @@ public extension Project {
     ) -> Project {
         let infoPlists: InfoPlist = .extendingDefault(with: ["UIAppFonts": .array(fontFamilys)])
         let implements = Target.implements(name: name, product: .staticFramework, resources: ["Resources/**"], dependencies: .dependencies(of: name), infoPlist: infoPlists)
-        let tests = Target.tests(name: name, dependencies: [.target(implements)])
         
         return Project(
             name: name,
@@ -77,8 +76,7 @@ public extension Project {
             ),
             settings: .settings(configurations: Configuration.defaultSettings),
             targets: [
-                implements,
-                tests,
+                implements
             ],
             schemes: [
                 .scheme(

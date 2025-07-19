@@ -17,9 +17,8 @@ extension Array where Element == Target {
     
     static func targets(name: String) -> [Target] {
         let implements = Target.implements(name: name, product: .staticLibrary, dependencies: .dependencies(of: name))
-        let tests = Target.tests(name: name, dependencies: [.target(implements)])
         
-        return [tests, implements]
+        return [implements]
     }
 }
 
@@ -67,24 +66,6 @@ public extension Target {
             infoPlist: infoPlist,
             sources: ["Sources/**"],
             resources: resources,
-            dependencies: dependencies,
-            settings: .settings(configurations: Configuration.defaultSettings, defaultSettings: defaultSettings)
-        )
-    }
-    
-    static func tests(
-        name: String,
-        product: Product = .unitTests,
-        dependencies: [TargetDependency]
-    ) -> Target {
-        return Target.target(
-            name: "\(name)Tests",
-            destinations: destinations,
-            product: product,
-            bundleId: "com.\(organizationName).\(name.lowercased())tests",
-            deploymentTargets: deploymentTargets,
-            infoPlist: .file(path: "Tests/Support/Info.plist"),
-            sources: ["Tests/Sources/**"],
             dependencies: dependencies,
             settings: .settings(configurations: Configuration.defaultSettings, defaultSettings: defaultSettings)
         )
