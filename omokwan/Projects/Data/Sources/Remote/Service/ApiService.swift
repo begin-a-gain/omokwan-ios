@@ -7,6 +7,7 @@
 
 import Foundation
 import Domain
+import Util
 
 public final class ApiService {
     private let tokenProvider: TokenProvider
@@ -17,6 +18,8 @@ public final class ApiService {
     
     func call<T: Decodable>(_ endPoint: EndPoint<T>) async throws -> T {
         do {
+            var logOutput: String = ""
+            
             guard var url = URL(string: "http://\(BaseUrl.current)\(endPoint.path)") else {
                 throw (RemoteNetworkError.requestURLNotExistError)
             }
@@ -31,13 +34,14 @@ public final class ApiService {
                 accessToken: tokenProvider.getAccessToken()
             )
             
+            logOutput += "📨 HTTP Headers    : \(String(describing: urlRequest.allHTTPHeaderFields))\n"
+            
             if let body = endPoint.requestBody {
                 guard let httpBody = try? JSONEncoder().encode(body) else {
                     throw RemoteNetworkError.bodyEncodingError
                 }
                 urlRequest.httpBody = httpBody
-                print("🤩😅🤣😂🙄🫠🥰😏😐🤥🤮🤓🤩😅🤣😂🙄🫠🥰😏😐🤥🤮🤓\n🥰[HTTP BODY] = \(body)\n🤩😅🤣😂🙄🫠🥰😏😐🤥🤮🤓🤩😅🤣😂🙄🫠🥰😏😐🤥🤮🤓\n")
-                print("🐵🐯🐭😾🐶🐷🐴🐟🐠🐡🦈🐬🦦🦐🦍🐧🐙🐊🐸🐔🐼🦄🦉🐿️\n🥰[HTTP HEADER] = \(urlRequest.allHTTPHeaderFields)\n🐵🐯🐭😾🐶🐷🐴🐟🐠🐡🦈🐬🦦🦐🦍🐧🐙🐊🐸🐔🐼🦄🦉🐿️\n")
+                logOutput += "📦 HTTP Body       : \(body)\n"
             }
             
             let (data, response) = try await URLSession.shared.data(for: urlRequest)
@@ -45,12 +49,17 @@ public final class ApiService {
             guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
                 throw RemoteNetworkError.responseError
             }
-
-            print("🎵🎼🎸🥁🎹🎻🎷🎤📯🪘📻🪗🎵🎼🎸🥁🎹🎻🎷🎤📯🪘📻🪗\n🎸[RequestURL] = \(url)\n🎸[StatusCode] = \(statusCode) / [HTTPMethod] = \(endPoint.method)\n🎵🎼🎸🥁🎹🎻🎷🎤📯🪘📻🪗🎵🎼🎸🥁🎹🎻🎷🎤📯🪘📻🪗\n")
+            
+            logOutput += "🚀 Request URL     : \(url)\n"
+            logOutput += "📥 HTTP Method     : \(endPoint.method)\n"
+            logOutput += "📊 Status Code     : \(statusCode)\n"
 
             if let str = String(data: data, encoding: .utf8) {
-                print("🧡❤️💚💙🖤🤎💛💝💖💕💗💓🧡❤️💚💙🖤🤎💛💝💖💕💗💓\n❤️[Sucessfully Decoded String Data]\n\(str)\n🧡❤️💚💙🖤🤎💛💝💖💕💗💓🧡❤️💚💙🖤🤎💛💝💖💕💗💓\n")
+                logOutput += "🧾 Response Body   : \(str)\n"
             }
+            
+            logOutput += "-----------------------------\n"
+            OLogger.network.log(logOutput)
             
             switch statusCode {
             case 200...299:
@@ -84,6 +93,13 @@ public final class ApiService {
                 throw RemoteNetworkError.unKnownError
             }
         } catch let error as URLError {
+            let message = """
+            ❌ URLError 발생
+              - 종류: \(error.code.rawValue) (\(error.code))
+              - 설명: \(error.localizedDescription)
+            """
+            OLogger.error.log(message)
+            
             switch error.code {
             case .timedOut, .networkConnectionLost:
                 throw RemoteNetworkError.timeout
@@ -91,8 +107,20 @@ public final class ApiService {
                 throw RemoteNetworkError.urlError(error)
             }
         } catch let error as RemoteNetworkError {
+            let message = """
+            🚨 RemoteNetworkError 발생
+              - 에러 타입: \(error)
+              - 설명: \(error.localizedDescription)
+            """
+            OLogger.error.log(message)
             throw error
         } catch {
+            let message = """
+            🛑 알 수 없는 에러 발생 (RemoteNetworkError.unKnownError)
+              - 타입: \(type(of: error))
+              - 설명: \(error.localizedDescription)
+            """
+            OLogger.error.log(message)
             throw RemoteNetworkError.unKnownError
         }
     }
