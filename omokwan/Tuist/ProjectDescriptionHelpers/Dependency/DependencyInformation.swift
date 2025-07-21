@@ -10,7 +10,7 @@ import Foundation
 let dependencyInfo: [DependencyInformation: [DependencyInformation]] = [
     .Omokwan: [.Root, .DI, .Data, .KakaoSDKUser],
     .Domain: [.DI, .ComposableArchitecture],
-    .Data: [.Domain, .KakaoSDKUser],
+    .Data: [.Domain, .KakaoSDKUser, .Util],
     .Root: [.SignIn, .SignUp, .Main],
     .SignIn: [.Domain, .Base],
     .SignUp: [.Domain, .Base, .Util],
