@@ -37,10 +37,6 @@ struct MainBottomTabBarView: View {
             ForEach(MainBottomTabItem.allCases, id: \.self) { item in
                 BottomTabItem(
                     selectedTab: viewStore.$selectedTab,
-//                        Binding(
-//                            get: { viewStore.state.selectedTab },
-//                            set: { _ in }
-//                        ),
                     item: item,
                     action: {
                         viewStore.send(.selectTab(item))
