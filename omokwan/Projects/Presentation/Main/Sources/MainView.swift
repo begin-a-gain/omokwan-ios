@@ -12,14 +12,12 @@ import MyGame
 import Base
 
 public struct MainView: View {
-    let store: StoreOf<MainCoordinatorFeature>
-    @ObservedObject var viewStore: ViewStoreOf<MainCoordinatorFeature>
-    let myGameStore: StoreOf<MyGameFeature>
+    private let store: StoreOf<MainFeature>
+    @ObservedObject private var viewStore: ViewStoreOf<MainFeature>
 
-    public init(store: StoreOf<MainCoordinatorFeature>) {
+    public init(store: StoreOf<MainFeature>) {
         self.store = store
-        self.viewStore = ViewStore(store, observe: { $0 })
-        self.myGameStore = self.store.scope(state: \.myGameState, action: \.myGameAction)
+        self.viewStore = ViewStore(store) { $0 }
     }
     
     public var body: some View {
@@ -49,15 +47,17 @@ public struct MainView: View {
     }
     
     private var mainContentView: some View {
-        Group {
-            switch viewStore.state.selectedTab {
-            case .myGame:
-                MyGameView(
-                    store: myGameStore
-                ).padding(.bottom, MainConstants.bottomTabBarHeight)
-            case .myPage:
-                ProfileView()
-                    .padding(.bottom, MainConstants.bottomTabBarHeight)
+        WithViewStore(store, observe: \.selectedTab) { currentTab in
+            Group {
+                switch currentTab.state {
+                case .myGame:
+                    MyGameView(
+                        store: store.scope(state: \.myGameState, action: \.myGameAction)
+                    ).padding(.bottom, MainConstants.bottomTabBarHeight)
+                case .myPage:
+                    ProfileView()
+                        .padding(.bottom, MainConstants.bottomTabBarHeight)
+                }
             }
         }
     }

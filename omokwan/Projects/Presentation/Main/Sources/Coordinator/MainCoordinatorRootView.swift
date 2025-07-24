@@ -13,8 +13,8 @@ import MyGameParticipate
 import GameDetail
 
 public struct MainCoordinatorRootView: View {
-    let store: StoreOf<MainCoordinatorFeature>
-    @ObservedObject var viewStore: ViewStoreOf<MainCoordinatorFeature>
+    private let store: StoreOf<MainCoordinatorFeature>
+    @ObservedObject private var viewStore: ViewStoreOf<MainCoordinatorFeature>
 
     public init(store: StoreOf<MainCoordinatorFeature>) {
         self.store = store
@@ -23,7 +23,7 @@ public struct MainCoordinatorRootView: View {
     
     public var body: some View {
         NavigationStackStore(store.scope(state: \.path, action: \.path)) {
-            MainView(store: store)
+            MainView(store: store.scope(state: \.mainState, action: \.mainAction))
         } destination: { store in
             switch store {
             case .myGame:

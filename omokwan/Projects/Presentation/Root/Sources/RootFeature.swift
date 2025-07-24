@@ -41,6 +41,13 @@ public struct RootFeature {
                 return signUpDoneNavigation(&state, signUpDoneAction)
             case .navigatePathAction(.element(id: _, action: RootFeature.RootPath.Action.signUp(let signUpNavigationAction))):
                 return signUpNavigation(&state, signUpNavigationAction)
+            case .path(.main(let mainCoordinatorAction)):
+                switch mainCoordinatorAction {
+                case .mainAction(let mainAction):
+                    return mainNavigation(&state, mainAction)
+                default:
+                    return .none
+                }
             default:
                 return .none
             }
@@ -94,6 +101,21 @@ private extension RootFeature {
         case .signInAgain:
             state.path = .signIn(.init())
             return .none
+        default:
+            return .none
+        }
+    }
+}
+
+// mainAction
+private extension RootFeature {
+    private func mainNavigation(_ state: inout State, _ action: MainFeature.Action) -> Effect<Action> {
+        switch action {
+//             TODO: SignOut Grab, clear shared user
+//        case .signOutCaseTemp:
+//            state.navigationPath = .init()
+//            state.path = .signIn(.init())
+//            return .none
         default:
             return .none
         }
