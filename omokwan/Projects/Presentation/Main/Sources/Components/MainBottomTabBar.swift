@@ -10,9 +10,9 @@ import DesignSystem
 import ComposableArchitecture
 
 struct MainBottomTabBarView: View {
-    @ObservedObject var viewStore: ViewStoreOf<MainCoordinatorFeature>
+    @ObservedObject private var viewStore: ViewStoreOf<MainFeature>
 
-    public init(viewStore: ViewStoreOf<MainCoordinatorFeature>) {
+    init(viewStore: ViewStoreOf<MainFeature>) {
         self.viewStore = viewStore
     }
     
@@ -36,11 +36,11 @@ struct MainBottomTabBarView: View {
         HStack(alignment: .top, spacing: 0) {
             ForEach(MainBottomTabItem.allCases, id: \.self) { item in
                 BottomTabItem(
-                    selectedTab:
-                        Binding(
-                            get: { viewStore.state.selectedTab },
-                            set: { _ in }
-                        ),
+                    selectedTab: viewStore.$selectedTab,
+//                        Binding(
+//                            get: { viewStore.state.selectedTab },
+//                            set: { _ in }
+//                        ),
                     item: item,
                     action: {
                         viewStore.send(.selectTab(item))

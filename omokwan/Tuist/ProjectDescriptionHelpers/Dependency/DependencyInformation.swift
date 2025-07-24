@@ -12,15 +12,15 @@ let dependencyInfo: [DependencyInformation: [DependencyInformation]] = [
     .Domain: [.DI, .ComposableArchitecture],
     .Data: [.Domain, .KakaoSDKUser, .Util],
     .Root: [.SignIn, .SignUp, .Main],
-    .SignIn: [.Domain, .Base],
-    .SignUp: [.Domain, .Base, .Util],
+    .SignIn: [.Base],
+    .SignUp: [.Base, .Util],
     .Main: [.MyGame, .MyGameAdd, .MyGameParticipate, .GameDetail],
     .DI: [.Swinject],
-    .Base: [.DesignSystem, .ComposableArchitecture],
-    .MyGame: [.Base, .Util, .Domain],
-    .MyGameAdd: [.Base, .Util, .Domain],
-    .MyGameParticipate: [.Base, .Util, .Domain],
-    .GameDetail: [.Base, .Util, .Domain]
+    .Base: [.DesignSystem, .ComposableArchitecture, .Domain],
+    .MyGame: [.Base, .Util],
+    .MyGameAdd: [.Base, .Util],
+    .MyGameParticipate: [.Base, .Util],
+    .GameDetail: [.Base, .Util]
 ]
 
 public enum DependencyInformation: String, Sendable {

@@ -54,7 +54,8 @@ extension MainCoordinatorFeature {
             return .none
         case .createRoomComplete(let title):
             state.path.removeAll()
-            return .send(.myGameAction(.gameCreated(title)))
+            return .none
+//            return .send(.myGameAction(.gameCreated(title)))
         default:
             return .none
         }
