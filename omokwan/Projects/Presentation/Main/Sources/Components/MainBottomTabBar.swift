@@ -11,24 +11,22 @@ import ComposableArchitecture
 
 struct MainBottomTabBarView: View {
     @ObservedObject private var viewStore: ViewStoreOf<MainFeature>
+    private let hasBottomSafeArea: Bool
 
-    init(viewStore: ViewStoreOf<MainFeature>) {
+    init(viewStore: ViewStoreOf<MainFeature>, hasBottomSafeArea: Bool) {
         self.viewStore = viewStore
+        self.hasBottomSafeArea = hasBottomSafeArea
     }
     
     var body: some View {
         ZStack(alignment: .top) {
             VStack(spacing: 0) {
+                Spacer().height(MainConstants.circleButtonSize/2)
                 tabItems
                 Spacer().height(16)
             }
-            
-            CenterPlusFloatingActionButton() {
-                viewStore.send(.addGameButtonTapped)
-            }
-            .offset(y: -36)
        }
-        .height(MainConstants.bottomTabBarHeight, .top)
+        .height(MainUtil.getBottomTabBarHeight(hasBottomSafeArea))
         .greedyWidth()
     }
     
@@ -93,34 +91,6 @@ private struct BottomTabItem: View {
             OImages.icStone24.swiftUIImage
         case .myPage:
             OImages.icStone24.swiftUIImage
-        }
-    }
-}
-
-private struct CenterPlusFloatingActionButton: View {
-    fileprivate let action: () -> Void
-    
-    fileprivate init(action: @escaping () -> Void) {
-        self.action = action
-    }
-    
-    fileprivate var body: some View {
-        Button {
-            action()
-        } label: {
-            ZStack {
-                Circle()
-                    .frame(64, 64)
-                    .padding(4)
-                
-                OImages.icPlus.swiftUIImage
-                    .renderingMode(.template)
-                    .resizedToFit(32, 32)
-                    .foregroundColor(OColors.oWhite.swiftUIColor)
-                    .padding(16)
-                    .background(OColors.oPrimary.swiftUIColor)
-                    .clipShape(Circle())
-            }
         }
     }
 }
