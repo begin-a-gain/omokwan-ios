@@ -16,6 +16,7 @@ public struct MainFeature {
     public struct State: Equatable {
         public init() {}
 
+        var isMainLoading = false
         @BindingState var selectedTab: MainBottomTabItem = .myGame
         var myGameState: MyGameFeature.State = .init()
 
@@ -76,8 +77,14 @@ public struct MainFeature {
                 return .none
             case .noAction:
                 return .none
-            case .myGameAction:
-                return .none
+            case .myGameAction(let myGameAction):
+                switch myGameAction {
+                case .setLoading(let value):
+                    state.isMainLoading = value
+                    return .none
+                default:
+                    return .none
+                }
             }
         }
         .ifLet(\.$mainSheet, action: \.mainSheet) {
