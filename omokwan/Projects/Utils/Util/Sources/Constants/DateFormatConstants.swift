@@ -13,4 +13,5 @@ public struct DateFormatConstants {
     public static let scrollHeaderFormat = "yyyy. M월"
     public static let scrollCalendarFormat = "yyyyMMdd"
     public static let detailGameSectionRowDateFormat = "dd"
+    public static let calendarGameRequestFormat = "yyyy-MM-dd"
 }
