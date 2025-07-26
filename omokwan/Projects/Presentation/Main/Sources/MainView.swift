@@ -50,6 +50,7 @@ public struct MainView: View {
                     .ignoresSafeArea(edges: .bottom)
             }
         }
+        .oLoading(isPresent: viewStore.isMainLoading)
         .sheet(store: store.scope(state: \.$mainSheet, action: \.mainSheet)) { store in
             MainSheetView(store: store)
                 .modifier(CommonSheetModifier(detent: [.medium]))

@@ -17,6 +17,7 @@ extension DIContainer {
         registerAccountDependency()
         registerSocialDependency()
         registerServerDependency()
+        registerGameDependency()
         registerLocalStorageDependency()
     }
     
@@ -62,6 +63,13 @@ extension DIContainer {
         container.register(ServerRepositoryProtocol.self) { resolver in
             let apiService: ApiService = resolver.resolve()
             return ServerRepository(apiService: apiService)
+        }
+    }
+    
+    private func registerGameDependency() {
+        container.register(GameRepositoryProtocol.self) { resolver in
+            let apiService: ApiService = resolver.resolve()
+            return GameRepository(apiService: apiService)
         }
     }
     

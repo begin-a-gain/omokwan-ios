@@ -52,3 +52,10 @@ extension EndPoint {
         return EndPoint(path: "/users/info", method: .GET)
     }
 }
+
+// MARK: Game
+extension EndPoint {
+    static func getGameInfoFromDate(queryParameters: GameInfoRequest) -> EndPoint<T> {
+        return EndPoint(path: "/matches", method: .GET, queryParameters: queryParameters)
+    }
+}
