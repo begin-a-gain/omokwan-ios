@@ -8,9 +8,12 @@
 import ComposableArchitecture
 import Foundation
 import Domain
+import Util
 
 @Reducer
 public struct MyGameFeature {
+    @Dependency(\.gameUseCase) private var gameUseCase
+
     public init() {}
     
     public struct State: Equatable {
@@ -36,6 +39,9 @@ public struct MyGameFeature {
         case bellButtonTapped
         case myGameSheet(PresentationAction<MyGameSheetFeature.Action>)
         case gameCreated(String)
+        case gameInfoFetched([MyGameModel])
+        case noAction
+        case setLoading(Bool)
     }
     
     public var body: some ReducerOf<Self> {
@@ -43,7 +49,13 @@ public struct MyGameFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                return .none
+                let dateString = state.selectedDate.formattedString(format: DateFormatConstants.calendarGameRequestFormat)
+                return .merge([
+                    .send(.setLoading(true)),
+                    .run { send in
+                        await send(fetchMyGameInfo(dateString))
+                    }
+                ])
             case .binding:
                 return .none
             case .dateArrowLeftButtonTapped:
@@ -81,7 +93,15 @@ public struct MyGameFeature {
                     myGameCompleteStatus = .inCompleteWithSkip
                 }
                 addSingleValueToMyGameList(
-                    MyGameModel(myGameCompleteStatus: myGameCompleteStatus),
+                    MyGameModel(
+                        gameID: 1,
+                        name: "",
+                        onGoingDays: 1,
+                        participants: 1,
+                        maxParticipants: 1,
+                        myGameCompleteStatus: myGameCompleteStatus,
+                        isPrivateRoom: true
+                    ),
                     state: &state
                 )
                 
@@ -90,6 +110,13 @@ public struct MyGameFeature {
             case .gameCreated(let title):
                 // TODO: 대국 생성 완료 토스트 생성
                 print("DONGJUN -> \(title) 생성 완료")
+                return .none
+            case .gameInfoFetched(let myGameModels):
+                state.myGameList = myGameModels
+                return .send(.setLoading(false))
+            case .noAction:
+                return .send(.setLoading(false))
+            case .setLoading:
                 return .none
             }
         }
@@ -117,6 +144,20 @@ private extension MyGameFeature {
     func checkAndAppendNilIfNeeded(state: inout State) {
         if (state.myGameList.count % 2 == 1) && (state.myGameList.count > 6) {
             state.myGameList.append(nil)
+        }
+    }
+}
+
+private extension MyGameFeature {
+    func fetchMyGameInfo(_ dateString: String) async -> Action {
+        let response = await gameUseCase.fetchGameInfosFromDate(dateString)
+        switch response {
+        case .success(let myGameModels):
+            
+            return .gameInfoFetched(myGameModels)
+        case .failure(let error):
+            // TODO: 에러 정해지면 작업
+            return .noAction
         }
     }
 }
