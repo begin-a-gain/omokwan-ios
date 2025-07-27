@@ -36,7 +36,8 @@ struct MyGameSheetView: View {
             in: ...Date(),
             displayedComponents: [.date]
         )
-            .datePickerStyle(.wheel)
-            .labelsHidden()
+        .datePickerStyle(.wheel)
+        .labelsHidden()
+        .environment(\.locale, Locale(identifier: "ko_KR"))
     }
 }
