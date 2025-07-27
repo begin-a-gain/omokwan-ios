@@ -42,6 +42,7 @@ public struct MyGameFeature {
         case gameInfoFetched([MyGameModel])
         case noAction
         case setLoading(Bool)
+        case fetchGameInfo
     }
     
     public var body: some ReducerOf<Self> {
@@ -49,6 +50,8 @@ public struct MyGameFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                return .send(.fetchGameInfo)
+            case .fetchGameInfo:
                 let dateString = state.selectedDate.formattedString(format: DateFormatConstants.calendarGameRequestFormat)
                 return .merge([
                     .send(.setLoading(true)),
@@ -59,9 +62,19 @@ public struct MyGameFeature {
             case .binding:
                 return .none
             case .dateArrowLeftButtonTapped:
-                return .none
+                guard let date = state.selectedDate.addDay(-1) else {
+                    return .none
+                }
+                
+                state.selectedDate = date
+                return .send(.fetchGameInfo)
             case .dateArrowRightButtonTapped:
-                return .none
+                guard let date = state.selectedDate.addDay(1) else {
+                    return .none
+                }
+                
+                state.selectedDate = date
+                return .send(.fetchGameInfo)
             case .datePickerButtonTapped:
                 state.myGameSheet = .init(selectedDate: state.selectedDate)
                 return .none
@@ -74,7 +87,7 @@ public struct MyGameFeature {
                     case .dismissSheetWithData(let date):
                         state.myGameSheet = nil
                         state.selectedDate = date
-                        return .none
+                        return .send(.fetchGameInfo)
                     default:
                         return .none
                     }
