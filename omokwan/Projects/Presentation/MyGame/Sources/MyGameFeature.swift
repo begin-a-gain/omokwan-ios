@@ -112,7 +112,8 @@ public struct MyGameFeature {
                 print("DONGJUN -> \(title) 생성 완료")
                 return .none
             case .gameInfoFetched(let myGameModels):
-                state.myGameList = myGameModels
+                addListValueToMyGameList(myGameModels, state: &state)
+                checkAndAppendNilIfNeeded(state: &state)
                 return .send(.setLoading(false))
             case .noAction:
                 return .send(.setLoading(false))
