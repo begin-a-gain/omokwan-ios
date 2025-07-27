@@ -21,6 +21,12 @@ public struct SignInFeature {
     public struct State: Equatable {
         public init() {}
         
+        public enum AlertCase: Equatable {
+            case error(NetworkError)
+        }
+        var alertCase: AlertCase?
+        var alertState: AlertFeature.State = .init()
+        
         var isLoading: Bool = false
         @Shared(.userInfo) var userInfo = UserInfo()
     }
@@ -34,10 +40,11 @@ public struct SignInFeature {
         case appleLoginError(AppleSignInError)
         case navigateToSignUp
         case shouldSignUp
-        case noAction
         case fetchUserInfo
         case userInfoFetched(UserInfo)
         case navigateToMain
+        case alertAction(AlertFeature.Action)
+        case showAlert(State.AlertCase)
     }
     
     public var body: some ReducerOf<Self> {
@@ -55,7 +62,7 @@ public struct SignInFeature {
                     )
                 }
             case .kakaoLoginError(let error):
-                // TODO: 에러 핸들링
+                // TODO: 카카오 에러 핸들링
                 state.isLoading = false
                 return .none
             case .appleButtonTapped:
@@ -65,17 +72,13 @@ public struct SignInFeature {
             case .receiveAppleTokenSuccessfully(let token):
                 return .send(.navigateToSignUp)
             case .appleLoginError(let error):
-                // TODO: 에러 핸들링
+                // TODO: 애플 에러 핸들링
                 return .none
             case .navigateToSignUp:
                 return .none
             case .shouldSignUp:
                 state.isLoading = false
                 return .send(.navigateToSignUp)
-            case .noAction:
-                // TODO: 추후 제거 액션
-                state.isLoading = false
-                return .none
             case .fetchUserInfo:
                 return .run { send in
                     await send(fetchUserInfo())
@@ -86,7 +89,16 @@ public struct SignInFeature {
                 return .send(.navigateToMain)
             case .navigateToMain:
                 return .none
+            case .alertAction:
+                return .none
+            case .showAlert(let alertCase):
+                state.isLoading = false
+                state.alertCase = alertCase
+                return .send(.alertAction(.present))
             }
+        }
+        Scope(state: \.alertState, action: \.alertAction) {
+            AlertFeature()
         }
     }
 }
@@ -124,8 +136,7 @@ private extension SignInFeature {
                 return .shouldSignUp
             }
         case let .failure(error):
-            // TODO: 에러 정해지면 작업
-            return .noAction
+            return .showAlert(.error(error))
         }
     }
     
@@ -135,8 +146,7 @@ private extension SignInFeature {
         case .success(let userInfo):
             return .userInfoFetched(userInfo)
         case .failure(let error):
-            // TODO: 에러 정해지면 작업
-            return .noAction
+            return .showAlert(.error(error))
         }
     }
     
