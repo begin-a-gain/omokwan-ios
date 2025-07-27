@@ -11,8 +11,8 @@ import ComposableArchitecture
 import Base
 
 public struct SignUpView: View {
-    let store: StoreOf<SignUpFeature>
-    @ObservedObject var viewStore: ViewStoreOf<SignUpFeature>
+    private let store: StoreOf<SignUpFeature>
+    @ObservedObject private var viewStore: ViewStoreOf<SignUpFeature>
 
     public init(store: StoreOf<SignUpFeature>) {
         self.store = store
