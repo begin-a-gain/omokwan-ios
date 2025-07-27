@@ -7,24 +7,35 @@
 
 import ComposableArchitecture
 import Domain
+import Base
 
-public struct SignUpDoneFeature: Reducer {
+@Reducer
+public struct SignUpDoneFeature {
     @Dependency(\.accountUseCase) private var accountUseCase
 
     public init() {}
     
     public struct State: Equatable {
-        var isLoading: Bool = false
-        @Shared(.userInfo) var userInfo = UserInfo()
-
         public init() {}
+
+        public enum AlertCase: Equatable {
+            case error(NetworkError)
+        }
+
+        @Shared(.userInfo) var userInfo = UserInfo()
+        
+        var isLoading: Bool = false
+        var alertCase: AlertCase?
+        var alertState: AlertFeature.State = .init()
     }
     
     public enum Action {
         case startButtonTapped
         case navigateToMain
         case userInfoFetched(UserInfo)
-        case signInAgain
+        case signInAgain(NetworkError)
+        case alertAction(AlertFeature.Action)
+        case showAlert(State.AlertCase)
     }
     
     public var body: some ReducerOf<Self> {
@@ -39,12 +50,22 @@ public struct SignUpDoneFeature: Reducer {
                 state.isLoading = false
                 setUserInfo(&state, userInfo)
                 return .send(.navigateToMain)
-            case .signInAgain:
+            case .signInAgain(let networkError):
                 state.isLoading = false
+                // TODO: 로그인 화면에서 alert 작업
                 return .none
             case .navigateToMain:
                 return .none
+            case .alertAction:
+                return .none
+            case .showAlert(let alertCase):
+                state.isLoading = false
+                state.alertCase = alertCase
+                return .send(.alertAction(.present))
             }
+        }
+        Scope(state: \.alertState, action: \.alertAction) {
+            AlertFeature()
         }
     }
 }
@@ -56,7 +77,7 @@ private extension SignUpDoneFeature {
         case .success(let userInfo):
             return .userInfoFetched(userInfo)
         case .failure(let error):
-            return .signInAgain
+            return .signInAgain(error)
         }
     }
     

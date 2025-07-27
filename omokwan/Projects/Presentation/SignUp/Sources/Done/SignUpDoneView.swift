@@ -8,10 +8,11 @@
 import SwiftUI
 import DesignSystem
 import ComposableArchitecture
+import Base
 
 public struct SignUpDoneView: View {
-    let store: StoreOf<SignUpDoneFeature>
-    @ObservedObject var viewStore: ViewStoreOf<SignUpDoneFeature>
+    private let store: StoreOf<SignUpDoneFeature>
+    @ObservedObject private var viewStore: ViewStoreOf<SignUpDoneFeature>
 
     public init(store: StoreOf<SignUpDoneFeature>) {
         self.store = store
@@ -22,6 +23,9 @@ public struct SignUpDoneView: View {
         signUpDoneBody
             .navigationBarBackButtonHidden(true)
             .oLoading(isPresent: viewStore.isLoading)
+            .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {
+                alertView
+            }
     }
     
     private var signUpDoneBody: some View {
@@ -41,6 +45,22 @@ public struct SignUpDoneView: View {
                     viewStore.send(.startButtonTapped)
                 }
             ).padding(20)
+        }
+    }
+}
+
+// MARK: About Alert
+private extension SignUpDoneView {
+    var alertView: some View {
+        Group {
+            if let alertCase = viewStore.alertCase {
+                switch alertCase {
+                case .error(let networkError):
+                    CommonErrorAlertView(networkError) {
+                        viewStore.send(.alertAction(.dismiss))
+                    }
+                }
+            }
         }
     }
 }

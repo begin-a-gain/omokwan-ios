@@ -24,6 +24,12 @@ public struct SignUpFeature {
     public struct State: Equatable{
         public init() {}
         
+        public enum AlertCase: Equatable {
+            case error(NetworkError)
+        }
+        var alertCase: AlertCase?
+        var alertState: AlertFeature.State = .init()
+        
         enum NicknameValidStatus {
             case duplicated
             case invalidFormat
@@ -43,12 +49,13 @@ public struct SignUpFeature {
         case nextButtonTapped
         case navigateToBack
         case binding(BindingAction<State>)
-        case noAction
         case validNickname
         case checkNicknameValidation(String)
         case checkNicknameDuplicated(String)
         case nicknameUpdateCompleted
         case navigateToSignUpDone
+        case alertAction(AlertFeature.Action)
+        case showAlert(State.AlertCase)
     }
     
     public var body: some ReducerOf<Self> {
@@ -94,9 +101,6 @@ public struct SignUpFeature {
                 }
             case .navigateToBack:
                 return .none
-            case .noAction:
-                state.isLoading = false
-                return .none
             case .validNickname:
                 state.isLoading = false
                 state.nicknameValidStatus = .valid
@@ -106,7 +110,16 @@ public struct SignUpFeature {
                 return .send(.navigateToSignUpDone)
             case .navigateToSignUpDone:
                 return .none
+            case .alertAction:
+                return .none
+            case .showAlert(let alertCase):
+                state.isLoading = false
+                state.alertCase = alertCase
+                return .send(.alertAction(.present))
             }
+        }
+        Scope(state: \.alertState, action: \.alertAction) {
+            AlertFeature()
         }
     }
 }
@@ -118,8 +131,7 @@ private extension SignUpFeature {
         case .success:
             return .validNickname
         case let .failure(error):
-            // TODO: 에러 정해지면 작업
-            return .noAction
+            return .showAlert(.error(error))
         }
     }
     
@@ -129,8 +141,7 @@ private extension SignUpFeature {
         case .success:
             return .nicknameUpdateCompleted
         case let .failure(error):
-            // TODO: 에러 정해지면 작업
-            return .noAction
+            return .showAlert(.error(error))
         }
     }
 }
