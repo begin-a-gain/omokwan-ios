@@ -42,6 +42,8 @@ public struct MyGameFeature {
         case gameInfoFetched([MyGameModel])
         case noAction
         case setLoading(Bool)
+        case fetchGameInfo
+        case passError(NetworkError)
     }
     
     public var body: some ReducerOf<Self> {
@@ -49,6 +51,8 @@ public struct MyGameFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                return .send(.fetchGameInfo)
+            case .fetchGameInfo:
                 let dateString = state.selectedDate.formattedString(format: DateFormatConstants.calendarGameRequestFormat)
                 return .merge([
                     .send(.setLoading(true)),
@@ -59,9 +63,19 @@ public struct MyGameFeature {
             case .binding:
                 return .none
             case .dateArrowLeftButtonTapped:
-                return .none
+                guard let date = state.selectedDate.addDay(-1) else {
+                    return .none
+                }
+                
+                state.selectedDate = date
+                return .send(.fetchGameInfo)
             case .dateArrowRightButtonTapped:
-                return .none
+                guard let date = state.selectedDate.addDay(1) else {
+                    return .none
+                }
+                
+                state.selectedDate = date
+                return .send(.fetchGameInfo)
             case .datePickerButtonTapped:
                 state.myGameSheet = .init(selectedDate: state.selectedDate)
                 return .none
@@ -74,7 +88,7 @@ public struct MyGameFeature {
                     case .dismissSheetWithData(let date):
                         state.myGameSheet = nil
                         state.selectedDate = date
-                        return .none
+                        return .send(.fetchGameInfo)
                     default:
                         return .none
                     }
@@ -112,11 +126,14 @@ public struct MyGameFeature {
                 print("DONGJUN -> \(title) 생성 완료")
                 return .none
             case .gameInfoFetched(let myGameModels):
-                state.myGameList = myGameModels
+                addListValueToMyGameList(myGameModels, state: &state)
+                checkAndAppendNilIfNeeded(state: &state)
                 return .send(.setLoading(false))
             case .noAction:
                 return .send(.setLoading(false))
             case .setLoading:
+                return .none
+            case .passError:
                 return .none
             }
         }
@@ -153,11 +170,9 @@ private extension MyGameFeature {
         let response = await gameUseCase.fetchGameInfosFromDate(dateString)
         switch response {
         case .success(let myGameModels):
-            
             return .gameInfoFetched(myGameModels)
         case .failure(let error):
-            // TODO: 에러 정해지면 작업
-            return .noAction
+            return .passError(error)
         }
     }
 }
