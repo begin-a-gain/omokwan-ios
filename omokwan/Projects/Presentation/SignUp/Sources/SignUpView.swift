@@ -8,6 +8,7 @@
 import SwiftUI
 import DesignSystem
 import ComposableArchitecture
+import Base
 
 public struct SignUpView: View {
     let store: StoreOf<SignUpFeature>
@@ -27,6 +28,9 @@ public struct SignUpView: View {
     public var body: some View {
         signUpBody
             .oLoading(isPresent: viewStore.isLoading)
+            .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {
+                alertView
+            }
     }
     
     private var signUpBody: some View {
@@ -89,6 +93,22 @@ private extension SignUpView {
             return "이미 사용중인 아이디 입니다."
         case .invalidFormat:
             return "2~10글자 사이의 한글 혹은 영문만 사용해주세요."
+        }
+    }
+}
+
+// MARK: About Alert
+private extension SignUpView {
+    var alertView: some View {
+        Group {
+            if let alertCase = viewStore.alertCase {
+                switch alertCase {
+                case .error(let networkError):
+                    CommonErrorAlertView(networkError) {
+                        viewStore.send(.alertAction(.dismiss))
+                    }
+                }
+            }
         }
     }
 }
