@@ -50,6 +50,9 @@ public struct MainView: View {
                     .ignoresSafeArea(edges: .bottom)
             }
         }
+        .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {
+            alertView
+        }
         .oLoading(isPresent: viewStore.isMainLoading)
         .sheet(store: store.scope(state: \.$mainSheet, action: \.mainSheet)) { store in
             MainSheetView(store: store)
@@ -110,6 +113,22 @@ private struct CenterPlusFloatingActionButton: View {
                     .padding(16)
                     .background(OColors.oPrimary.swiftUIColor)
                     .clipShape(Circle())
+            }
+        }
+    }
+}
+
+// MARK: About Alert
+private extension MainView {
+    var alertView: some View {
+        Group {
+            if let alertCase = viewStore.alertCase {
+                switch alertCase {
+                case .error(let networkError):
+                    CommonErrorAlertView(networkError) {
+                        viewStore.send(.alertAction(.dismiss))
+                    }
+                }
             }
         }
     }

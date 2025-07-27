@@ -43,6 +43,7 @@ public struct MyGameFeature {
         case noAction
         case setLoading(Bool)
         case fetchGameInfo
+        case passError(NetworkError)
     }
     
     public var body: some ReducerOf<Self> {
@@ -132,6 +133,8 @@ public struct MyGameFeature {
                 return .send(.setLoading(false))
             case .setLoading:
                 return .none
+            case .passError:
+                return .none
             }
         }
         .ifLet(\.$myGameSheet, action: \.myGameSheet) {
@@ -167,11 +170,9 @@ private extension MyGameFeature {
         let response = await gameUseCase.fetchGameInfosFromDate(dateString)
         switch response {
         case .success(let myGameModels):
-            
             return .gameInfoFetched(myGameModels)
         case .failure(let error):
-            // TODO: 에러 정해지면 작업
-            return .noAction
+            return .passError(error)
         }
     }
 }
