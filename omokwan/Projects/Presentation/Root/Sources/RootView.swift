@@ -13,24 +13,36 @@ import Main
 
 public struct RootView: View {
     private let store: StoreOf<RootFeature>
+    @ObservedObject private var viewStore: ViewStoreOf<RootFeature>
 
     public init(store: StoreOf<RootFeature>) {
         self.store = store
+        self.viewStore = ViewStore(store) { $0 }
     }
     
     public var body: some View {
-        let pathStore = store.scope(state: \.path, action: \.path)
-        switch pathStore.state {
-        case .main:
-            if let mainStore = pathStore.scope(state: \.main, action: \.main) {
-                MainCoordinatorRootView(store: mainStore)
-            }
-        default:
-            NavigationStackStore(store.scope(state: \.navigationPath, action: \.navigatePathAction)) {
-                rootView
-            } destination: { store in
-                destinationView(store)
-            }
+        GeometryReader { proxy in
+            let hasBottomSafeArea = proxy.safeAreaInsets.bottom > 0
+            
+            ZStack {
+                let pathStore = store.scope(state: \.path, action: \.path)
+                switch pathStore.state {
+                case .main:
+                    if let mainStore = pathStore.scope(state: \.main, action: \.main) {
+                        MainCoordinatorRootView(store: mainStore)
+                    }
+                default:
+                    NavigationStackStore(store.scope(state: \.navigationPath, action: \.navigatePathAction)) {
+                        rootView
+                    } destination: { store in
+                        destinationView(store)
+                    }
+                }
+            }.oToast(
+                isPresented: viewStore.$isToastPresented,
+                message: viewStore.toastMessage,
+                bottomPadding: getToastBottomPadding(hasBottomSafeArea)
+            )
         }
     }
 }
@@ -76,6 +88,19 @@ private extension RootView {
             }
         default:
             EmptyView()
+        }
+    }
+}
+
+private extension RootView {
+    func getToastBottomPadding(_ hasBottomSafeArea: Bool) -> Double {
+        let bottomTabBarHeight = MainUtil.getBottomTabBarHeight(hasBottomSafeArea)
+        let defaultPadding: Double = 24
+        
+        if case .main = viewStore.path {
+            return bottomTabBarHeight + defaultPadding
+        } else {
+            return defaultPadding
         }
     }
 }
