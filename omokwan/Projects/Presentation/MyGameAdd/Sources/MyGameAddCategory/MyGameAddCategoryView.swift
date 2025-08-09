@@ -9,6 +9,7 @@ import ComposableArchitecture
 import SwiftUI
 import DesignSystem
 import Domain
+import Base
 
 public struct MyGameAddCategoryView: View {
     let store: StoreOf<MyGameAddCategoryFeature>
@@ -21,6 +22,13 @@ public struct MyGameAddCategoryView: View {
     
     public var body: some View {
         myGameAddCategoryBodyView
+        .onAppear {
+            viewStore.send(.onAppear)
+        }
+        .oLoading(isPresent: viewStore.isLoading)
+        .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
+            alertView
+        }
     }
     
     private var myGameAddCategoryBodyView: some View {
@@ -57,7 +65,7 @@ public struct MyGameAddCategoryView: View {
     private var categoriesChipsView: some View {
         DynamicWidthChipsGridView(
             categories: viewStore.categories.map {
-                ChipsGridModel(title: $0.rawValue, emoji: $0.emoji)
+                ChipsGridModel(title: $0.category, emoji: "-") // 서버에서 응답값 emoji 내려줄 예정
             },
             selectedTitle: selectedCategory,
             tapAction: { categoryTitle in
@@ -75,7 +83,7 @@ public struct MyGameAddCategoryView: View {
                 type: .text,
                 size: .small,
                 action: {
-                    viewStore.send(.skipButtonTapped)
+                    viewStore.send(.skipButtonTapped(viewStore.categories))
                 }
             )
             OButton(
@@ -83,7 +91,7 @@ public struct MyGameAddCategoryView: View {
                 status: viewStore.isNextButtonEnable ? .default : .disable,
                 type: .default,
                 action: {
-                    viewStore.send(.nextButtonTapped(viewStore.selectedCategory))
+                    viewStore.send(.nextButtonTapped(viewStore.categories, viewStore.selectedCategory))
                 }
             )
         }
@@ -92,7 +100,27 @@ public struct MyGameAddCategoryView: View {
     }
     
     private var selectedCategory: [String]? {
-        let nullStringValue = viewStore.selectedCategory?.rawValue
+        let nullStringValue = viewStore.selectedCategory?.category
         return nullStringValue.map{ [$0] }
+    }
+}
+
+// MARK: About Alert
+private extension MyGameAddCategoryView {
+    var alertView: some View {
+        Group {
+            if let alertCase = viewStore.alertCase {
+                switch alertCase {
+                case .error(let error):
+                    errorAlertView(error)
+                }
+            }
+        }
+    }
+    
+    func errorAlertView(_ networkError: NetworkError) -> some View {
+        CommonErrorAlertView(networkError) {
+            viewStore.send(.alertAction(.dismiss))
+        }
     }
 }
