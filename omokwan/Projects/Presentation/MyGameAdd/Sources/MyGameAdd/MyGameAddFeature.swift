@@ -11,6 +11,8 @@ import Base
 
 @Reducer
 public struct MyGameAddFeature {
+    @Dependency(\.gameUseCase) private var gameUseCase
+
     public init() {}
     
     public struct State: Equatable {
@@ -19,13 +21,12 @@ public struct MyGameAddFeature {
         }
         
         // MARK: Alert
-        public enum AlertCase {
+        public enum AlertCase: Equatable {
             case password
             case create
             case leave
+            case error(NetworkError)
         }
-        var alertCase: AlertCase?
-        var alertState: AlertFeature.State = .init()
         
         // MARK: Password Focus Field
         public enum PasswordFocusField {
@@ -34,6 +35,10 @@ public struct MyGameAddFeature {
             case tensPlace
             case onesPlace
         }
+        
+        var alertCase: AlertCase?
+        var alertState: AlertFeature.State = .init()
+        var isLoading: Bool = false
         
         @BindingState var gameName: String = ""
         var selectedRepeatDay: MyGameAddRepeatDayType = .weekday
@@ -56,11 +61,24 @@ public struct MyGameAddFeature {
         @BindingState var onesPlace: String = ""
         
         var isStartButtonEnable: Bool {
-            return !gameName.isEmpty
+            return !gameName.isEmpty && isCategoryValidation && isDirectSelectionValidation
+        }
+        
+        var isCategoryValidation: Bool {
+            selectedCategory != nil
+        }
+        
+        var isDirectSelectionValidation: Bool {
+            if selectedRepeatDay != .directSelection {
+                return true
+            }
+            
+            return !isSelectedDirectSelectionList.allSatisfy { $0 == false }
         }
     }
     
     public enum Action: BindableAction {
+        case onAppear
         case navigateToBack
         case binding(BindingAction<State>)
         case repeatDayButtonTapped
@@ -90,6 +108,8 @@ public struct MyGameAddFeature {
         BindingReducer()
         Reduce { state, action in
             switch action {
+            case .onAppear:
+                return .none
             case .navigateToBack:
                 return .none
             case .binding:
@@ -162,6 +182,7 @@ public struct MyGameAddFeature {
             case .alertAction:
                 return .none
             case .showAlert(let alertCase):
+                state.isLoading = false
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
             case .passwordAlertConfirmButtonTapped:
@@ -197,12 +218,17 @@ public struct MyGameAddFeature {
             case .createAlertCancelButtonTapped:
                 return .send(.alertAction(.dismiss))
             case .createAlertConfirmButtonTapped:
-                let title = state.gameName
+                let configuration = getCreateGameRoomRequestConfiguration(state)
+                state.isLoading = true
+                
                 return .merge([
                     .send(.alertAction(.dismiss)),
-                    .send(.createRoomComplete(title))
+                    .run { send in
+                        await send(createRoom(configuration))
+                    }
                 ])
             case .createRoomComplete:
+                state.isLoading = false
                 return .none
             case .backButtonTapped:
                 return .send(.showAlert(.leave))
@@ -226,6 +252,58 @@ public struct MyGameAddFeature {
         }
         Scope(state: \.alertState, action: \.alertAction) {
             AlertFeature()
+        }
+    }
+}
+
+private extension MyGameAddFeature {
+    func getCreateGameRoomRequestConfiguration(_ state: State) -> MyGameAddConfiguration {
+        let name: String = state.gameName
+        
+        let dayType: [Int] = getDayTypeCode(
+            selectedRepeatDay: state.selectedRepeatDay,
+            directSelectionTypeList: state.directSelectionTypeList,
+            isSelectedDirectSelectionList: state.isSelectedDirectSelectionList
+        )
+        
+        let maxParticipants: Int = state.maxNumOfPeople
+        let categoryCode: String = "1" // TODO: 카테고리 작업 시 수정
+        
+        let isPublic: Bool = !state.isPrivateRoomSelected
+        let password: String? = isPublic ? nil : state.privateRoomPassword
+        
+        return MyGameAddConfiguration(
+            name: name,
+            dayType: dayType,
+            maxParticipants: maxParticipants,
+            categoryCode: categoryCode,
+            password: password,
+            isPublic: isPublic
+        )
+    }
+    
+    func getDayTypeCode(
+        selectedRepeatDay: MyGameAddRepeatDayType,
+        directSelectionTypeList: [MyGameAddDirectSelectionDayType],
+        isSelectedDirectSelectionList: [Bool]
+    ) -> [Int] {
+        switch selectedRepeatDay {
+        case .directSelection:
+            zip(directSelectionTypeList, isSelectedDirectSelectionList)
+                .filter { $0.1 }
+                .map { $0.0.code }
+        default:
+            [selectedRepeatDay.code]
+        }
+    }
+    
+    func createRoom(_ configuration: MyGameAddConfiguration) async -> Action {
+        let response = await gameUseCase.createGame(configuration)
+        switch response {
+        case .success:
+            return .createRoomComplete(configuration.name)
+        case .failure(let error):
+            return .showAlert(.error(error))
         }
     }
 }
