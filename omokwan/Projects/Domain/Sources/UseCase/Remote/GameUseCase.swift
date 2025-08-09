@@ -10,6 +10,7 @@ import Dependencies
 
 public struct GameUseCase {
     public let fetchGameInfosFromDate: (_ dateString: String) async -> Result<[MyGameModel], NetworkError>
+    public let createGame: (_ configuration: MyGameAddConfiguration) async -> Result<Void, NetworkError>
 }
 
 extension GameUseCase: DependencyKey {
@@ -18,6 +19,9 @@ extension GameUseCase: DependencyKey {
         return GameUseCase(
             fetchGameInfosFromDate: { dateString in
                 await repository.getGameInfosFromDate(dateString: dateString)
+            },
+            createGame: { configuration in
+                await repository.postCreateGame(configuration)
             }
         )
     }()
