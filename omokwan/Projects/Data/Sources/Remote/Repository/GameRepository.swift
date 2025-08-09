@@ -44,4 +44,14 @@ public struct GameRepository: GameRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func getGameCategories() async -> Result<[GameCategory], NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<[GameCategoryResponse]>>.getGameCategories()
+            let response = try await apiService.call(endPoint)
+            return .success(try GameMapper.toGameCategory(response.data))
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }

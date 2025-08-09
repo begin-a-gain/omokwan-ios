@@ -62,4 +62,8 @@ extension EndPoint {
     static func postCreateGame(requestBody: CreateGameRequest) -> EndPoint<T> {
         return EndPoint(path: "/matches", method: .POST, requestBody: requestBody)
     }
+    
+    static func getGameCategories() -> EndPoint<T> {
+        return EndPoint(path: "/matches/categories", method: .GET)
+    }
 }
