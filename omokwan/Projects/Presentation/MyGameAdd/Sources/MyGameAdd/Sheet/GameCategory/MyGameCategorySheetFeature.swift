@@ -12,11 +12,12 @@ public struct MyGameCategorySheetFeature: Reducer {
     public init() {}
     
     public struct State: Equatable {
-        public init(selectedCategory: GameCategory?) {
+        public init(categories: [GameCategory], selectedCategory: GameCategory?) {
+            self.categories = categories
             self.selectedCategory = selectedCategory
         }
         
-        var categories: [GameCategory] = GameCategory.allCases
+        var categories: [GameCategory]
         var selectedCategory: GameCategory?
     }
     
@@ -33,10 +34,10 @@ public struct MyGameCategorySheetFeature: Reducer {
             case .binding:
                 return .none
             case .categoryTapped(let category):
-                if let selectedCategory = state.selectedCategory, selectedCategory.rawValue == category {
+                if let selectedCategory = state.selectedCategory, selectedCategory.category == category {
                     state.selectedCategory = nil
                 } else {
-                    state.selectedCategory = state.categories.first { $0.rawValue == category }
+                    state.selectedCategory = state.categories.first { $0.category == category }
                 }
                 
                 return .none

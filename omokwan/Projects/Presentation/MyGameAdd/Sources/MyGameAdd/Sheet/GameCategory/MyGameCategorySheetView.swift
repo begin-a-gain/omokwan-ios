@@ -34,7 +34,7 @@ struct MyGameCategorySheetView: View {
     private var sheetContent: some View {
         DynamicWidthChipsGridView(
             categories: viewStore.categories.map {
-                ChipsGridModel(title: $0.rawValue, emoji: $0.emoji)
+                ChipsGridModel(title: $0.category, emoji: "-") // TODO: 서버에서 내려주는 값으로 교체 예정
             },
             selectedTitle: selectedCategory,
             tapAction: { categoryTitle in
@@ -46,7 +46,7 @@ struct MyGameCategorySheetView: View {
     }
     
     private var selectedCategory: [String]? {
-        let nullStringValue = viewStore.selectedCategory?.rawValue
+        let nullStringValue = viewStore.selectedCategory?.category
         return nullStringValue.map{ [$0] }
     }
 }

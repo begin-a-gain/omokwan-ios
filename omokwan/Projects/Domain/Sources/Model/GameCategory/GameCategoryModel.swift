@@ -5,7 +5,7 @@
 //  Created by 김동준 on 11/30/24
 //
 
-public struct GameCategory {
+public struct GameCategory: Hashable {
     public let code: String
     public let category: String
 
