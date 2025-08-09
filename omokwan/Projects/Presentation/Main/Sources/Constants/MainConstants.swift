@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct MainConstants {
+public struct MainConstants {
     static let bottomTabBarHeightWithSafeArea: Double = 100
     static let bottomTabBarHeightWithoutSafeArea: Double = 88
     static let circleButtonSize: CGFloat = 64

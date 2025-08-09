@@ -25,4 +25,33 @@ public struct GameRepository: GameRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func postCreateGame(_ configuration: MyGameAddConfiguration) async -> Result<Void, NetworkError> {
+        do {
+            let requestBody = CreateGameRequest(
+                name: configuration.name,
+                dayType: configuration.dayType,
+                maxParticipants: configuration.maxParticipants,
+                categoryCode: configuration.categoryCode,
+                password: configuration.password,
+                isPublic: configuration.isPublic
+            )
+            
+            let endPoint = EndPoint<RemoteResponseModel<CreateGameResponse>>.postCreateGame(requestBody: requestBody)
+            let _ = try await apiService.call(endPoint)
+            return .success(())
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
+    
+    public func getGameCategories() async -> Result<[GameCategory], NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<[GameCategoryResponse]>>.getGameCategories()
+            let response = try await apiService.call(endPoint)
+            return .success(try GameMapper.toGameCategory(response.data))
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }

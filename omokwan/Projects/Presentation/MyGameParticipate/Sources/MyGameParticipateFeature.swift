@@ -79,7 +79,7 @@ public struct MyGameParticipateFeature {
                         isPrivateRoom: true,
                         currentNumOfPeople: 3,
                         maxNumOfPeople: 5,
-                        category: GameCategory.diet,
+                        category: .init(code: "1", category: "다이어트"),
                         createRoomDate: .now,
                         hostName: "빡빡이",
                         roomStatus: .available
@@ -89,7 +89,7 @@ public struct MyGameParticipateFeature {
                         isPrivateRoom: false,
                         currentNumOfPeople: 3,
                         maxNumOfPeople: 5,
-                        category: GameCategory.diet,
+                        category: .init(code: "1", category: "다이어트"),
                         createRoomDate: .now,
                         hostName: "오목왕빡빡이",
                         roomStatus: .available
@@ -99,7 +99,7 @@ public struct MyGameParticipateFeature {
                         isPrivateRoom: true,
                         currentNumOfPeople: 3,
                         maxNumOfPeople: 2,
-                        category: GameCategory.diet,
+                        category: .init(code: "1", category: "다이어트"),
                         createRoomDate: .now,
                         hostName: "ㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇ",
                         roomStatus: .participating
@@ -109,7 +109,7 @@ public struct MyGameParticipateFeature {
                         isPrivateRoom: true,
                         currentNumOfPeople: 3,
                         maxNumOfPeople: 5,
-                        category: GameCategory.diet,
+                        category: .init(code: "1", category: "다이어트"),
                         createRoomDate: .now,
                         hostName: "dddddddddddd",
                         roomStatus: .unavailable

@@ -90,7 +90,7 @@ private extension GameRoomCardView {
     
     func categoryView(_ category: GameCategory) -> some View {
         OText(
-            "#\(category.rawValue)",
+            "#\(category.category)",
             token: .caption,
             color: OColors.text01.swiftUIColor
         )

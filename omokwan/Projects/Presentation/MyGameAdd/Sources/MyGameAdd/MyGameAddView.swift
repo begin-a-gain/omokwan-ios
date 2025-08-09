@@ -9,13 +9,14 @@ import ComposableArchitecture
 import SwiftUI
 import DesignSystem
 import Base
+import Domain
 
 public struct MyGameAddView: View {
-    let store: StoreOf<MyGameAddFeature>
-    @ObservedObject var viewStore: ViewStoreOf<MyGameAddFeature>
+    private let store: StoreOf<MyGameAddFeature>
+    @ObservedObject private var viewStore: ViewStoreOf<MyGameAddFeature>
     @FocusState private var focusedField: MyGameAddTextFieldType?
     @FocusState private var passwordFocusedField: PasswordFocusField?
-    typealias PasswordFocusField = MyGameAddFeature.State.PasswordFocusField
+    private typealias PasswordFocusField = MyGameAddFeature.State.PasswordFocusField
     
     private enum MyGameAddTextFieldType {
         case gameName
@@ -28,6 +29,9 @@ public struct MyGameAddView: View {
     
     public var body: some View {
         myGameAddBodyView
+        .onAppear {
+            viewStore.send(.onAppear)
+        }
         .sheet(store: store.scope(state: \.$repeatDaySheet, action: \.repeatDaySheet)) { store in
             MyGameRepeatDaySheetView(store: store)
                 .modifier(CommonSheetModifier(detent: [.medium]))
@@ -40,20 +44,10 @@ public struct MyGameAddView: View {
             MyGameCategorySheetView(store: store)
                 .modifier(CommonSheetModifier(detent: [.medium]))
         }
-        .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {
-            Group {
-                if let alertCase = viewStore.alertCase {
-                    switch alertCase {
-                    case .password:
-                        passwordAlertView
-                    case .create:
-                        createAlertView
-                    case .leave:
-                        leaveAlertView
-                    }
-                }
-            }
+        .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
+            alertView
         }
+        .oLoading(isPresent: viewStore.isLoading)
     }
     
     private var myGameAddBodyView: some View {
@@ -248,7 +242,7 @@ private extension MyGameAddView {
     
     private var selectedCategoryString: String {
         if let category = viewStore.selectedCategory {
-            return category.rawValue
+            return category.category
         } else {
             return "선택"
         }
@@ -277,6 +271,23 @@ private struct DirectSelectionCircleCircleStrokeModifier: ViewModifier {
 
 // MARK: About Alert
 private extension MyGameAddView {
+    var alertView: some View {
+        Group {
+            if let alertCase = viewStore.alertCase {
+                switch alertCase {
+                case .password:
+                    passwordAlertView
+                case .create:
+                    createAlertView
+                case .leave:
+                    leaveAlertView
+                case .error(let error):
+                    errorAlertView(error)
+                }
+            }
+        }
+    }
+    
     var passwordAlertView: some View {
         OAlertContentView(
             type: .default,
@@ -356,5 +367,11 @@ private extension MyGameAddView {
                 viewStore.send(.leaveAlertLeaveButtonTapped)
             }
         )
+    }
+    
+    func errorAlertView(_ networkError: NetworkError) -> some View {
+        CommonErrorAlertView(networkError) {
+            viewStore.send(.alertAction(.dismiss))
+        }
     }
 }

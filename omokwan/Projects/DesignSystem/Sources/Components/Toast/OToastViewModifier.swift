@@ -35,22 +35,23 @@ struct OToastViewModifier: ViewModifier {
         ZStack {
             content
 
-            if isPresented {
-                VStack {
-                    Spacer()
+            VStack {
+                Spacer()
+                Button {
+                    isPresented = false
+                } label: {
                     OToast(
                         message: message,
                         bottomPadding: bottomPadding,
                         backgroundColor: backgroundColor,
                         textColor: textColor
                     )
-                    .transition(
-                        .move(edge: .bottom)
-                        .combined(with: .opacity)
-                    )
-                    .animation(.easeInOut, value: isPresented)
                 }
-                .onAppear {
+            }
+            .opacity(isPresented ? 1 : 0)
+            .animation(.easeInOut, value: isPresented)
+            .onChange(of: isPresented) { newValue in
+                if newValue {
                     DispatchQueue.main.asyncAfter(deadline: .now() + dismissDuration) {
                         withAnimation {
                             isPresented = false

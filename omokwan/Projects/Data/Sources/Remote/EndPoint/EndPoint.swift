@@ -58,4 +58,12 @@ extension EndPoint {
     static func getGameInfoFromDate(queryParameters: GameInfoRequest) -> EndPoint<T> {
         return EndPoint(path: "/matches", method: .GET, queryParameters: queryParameters)
     }
+    
+    static func postCreateGame(requestBody: CreateGameRequest) -> EndPoint<T> {
+        return EndPoint(path: "/matches", method: .POST, requestBody: requestBody)
+    }
+    
+    static func getGameCategories() -> EndPoint<T> {
+        return EndPoint(path: "/matches/categories", method: .GET)
+    }
 }
