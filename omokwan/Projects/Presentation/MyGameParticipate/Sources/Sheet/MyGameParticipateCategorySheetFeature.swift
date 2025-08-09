@@ -16,7 +16,7 @@ public struct MyGameParticipateCategorySheetFeature: Reducer {
             self.selectedCategoryTitles = Set(selectedCategoryTitles)
         }
         
-        var categories: [GameCategory] = GameCategory.allCases
+        var categories: [GameCategory] = []
         var selectedCategoryTitles: Set<String>
     }
     

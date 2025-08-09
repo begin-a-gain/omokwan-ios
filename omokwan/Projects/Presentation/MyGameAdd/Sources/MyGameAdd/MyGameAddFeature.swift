@@ -16,7 +16,8 @@ public struct MyGameAddFeature {
     public init() {}
     
     public struct State: Equatable {
-        public init(selectedCategory: GameCategory?) {
+        public init(categories: [GameCategory], selectedCategory: GameCategory?) {
+            self.cateogryList = categories
             self.selectedCategory = selectedCategory
         }
         
@@ -45,6 +46,7 @@ public struct MyGameAddFeature {
         var directSelectionTypeList: [MyGameAddDirectSelectionDayType] = MyGameAddDirectSelectionDayType.allCases
         var isSelectedDirectSelectionList: [Bool] = Array(repeating: false, count: MyGameAddDirectSelectionDayType.allCases.count)
         var maxNumOfPeople: Int = 5
+        var cateogryList: [GameCategory] = []
         var selectedCategory: GameCategory?
         @BindingState var isRemindAlarmSelected: Bool = false
         
@@ -152,7 +154,10 @@ public struct MyGameAddFeature {
                     return .none
                 }
             case .gameCategorySettingButtonTapped:
-                state.gameCategorySheet = .init(selectedCategory: state.selectedCategory)
+                state.gameCategorySheet = .init(
+                    categories: state.cateogryList,
+                    selectedCategory: state.selectedCategory
+                )
                 return .none
             case .gameCategorySheet(let action):
                 switch action {
@@ -267,7 +272,7 @@ private extension MyGameAddFeature {
         )
         
         let maxParticipants: Int = state.maxNumOfPeople
-        let categoryCode: String = "1" // TODO: 카테고리 작업 시 수정
+        let categoryCode: String = state.selectedCategory?.code ?? "-1"
         
         let isPublic: Bool = !state.isPrivateRoomSelected
         let password: String? = isPublic ? nil : state.privateRoomPassword

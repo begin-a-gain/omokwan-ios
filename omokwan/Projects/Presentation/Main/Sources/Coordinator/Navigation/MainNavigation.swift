@@ -33,11 +33,25 @@ extension MainCoordinatorFeature {
         case .navigateToBack:
             _ = state.path.popLast()
             return .none
-        case .skipButtonTapped:
-            state.path.append(.myGameAdd(MyGameAddFeature.State(selectedCategory: nil)))
+        case .skipButtonTapped(let categories):
+            state.path.append(
+                .myGameAdd(
+                    MyGameAddFeature.State(
+                        categories: categories,
+                        selectedCategory: nil
+                    )
+                )
+            )
             return .none
-        case .nextButtonTapped(let category):
-            state.path.append(.myGameAdd(MyGameAddFeature.State(selectedCategory: category)))
+        case let .nextButtonTapped(categories, selectedCategory):
+            state.path.append(
+                .myGameAdd(
+                    MyGameAddFeature.State(
+                        categories: categories,
+                        selectedCategory: selectedCategory
+                    )
+                )
+            )
             return .none
         default:
             return .none
@@ -50,7 +64,7 @@ extension MainCoordinatorFeature {
     func myGameAddNavigation(_ state: inout State, _ action: MyGameAddFeature.Action) -> Effect<Action> {
         switch action {
         case .navigateToBack:
-            _ = state.path.popLast()
+            state.path.removeAll()
             return .none
         case .createRoomComplete(let title):
             state.path.removeAll()

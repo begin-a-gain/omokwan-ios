@@ -33,4 +33,17 @@ struct GameMapper {
             )
         }
     }
+    
+    static func toGameCategory(_ gameCategoryResponse: [GameCategoryResponse]?) throws -> [GameCategory] {
+        guard let gameCategoryResponse = gameCategoryResponse else {
+            throw RemoteNetworkError.responseDataNilError
+        }
+        
+        return gameCategoryResponse.map { gameCategory in
+            GameCategory(
+                code: gameCategory.code ?? "-1",
+                category: gameCategory.category ?? "-"
+            )
+        }
+    }
 }
