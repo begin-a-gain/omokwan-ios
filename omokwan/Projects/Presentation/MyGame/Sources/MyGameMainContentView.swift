@@ -65,7 +65,7 @@ struct MyGameMainContentView: View {
             MyGameStone(
                 fullRectSize: geometry.size.width/2,
                 stoneSize: geometry.size.width/2 - (MyGameConstants.stonePadding * 2),
-                myGameCompleteStatus: item.myGameCompleteStatus
+                item: item
             )
         }
     }

@@ -9,7 +9,7 @@ import DI
 import Dependencies
 
 public struct GameUseCase {
-    public let fetchGameInfosFromDate: (_ dateString: String) async -> Result<[MyGameModel], NetworkError>
+    public let fetchGameInfosFromDate: (_ dateString: String, _ isToday: Bool) async -> Result<[MyGameModel], NetworkError>
     public let createGame: (_ configuration: MyGameAddConfiguration) async -> Result<Void, NetworkError>
     public let fetchGameCategories: () async -> Result<[GameCategory], NetworkError>
 }
@@ -18,8 +18,8 @@ extension GameUseCase: DependencyKey {
     public static var liveValue: GameUseCase = {
         let repository: GameRepositoryProtocol = DIContainer.shared.resolve()
         return GameUseCase(
-            fetchGameInfosFromDate: { dateString in
-                await repository.getGameInfosFromDate(dateString: dateString)
+            fetchGameInfosFromDate: { dateString, isToday in
+                await repository.getGameInfosFromDate(dateString: dateString, isToday: isToday)
             },
             createGame: { configuration in
                 await repository.postCreateGame(configuration)

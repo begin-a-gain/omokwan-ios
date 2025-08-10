@@ -11,8 +11,8 @@ import DesignSystem
 import Util
 
 public struct MyGameView: View {
-    let store: StoreOf<MyGameFeature>
-    @ObservedObject var viewStore: ViewStoreOf<MyGameFeature>
+    private let store: StoreOf<MyGameFeature>
+    @ObservedObject private var viewStore: ViewStoreOf<MyGameFeature>
 
     public init(store: StoreOf<MyGameFeature>) {
         self.store = store
