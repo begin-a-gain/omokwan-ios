@@ -8,16 +8,20 @@
 import Domain
 
 struct GameMapper {
-    static func toMyGameModels(_ gameInfoResponseList: [GameInfoResponse]?) throws -> [MyGameModel] {
+    static func toMyGameModels(_ gameInfoResponseList: [GameInfoResponse]?, _ isToday: Bool) throws -> [MyGameModel] {
         guard let gameInfoResponseList = gameInfoResponseList else {
             throw RemoteNetworkError.responseDataNilError
         }
         
         return gameInfoResponseList.map { gameInfo in
-            // TODO: 논의 후 이 부분 수정 필요
             let completeStatus: MyGameCompleteStatus
             if let isCompleted = gameInfo.completed {
-                completeStatus = isCompleted ? .complete : .inComplete
+                switch isCompleted {
+                case true:
+                    completeStatus = .complete
+                case false:
+                    completeStatus = isToday ? .inComplete : .inCompleteWithSkip
+                }
             } else {
                 completeStatus = .inComplete
             }
@@ -29,7 +33,7 @@ struct GameMapper {
                 participants: gameInfo.participants ?? 0,
                 maxParticipants: gameInfo.maxParticipants ?? 0,
                 myGameCompleteStatus: completeStatus,
-                isPrivateRoom: gameInfo.public ?? false
+                isPrivateRoom: gameInfo.public == false
             )
         }
     }

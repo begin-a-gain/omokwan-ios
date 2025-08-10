@@ -12,16 +12,16 @@ import Domain
 struct MyGameStone: View {
     let fullRectSize: CGFloat
     let stoneSize: CGFloat
-    let myGameCompleteStatus: MyGameCompleteStatus
+    let item: MyGameModel
     
     init(
         fullRectSize: CGFloat,
         stoneSize: CGFloat,
-        myGameCompleteStatus: MyGameCompleteStatus
+        item: MyGameModel
     ) {
         self.fullRectSize = fullRectSize
         self.stoneSize = stoneSize
-        self.myGameCompleteStatus = myGameCompleteStatus
+        self.item = item
     }
     
     var body: some View {
@@ -34,27 +34,34 @@ struct MyGameStone: View {
 
 // MARK: 오목돌에 관한 View
 private extension MyGameStone {
-    private var stone: some View  {
-        Circle()
-            .fill(
-                LinearGradient(
-                    stops: gradientColors,
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+    var stone: some View  {
+        Button {
+            
+        } label: {
+            Circle()
+                .fill(
+                    LinearGradient(
+                        stops: gradientColors,
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
                 )
-            )
-            .opacity(stoneOpacity)
-            .frame(width: stoneSize, height: stoneSize)
-            .shadow(
-                color: stoneShadowColor,
-                radius: 10,
-                x: 0, y: 0
-            )
-            .modifier(MyGameStoneModifier(myGameCompleteStatus: myGameCompleteStatus))
+                .opacity(stoneOpacity)
+                .frame(width: stoneSize, height: stoneSize)
+                .shadow(
+                    color: stoneShadowColor,
+                    radius: 10,
+                    x: 0, y: 0
+                )
+                .modifier(MyGameStoneModifier(myGameCompleteStatus: item.myGameCompleteStatus))
+                .overlay(alignment: .top) {
+                    stoneContents
+                }
+        }
     }
     
-    private var gradientColors: [Gradient.Stop] {
-        switch myGameCompleteStatus {
+    var gradientColors: [Gradient.Stop] {
+        switch item.myGameCompleteStatus {
         case .complete:
             return [
                 Gradient.Stop(color: OColors.oWhite.swiftUIColor, location: MyGameConstants.linearGradientStartPoint),
@@ -70,15 +77,15 @@ private extension MyGameStone {
         }
     }
     
-    private var stoneOpacity: CGFloat {
-        switch myGameCompleteStatus {
+    var stoneOpacity: CGFloat {
+        switch item.myGameCompleteStatus {
         case .complete: 0.5
         case .inComplete, .inCompleteWithSkip: 0.2
         }
     }
     
-    private var stoneShadowColor: Color {
-        switch myGameCompleteStatus {
+    var stoneShadowColor: Color {
+        switch item.myGameCompleteStatus {
         case .complete:
             OColors.uiPrimary.swiftUIColor// .opacity(0.7)
         case .inComplete, .inCompleteWithSkip:
@@ -88,38 +95,75 @@ private extension MyGameStone {
     }
 }
 
+// MARK: 오목돌의 내용
+private extension MyGameStone {
+    var stoneContents: some View {
+        VStack(spacing: 0) {
+            lockImage
+                .resizedToFit(16, 16)
+                .padding(.top, 26)
+                .padding(.bottom, 12)
+            
+            OText(
+                item.name,
+                token: .title_02,
+                color: OColors.text01.swiftUIColor,
+                lineLimit: 2
+            )
+            .padding(.bottom, 6)
+            
+            OText(
+                "대국 +\(item.onGoingDays)일 째",
+                token: .caption,
+                color: OColors.text01.swiftUIColor
+            )
+            .padding(.bottom, 2)
+            
+            OText(
+                "\(item.participants)/\(item.maxParticipants) 명",
+                token: .caption,
+                color: OColors.text01.swiftUIColor
+            )
+        }
+        .greedyWidth()
+        .hPadding(12)
+    }
+    
+    var lockImage: Image {
+        item.isPrivateRoom
+        ? OImages.icLockClosed.swiftUIImage
+        : OImages.icLockOpen.swiftUIImage
+    }
+}
+
 // MARK: 오목돌의 status (완료, 미완료와 같은 상태)에 대한 View
 private extension MyGameStone {
-    private var stoneStatusButton: some View {
+    var stoneStatusButton: some View {
         ZStack(alignment: .topTrailing) {
             Color.clear
             
-            Button {
-                
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(stoneStatusButtonBackgroundColor)
-                        .padding(.trailing, 4)
-                        .padding(.top, 4)
-                        .frame(fullRectSize / 3, fullRectSize / 3)
-                        .modifier(
-                            MyGameStoneStatusButtonModifier(
-                                myGameCompleteStatus: myGameCompleteStatus,
-                                size: fullRectSize / 3
-                            )
+            ZStack {
+                Circle()
+                    .fill(stoneStatusButtonBackgroundColor)
+                    .padding(.trailing, 4)
+                    .padding(.top, 4)
+                    .frame(fullRectSize / 3, fullRectSize / 3)
+                    .modifier(
+                        MyGameStoneStatusButtonModifier(
+                            myGameCompleteStatus: item.myGameCompleteStatus,
+                            size: fullRectSize / 3
                         )
-                    stoneStatusButtonContent
-                        .padding(.trailing, 4)
-                        .padding(.top, 4)
-                }
+                    )
+                stoneStatusButtonContent
+                    .padding(.trailing, 4)
+                    .padding(.top, 4)
             }
         }.frame(fullRectSize, fullRectSize)
     }
     
     @ViewBuilder
-    private var stoneStatusButtonContent: some View {
-        switch myGameCompleteStatus {
+    var stoneStatusButtonContent: some View {
+        switch item.myGameCompleteStatus {
         case .complete:
             OImages.icCheck.swiftUIImage
                 .renderingMode(.template)
@@ -139,8 +183,8 @@ private extension MyGameStone {
         }
     }
     
-    private var stoneStatusButtonBackgroundColor: Color {
-        switch myGameCompleteStatus {
+    var stoneStatusButtonBackgroundColor: Color {
+        switch item.myGameCompleteStatus {
         case .complete:
             OColors.uiPrimary.swiftUIColor
         case .inComplete:
