@@ -46,7 +46,8 @@ struct GameMapper {
         return gameCategoryResponse.map { gameCategory in
             GameCategory(
                 code: gameCategory.code ?? "-1",
-                category: gameCategory.category ?? "-"
+                category: gameCategory.category ?? "-",
+                emoji: gameCategory.emoji?.unicodeEmoji ?? "-"
             )
         }
     }

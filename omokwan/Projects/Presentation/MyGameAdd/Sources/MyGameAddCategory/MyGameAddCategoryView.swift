@@ -65,7 +65,7 @@ public struct MyGameAddCategoryView: View {
     private var categoriesChipsView: some View {
         DynamicWidthChipsGridView(
             categories: viewStore.categories.map {
-                ChipsGridModel(title: $0.category, emoji: "-") // 서버에서 응답값 emoji 내려줄 예정
+                ChipsGridModel(title: $0.category, emoji: $0.emoji)
             },
             selectedTitle: selectedCategory,
             tapAction: { categoryTitle in
