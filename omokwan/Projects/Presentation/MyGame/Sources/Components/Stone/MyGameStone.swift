@@ -54,7 +54,7 @@ private extension MyGameStone {
                     x: 0, y: 0
                 )
                 .modifier(MyGameStoneModifier(myGameCompleteStatus: item.myGameCompleteStatus))
-                .overlay(alignment: .top) {
+                .overlay {
                     stoneContents
                 }
         }
@@ -101,7 +101,6 @@ private extension MyGameStone {
         VStack(spacing: 0) {
             lockImage
                 .resizedToFit(16, 16)
-                .padding(.top, 26)
                 .padding(.bottom, 12)
             
             OText(
