@@ -13,6 +13,7 @@ struct MyGameStone: View {
     let fullRectSize: CGFloat
     let stoneSize: CGFloat
     let item: MyGameModel
+    let omokStoneType: OmokStoneType
     
     init(
         fullRectSize: CGFloat,
@@ -22,80 +23,27 @@ struct MyGameStone: View {
         self.fullRectSize = fullRectSize
         self.stoneSize = stoneSize
         self.item = item
+        
+        self.omokStoneType = switch item.myGameCompleteStatus {
+        case .complete: .primary
+        case .inComplete, .inCompleteWithSkip: .white
+        }
     }
     
     var body: some View {
         ZStack {
-            stone
-            stoneStatusButton
-        }
-    }
-}
-
-// MARK: 오목돌에 관한 View
-private extension MyGameStone {
-    var stone: some View  {
-        Button {
+            OmokStone(
+                stoneSize: stoneSize,
+                stoneType: omokStoneType
+            ).overlay {
+                stoneContents
+            }
             
-        } label: {
-            Circle()
-                .fill(
-                    LinearGradient(
-                        stops: gradientColors,
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .opacity(stoneOpacity)
-                .frame(width: stoneSize, height: stoneSize)
-                .shadow(
-                    color: stoneShadowColor,
-                    radius: 10,
-                    x: 0, y: 0
-                )
-                .modifier(MyGameStoneModifier(myGameCompleteStatus: item.myGameCompleteStatus))
-                .overlay {
-                    stoneContents
-                }
-        }
-    }
-    
-    var gradientColors: [Gradient.Stop] {
-        switch item.myGameCompleteStatus {
-        case .complete:
-            return [
-                Gradient.Stop(color: OColors.oWhite.swiftUIColor, location: MyGameConstants.linearGradientStartPoint),
-                Gradient.Stop(color: OColors.uiPrimary.swiftUIColor, location: MyGameConstants.linearGradientMiddlePoint),
-                Gradient.Stop(color: OColors.uiLinearGradientEndPoint.swiftUIColor, location: MyGameConstants.linearGradientEndPoint)
-            ]
-        case .inComplete, .inCompleteWithSkip:
-            return [
-                Gradient.Stop(color: OColors.oWhite.swiftUIColor, location: MyGameConstants.linearGradientStartPoint),
-                Gradient.Stop(color: OColors.gray600.swiftUIColor, location: MyGameConstants.linearGradientMiddlePoint),
-                Gradient.Stop(color: OColors.oWhite.swiftUIColor, location: MyGameConstants.linearGradientEndPoint)
-            ]
-        }
-    }
-    
-    var stoneOpacity: CGFloat {
-        switch item.myGameCompleteStatus {
-        case .complete: 0.5
-        case .inComplete, .inCompleteWithSkip: 0.2
-        }
-    }
-    
-    var stoneShadowColor: Color {
-        switch item.myGameCompleteStatus {
-        case .complete:
-            OColors.uiPrimary.swiftUIColor// .opacity(0.7)
-        case .inComplete, .inCompleteWithSkip:
-            OColors.oBlack.swiftUIColor
-//            OColors.uiInCompletedStoneShadow.swiftUIColor
+            stoneStatusView
         }
     }
 }
 
-// MARK: 오목돌의 내용
 private extension MyGameStone {
     var stoneContents: some View {
         VStack(spacing: 0) {
@@ -135,9 +83,8 @@ private extension MyGameStone {
     }
 }
 
-// MARK: 오목돌의 status (완료, 미완료와 같은 상태)에 대한 View
 private extension MyGameStone {
-    var stoneStatusButton: some View {
+    var stoneStatusView: some View {
         ZStack(alignment: .topTrailing) {
             Color.clear
             
@@ -148,7 +95,7 @@ private extension MyGameStone {
                     .padding(.top, 4)
                     .frame(fullRectSize / 3, fullRectSize / 3)
                     .modifier(
-                        MyGameStoneStatusButtonModifier(
+                        MyGameStoneStatusViewModifier(
                             myGameCompleteStatus: item.myGameCompleteStatus,
                             size: fullRectSize / 3
                         )

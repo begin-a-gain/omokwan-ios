@@ -6,26 +6,28 @@
 //
 
 import SwiftUI
-import DesignSystem
 
-struct CrossLineView: View {
+public struct CrossLineView: View {
     let crossLineSize: CGFloat
     let circleSize: CGFloat
+    let strokeColor: Color
     let hasData: Bool
     
-    init(
+    public init(
         crossLineSize: CGFloat,
         circleSize: CGFloat,
+        strokeColor: Color,
         hasData: Bool
     ) {
         self.crossLineSize = crossLineSize
         self.circleSize = circleSize
+        self.strokeColor = strokeColor
         self.hasData = hasData
     }
     
-    var body: some View {
+    public var body: some View {
         CrossLinePathView()
-            .stroke(OColors.strokePrimary.swiftUIColor.opacity(0.4), lineWidth: 2)
+            .stroke(strokeColor, lineWidth: 2)
             .frame(width: crossLineSize, height: crossLineSize)
             .modifier(
                 CrossLineModifier(
