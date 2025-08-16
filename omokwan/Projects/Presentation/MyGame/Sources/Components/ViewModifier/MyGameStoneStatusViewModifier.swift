@@ -1,5 +1,5 @@
 //
-//  MyGameStoneStatusButtonModifier.swift
+//  MyGameStoneStatusViewModifier.swift
 //  MyGame
 //
 //  Created by 김동준 on 12/11/24
@@ -9,7 +9,7 @@ import SwiftUI
 import DesignSystem
 import Domain
 
-struct MyGameStoneStatusButtonModifier: ViewModifier {
+struct MyGameStoneStatusViewModifier: ViewModifier {
     let myGameCompleteStatus: MyGameCompleteStatus
     let size: CGFloat
     

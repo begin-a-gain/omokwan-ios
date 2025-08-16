@@ -59,6 +59,7 @@ struct MyGameMainContentView: View {
             CrossLineView(
                 crossLineSize: geometry.size.width/2,
                 circleSize: geometry.size.width/2 - (MyGameConstants.stonePadding * 2),
+                strokeColor: OColors.strokePrimary.swiftUIColor.opacity(0.4),
                 hasData: true
             )
             
@@ -74,6 +75,7 @@ struct MyGameMainContentView: View {
         CrossLineView(
             crossLineSize: geometry.size.width/2,
             circleSize: geometry.size.width/2 - (MyGameConstants.stonePadding * 2),
+            strokeColor: OColors.strokePrimary.swiftUIColor.opacity(0.4),
             hasData: false
         )
     }
