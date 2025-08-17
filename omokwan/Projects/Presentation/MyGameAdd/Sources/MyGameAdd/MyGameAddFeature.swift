@@ -72,7 +72,6 @@ public struct MyGameAddFeature {
         
         var isStartButtonEnable: Bool {
             return isGameNameValidation
-                && isCategoryValidation
                 && isDirectSelectionValidation
         }
         
@@ -82,10 +81,6 @@ public struct MyGameAddFeature {
             }
             
             return gameNameValidStatus == .valid
-        }
-        
-        var isCategoryValidation: Bool {
-            selectedCategory != nil
         }
         
         var isDirectSelectionValidation: Bool {
@@ -302,7 +297,7 @@ private extension MyGameAddFeature {
         )
         
         let maxParticipants: Int = state.maxNumOfPeople
-        let categoryCode: String = state.selectedCategory?.code ?? "-1"
+        let categoryCode: String? = state.selectedCategory?.code
         
         let isPublic: Bool = !state.isPrivateRoomSelected
         let password: String? = isPublic ? nil : state.privateRoomPassword
