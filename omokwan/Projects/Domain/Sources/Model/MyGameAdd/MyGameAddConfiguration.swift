@@ -9,7 +9,7 @@ public struct MyGameAddConfiguration {
     public let name: String
     public let dayType: [Int]
     public let maxParticipants: Int
-    public let categoryCode: String
+    public let categoryCode: String?
     public let password: String?
     public let isPublic: Bool
     
@@ -17,7 +17,7 @@ public struct MyGameAddConfiguration {
         name: String,
         dayType: [Int],
         maxParticipants: Int,
-        categoryCode: String,
+        categoryCode: String?,
         password: String?,
         isPublic: Bool
     ) {

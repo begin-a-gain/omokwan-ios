@@ -11,7 +11,7 @@ struct CreateGameRequest: Encodable {
     let name: String
     let dayType: [Int]
     let maxParticipants: Int
-    let categoryCode: String
+    let categoryCode: String?
     let password: String?
     let isPublic: Bool
 }

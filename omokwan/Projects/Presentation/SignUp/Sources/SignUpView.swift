@@ -76,7 +76,11 @@ public struct SignUpView: View {
                 focusedFieldType: .nickname,
                 placeholder: "ex.오목완",
                 errorMessage: mappingNicknameErrorMessage(viewStore.nicknameValidStatus),
-                textMaxCount: 10
+                textMaxCount: 10,
+                trailingIcon: OImages.icCancel.swiftUIImage,
+                trailingIconButtonAction: {
+                    viewStore.send(.binding(.set(\.$nickname, "")))
+                }
             )
         }
     }

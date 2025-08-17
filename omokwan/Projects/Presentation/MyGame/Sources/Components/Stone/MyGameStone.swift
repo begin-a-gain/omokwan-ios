@@ -35,7 +35,7 @@ struct MyGameStone: View {
             OmokStone(
                 stoneSize: stoneSize,
                 stoneType: omokStoneType
-            ).overlay(alignment: .top) {
+            ).overlay {
                 stoneContents
             }
             
@@ -49,7 +49,6 @@ private extension MyGameStone {
         VStack(spacing: 0) {
             lockImage
                 .resizedToFit(16, 16)
-                .padding(.top, 26)
                 .padding(.bottom, 12)
             
             OText(

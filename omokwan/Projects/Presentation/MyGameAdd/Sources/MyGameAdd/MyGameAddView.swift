@@ -77,7 +77,7 @@ public struct MyGameAddView: View {
 
 // MARK: info view
 private extension MyGameAddView {
-    private var addGameInfoView: some View {
+    var addGameInfoView: some View {
         ScrollView {
             VStack(spacing: 0) {
                 gameNameSection
@@ -89,22 +89,40 @@ private extension MyGameAddView {
             .hPadding(20)
         }
     }
-    
-    private var gameNameSection: some View {
+}
+
+private extension MyGameAddView {
+    var gameNameSection: some View {
         OTextField<MyGameAddTextFieldType>(
             text: viewStore.$gameName,
             focusedField: $focusedField,
             focusedFieldType: .gameName,
             label: "대국 이름",
             isLabel: true,
-            placeholder: "대국 이름을 적어주세요."
+            placeholder: "대국 이름을 적어주세요.",
+            errorMessage: mappingGameNameErrorMessage(viewStore.gameNameValidStatus),
+            trailingIcon: OImages.icCancel.swiftUIImage,
+            trailingIconButtonAction: {
+                viewStore.send(.binding(.set(\.$gameName, "")))
+            }
         )
+    }
+    
+    func mappingGameNameErrorMessage(_ status: MyGameAddFeature.State.GameNameValidStatus?) -> String {
+        guard let status = status else { return "" }
+        
+        switch status {
+        case .empty, .valid:
+            return ""
+        case .inValidFormat:
+            return "1~30글자 사이의 한글 혹은 영문만 입력해주세요."
+        }
     }
 }
 
 // MARK: Default Setting
 private extension MyGameAddView {
-    private var defaultSetting: some View {
+    var defaultSetting: some View {
         VStack(spacing: 6) {
             OText(
                 "기본 설정",
@@ -124,7 +142,7 @@ private extension MyGameAddView {
 
 // MARK: Repeat Day
 private extension MyGameAddView {
-    private var repeatDayView: some View {
+    var repeatDayView: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
                 HStack(spacing: 8) {
@@ -155,7 +173,7 @@ private extension MyGameAddView {
         }
     }
     
-    private var dayCircleButtonView: some View {
+    var dayCircleButtonView: some View {
         HStack(spacing: 0) {
             ForEach(viewStore.directSelectionTypeList.indices, id: \.self) { index in
                 Button {
@@ -182,7 +200,7 @@ private extension MyGameAddView {
         .padding(.bottom, 16)
     }
     
-    private var maxNumOfPeopleView: some View {
+    var maxNumOfPeopleView: some View {
         OInputField(
             title: "최대 인원 수",
             value: "\(viewStore.maxNumOfPeople)",
@@ -195,7 +213,7 @@ private extension MyGameAddView {
 
 // MARK: Additional Setting
 private extension MyGameAddView {
-    private var additionalSetting: some View {
+    var additionalSetting: some View {
         VStack(spacing: 6) {
             OText(
                 "기타 설정",
@@ -230,7 +248,7 @@ private extension MyGameAddView {
         }
     }
     
-    private var gameCategoryView: some View {
+    var gameCategoryView: some View {
         OInputField(
             title: "대국 카테고리",
             value: selectedCategoryString,
@@ -240,7 +258,7 @@ private extension MyGameAddView {
         )
     }
     
-    private var selectedCategoryString: String {
+    var selectedCategoryString: String {
         if let category = viewStore.selectedCategory {
             return category.category
         } else {
