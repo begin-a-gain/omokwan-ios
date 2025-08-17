@@ -7,4 +7,5 @@
 
 public protocol TokenProvider {
     func getAccessToken() -> String
+    func setRefreshToken(_ refreshToken: String)
 }

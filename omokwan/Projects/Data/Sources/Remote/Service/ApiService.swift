@@ -65,6 +65,10 @@ public final class ApiService {
             case 200...299:
                 do {
                     let decodedResponse = try JSONDecoder().decode(T.self, from: data)
+                    checkCookieForRefreshToken(
+                        path: endPoint.path,
+                        response: response
+                    )
                     return decodedResponse
                 } catch let error as DecodingError {
                     throw RemoteNetworkError.decodingError(error)
@@ -153,28 +157,19 @@ private extension ApiService {
     }
 }
 
-// MARK: URLRequest
-//private extension ApiService {
-//    func makeURLRequest(url: URL, endPoint: EndPoint) -> URLRequest {
-//        var urlRequest = URLRequest(url: url)
-//        urlRequest.timeoutInterval = 30
-//        urlRequest.httpMethod = endPoint.method.rawValue
-//        if let headers = endPoint.headers {
-//            headers.forEach { key, value in
-//                urlRequest.setValue(value, forHTTPHeaderField: key)
-//            }
-//        }
-//
-//        return urlRequest
-//    }
-//    
-//    func getHeaders() -> [String: String] {
-//        let accessToken: String = ""
-//        let tokenString: String = accessToken.isEmpty ? "" : "Bearer \(accessToken)"
-//        return  [
-//            "Authorization": tokenString,
-//            "Content-Type": "application/json; charset=utf-8",
-//            "Accept-Charset": "UTF-8"
-//        ]
-//    }
-//}
+private extension ApiService {
+    func checkCookieForRefreshToken(path: String, response: URLResponse) {
+        if path.contains("/auth/login/") {
+            guard let httpResponse = response as? HTTPURLResponse,
+                  let headerFields = httpResponse.allHeaderFields as? [String: String],
+                  let url = httpResponse.url else { return }
+            
+            let cookies = HTTPCookie.cookies(withResponseHeaderFields: headerFields, for: url)
+
+            if let refreshCookie = cookies.first(where: { $0.name == "refresh_token" }) {
+                let refreshToken = refreshCookie.value
+                tokenProvider.setRefreshToken(refreshToken)
+            }
+        }
+    }
+}
