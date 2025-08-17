@@ -12,19 +12,19 @@ import Domain
 struct MyGameStone: View {
     let fullRectSize: CGFloat
     let stoneSize: CGFloat
-    let myGameCompleteStatus: MyGameCompleteStatus
+    let item: MyGameModel
     let omokStoneType: OmokStoneType
     
     init(
         fullRectSize: CGFloat,
         stoneSize: CGFloat,
-        myGameCompleteStatus: MyGameCompleteStatus
+        item: MyGameModel
     ) {
         self.fullRectSize = fullRectSize
         self.stoneSize = stoneSize
-        self.myGameCompleteStatus = myGameCompleteStatus
+        self.item = item
         
-        self.omokStoneType = switch myGameCompleteStatus {
+        self.omokStoneType = switch item.myGameCompleteStatus {
         case .complete: .primary
         case .inComplete, .inCompleteWithSkip: .white
         }
@@ -35,9 +35,51 @@ struct MyGameStone: View {
             OmokStone(
                 stoneSize: stoneSize,
                 stoneType: omokStoneType
-            )
+            ).overlay {
+                stoneContents
+            }
+            
             stoneStatusView
         }
+    }
+}
+
+private extension MyGameStone {
+    var stoneContents: some View {
+        VStack(spacing: 0) {
+            lockImage
+                .resizedToFit(16, 16)
+                .padding(.bottom, 12)
+            
+            OText(
+                item.name,
+                token: .title_02,
+                color: OColors.text01.swiftUIColor,
+                lineLimit: 2
+            )
+            .padding(.bottom, 6)
+            
+            OText(
+                "대국 +\(item.onGoingDays)일 째",
+                token: .caption,
+                color: OColors.text01.swiftUIColor
+            )
+            .padding(.bottom, 2)
+            
+            OText(
+                "\(item.participants)/\(item.maxParticipants) 명",
+                token: .caption,
+                color: OColors.text01.swiftUIColor
+            )
+        }
+        .greedyWidth()
+        .hPadding(12)
+    }
+    
+    var lockImage: Image {
+        item.isPrivateRoom
+        ? OImages.icLockClosed.swiftUIImage
+        : OImages.icLockOpen.swiftUIImage
     }
 }
 
@@ -54,7 +96,7 @@ private extension MyGameStone {
                     .frame(fullRectSize / 3, fullRectSize / 3)
                     .modifier(
                         MyGameStoneStatusViewModifier(
-                            myGameCompleteStatus: myGameCompleteStatus,
+                            myGameCompleteStatus: item.myGameCompleteStatus,
                             size: fullRectSize / 3
                         )
                     )
@@ -67,7 +109,7 @@ private extension MyGameStone {
     
     @ViewBuilder
     var stoneStatusButtonContent: some View {
-        switch myGameCompleteStatus {
+        switch item.myGameCompleteStatus {
         case .complete:
             OImages.icCheck.swiftUIImage
                 .renderingMode(.template)
@@ -88,7 +130,7 @@ private extension MyGameStone {
     }
     
     var stoneStatusButtonBackgroundColor: Color {
-        switch myGameCompleteStatus {
+        switch item.myGameCompleteStatus {
         case .complete:
             OColors.uiPrimary.swiftUIColor
         case .inComplete:

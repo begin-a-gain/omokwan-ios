@@ -8,6 +8,8 @@
 import ComposableArchitecture
 import MyGame
 import MyGameAdd
+import Base
+import Domain
 
 @Reducer
 public struct MainFeature {
@@ -15,6 +17,12 @@ public struct MainFeature {
     
     public struct State: Equatable {
         public init() {}
+        
+        public enum AlertCase: Equatable {
+            case error(NetworkError)
+        }
+        var alertCase: AlertCase?
+        var alertState: AlertFeature.State = .init()
 
         var isMainLoading = false
         @BindingState var selectedTab: MainBottomTabItem = .myGame
@@ -32,6 +40,8 @@ public struct MainFeature {
         case navigateToMyGameAddCategory
         case navigateToMyGameParticipate
         case myGameAction(MyGameFeature.Action)
+        case alertAction(AlertFeature.Action)
+        case showAlert(State.AlertCase)
     }
     
     public var body: some ReducerOf<Self> {
@@ -82,9 +92,17 @@ public struct MainFeature {
                 case .setLoading(let value):
                     state.isMainLoading = value
                     return .none
+                case .passError(let networkError):
+                    return .send(.showAlert(.error(networkError)))
                 default:
                     return .none
                 }
+            case .alertAction:
+                return .none
+            case .showAlert(let alertCase):
+                state.isMainLoading = false
+                state.alertCase = alertCase
+                return .send(.alertAction(.present))
             }
         }
         .ifLet(\.$mainSheet, action: \.mainSheet) {
@@ -93,6 +111,9 @@ public struct MainFeature {
         
         Scope(state: \.myGameState, action: \.myGameAction) {
             MyGameFeature()
+        }
+        Scope(state: \.alertState, action: \.alertAction) {
+            AlertFeature()
         }
     }
 }

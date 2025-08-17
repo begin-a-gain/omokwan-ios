@@ -14,13 +14,13 @@ public struct GameRepository: GameRepositoryProtocol {
         self.apiService = apiService
     }
     
-    public func getGameInfosFromDate(dateString: String) async -> Result<[MyGameModel], NetworkError> {
+    public func getGameInfosFromDate(dateString: String, isToday: Bool) async -> Result<[MyGameModel], NetworkError> {
         do {
             let endPoint = EndPoint<RemoteResponseModel<[GameInfoResponse]>>.getGameInfoFromDate(
                 queryParameters: GameInfoRequest(date: dateString)
             )
             let response = try await apiService.call(endPoint)
-            return .success(try GameMapper.toMyGameModels(response.data))
+            return .success(try GameMapper.toMyGameModels(response.data, isToday))
         } catch {
             return .failure(ErrorMapper.toNetworkError(error))
         }

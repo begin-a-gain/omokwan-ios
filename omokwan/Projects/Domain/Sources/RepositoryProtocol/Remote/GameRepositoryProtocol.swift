@@ -6,7 +6,7 @@
 //
 
 public protocol GameRepositoryProtocol {
-    func getGameInfosFromDate(dateString: String) async -> Result<[MyGameModel], NetworkError>
+    func getGameInfosFromDate(dateString: String, isToday: Bool) async -> Result<[MyGameModel], NetworkError>
     func postCreateGame(_ configuration: MyGameAddConfiguration) async -> Result<Void, NetworkError>
     func getGameCategories() async -> Result<[GameCategory], NetworkError>
 }

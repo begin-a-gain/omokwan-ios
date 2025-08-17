@@ -8,4 +8,5 @@
 struct GameCategoryResponse: Decodable {
     let code: String?
     let category: String?
+    let emoji: String?
 }

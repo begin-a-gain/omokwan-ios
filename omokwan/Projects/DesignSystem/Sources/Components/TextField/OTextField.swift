@@ -81,7 +81,7 @@ public struct OTextField<FocusedFieldType: Hashable>: View {
                 } else {
                     normalTextFieldView
                 }
-                if let trailingIcon = trailingIcon {
+                if let trailingIcon = trailingIcon, !text.isEmpty {
                     trailingIconView(image: trailingIcon)
                 }
             }

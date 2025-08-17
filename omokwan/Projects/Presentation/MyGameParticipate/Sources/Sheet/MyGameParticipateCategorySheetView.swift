@@ -32,7 +32,7 @@ struct MyGameParticipateCategorySheetView: View {
     private var sheetContent: some View {
         DynamicWidthChipsGridView(
             categories: viewStore.categories.map {
-                ChipsGridModel(title: $0.category, emoji: "-") // TODO: 서버에서 내려주는 값으로 교체 예정
+                ChipsGridModel(title: $0.category, emoji: $0.emoji)
             },
             selectedTitle: Array(viewStore.selectedCategoryTitles),
             tapAction: { categoryTitle in

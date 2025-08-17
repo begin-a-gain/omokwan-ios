@@ -102,4 +102,12 @@ public extension Date {
         
         return result
     }
+    
+    func addDay(_ value: Int) -> Date? {
+        return Calendar.current.date(
+            byAdding: .day,
+            value: value,
+            to: self
+        )
+    }
 }

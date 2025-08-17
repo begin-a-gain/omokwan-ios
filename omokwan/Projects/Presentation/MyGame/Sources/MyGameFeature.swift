@@ -42,6 +42,8 @@ public struct MyGameFeature {
         case gameInfoFetched([MyGameModel])
         case noAction
         case setLoading(Bool)
+        case fetchGameInfo
+        case passError(NetworkError)
     }
     
     public var body: some ReducerOf<Self> {
@@ -49,19 +51,32 @@ public struct MyGameFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                return .send(.fetchGameInfo)
+            case .fetchGameInfo:
                 let dateString = state.selectedDate.formattedString(format: DateFormatConstants.calendarGameRequestFormat)
+                let isToday = Date.now.formattedString(format: DateFormatConstants.calendarGameRequestFormat) == dateString
                 return .merge([
                     .send(.setLoading(true)),
                     .run { send in
-                        await send(fetchMyGameInfo(dateString))
+                        await send(fetchMyGameInfo(dateString, isToday))
                     }
                 ])
             case .binding:
                 return .none
             case .dateArrowLeftButtonTapped:
-                return .none
+                guard let date = state.selectedDate.addDay(-1) else {
+                    return .none
+                }
+                
+                state.selectedDate = date
+                return .send(.fetchGameInfo)
             case .dateArrowRightButtonTapped:
-                return .none
+                guard let date = state.selectedDate.addDay(1) else {
+                    return .none
+                }
+                
+                state.selectedDate = date
+                return .send(.fetchGameInfo)
             case .datePickerButtonTapped:
                 state.myGameSheet = .init(selectedDate: state.selectedDate)
                 return .none
@@ -74,7 +89,7 @@ public struct MyGameFeature {
                     case .dismissSheetWithData(let date):
                         state.myGameSheet = nil
                         state.selectedDate = date
-                        return .none
+                        return .send(.fetchGameInfo)
                     default:
                         return .none
                     }
@@ -112,11 +127,15 @@ public struct MyGameFeature {
                 print("DONGJUN -> \(title) 생성 완료")
                 return .none
             case .gameInfoFetched(let myGameModels):
-                state.myGameList = myGameModels
+                state.myGameList = []
+                addListValueToMyGameList(myGameModels, state: &state)
+                checkAndAppendNilIfNeeded(state: &state)
                 return .send(.setLoading(false))
             case .noAction:
                 return .send(.setLoading(false))
             case .setLoading:
+                return .none
+            case .passError:
                 return .none
             }
         }
@@ -142,22 +161,26 @@ private extension MyGameFeature {
     }
     
     func checkAndAppendNilIfNeeded(state: inout State) {
-        if (state.myGameList.count % 2 == 1) && (state.myGameList.count > 6) {
+        let minimumRequiredCount = 6
+        if state.myGameList.count <= minimumRequiredCount {
+            let neededCount = minimumRequiredCount - state.myGameList.count
+            state.myGameList.append(contentsOf: Array(repeating: nil, count: neededCount))
+        }
+        
+        if (state.myGameList.count > minimumRequiredCount) && (state.myGameList.count % 2 == 1) {
             state.myGameList.append(nil)
         }
     }
 }
 
 private extension MyGameFeature {
-    func fetchMyGameInfo(_ dateString: String) async -> Action {
-        let response = await gameUseCase.fetchGameInfosFromDate(dateString)
+    func fetchMyGameInfo(_ dateString: String, _ isToday: Bool) async -> Action {
+        let response = await gameUseCase.fetchGameInfosFromDate(dateString, isToday)
         switch response {
         case .success(let myGameModels):
-            
             return .gameInfoFetched(myGameModels)
         case .failure(let error):
-            // TODO: 에러 정해지면 작업
-            return .noAction
+            return .passError(error)
         }
     }
 }
