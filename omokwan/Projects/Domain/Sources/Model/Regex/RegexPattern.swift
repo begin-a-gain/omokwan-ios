@@ -14,7 +14,7 @@ public enum RegexPattern {
         case .nickname:
             return #"^[가-힣a-zA-Z0-9]{2,10}$"#
         case .gameName:
-            return #"^[가-힣a-zA-Z0-9]{1,30}$"#
+            return #"^(?=.{1,30}$)[가-힣a-zA-Z0-9\s]+$"#
         }
     }
 }
