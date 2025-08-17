@@ -8,6 +8,7 @@
 import ComposableArchitecture
 import Domain
 import Base
+import Util
 
 @Reducer
 public struct MyGameAddFeature {
@@ -37,11 +38,18 @@ public struct MyGameAddFeature {
             case onesPlace
         }
         
+        enum GameNameValidStatus {
+            case empty
+            case valid
+            case inValidFormat
+        }
+        
         var alertCase: AlertCase?
         var alertState: AlertFeature.State = .init()
         var isLoading: Bool = false
         
         @BindingState var gameName: String = ""
+        var gameNameValidStatus: GameNameValidStatus?
         var selectedRepeatDay: MyGameAddRepeatDayType = .weekday
         var directSelectionTypeList: [MyGameAddDirectSelectionDayType] = MyGameAddDirectSelectionDayType.allCases
         var isSelectedDirectSelectionList: [Bool] = Array(repeating: false, count: MyGameAddDirectSelectionDayType.allCases.count)
@@ -63,7 +71,17 @@ public struct MyGameAddFeature {
         @BindingState var onesPlace: String = ""
         
         var isStartButtonEnable: Bool {
-            return !gameName.isEmpty && isCategoryValidation && isDirectSelectionValidation
+            return isGameNameValidation
+                && isCategoryValidation
+                && isDirectSelectionValidation
+        }
+        
+        var isGameNameValidation: Bool {
+            guard let gameNameValidStatus = gameNameValidStatus else {
+                return false
+            }
+            
+            return gameNameValidStatus == .valid
         }
         
         var isCategoryValidation: Bool {
@@ -113,6 +131,18 @@ public struct MyGameAddFeature {
             case .onAppear:
                 return .none
             case .navigateToBack:
+                return .none
+            case .binding(\.$gameName):
+                if state.gameName.isEmpty {
+                    state.gameNameValidStatus = .empty
+                    return .none
+                }
+                
+                let isValid = state.gameName.checkRegexValidation(
+                    pattern: RegexPattern.gameName.regex
+                )
+                
+                state.gameNameValidStatus = isValid ? .valid : .inValidFormat
                 return .none
             case .binding:
                 return .none
