@@ -87,6 +87,14 @@ extension KeyChainStorage: TokenProvider {
         return (try? read(key: KeyChainStorageKeys.ACCESS_TOKEN)) ?? ""
     }
     
+    public func setAccessToken(_ accessToken: String) {
+        try? save(key: KeyChainStorageKeys.ACCESS_TOKEN, data: accessToken)
+    }
+    
+    public func getRefreshToken() -> String {
+        return (try? read(key: KeyChainStorageKeys.REFRESH_TOKEN)) ?? ""
+    }
+    
     public func setRefreshToken(_ refreshToken: String) {
         try? save(key: KeyChainStorageKeys.REFRESH_TOKEN, data: refreshToken)
     }
