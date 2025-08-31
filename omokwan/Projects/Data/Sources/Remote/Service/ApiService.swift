@@ -16,11 +16,11 @@ public final class ApiService {
         self.tokenProvider = tokenProvider
     }
     
-    func call<T: Decodable>(_ endPoint: EndPoint<T>) async throws -> T {
+    func call<T: Decodable>(_ endPoint: EndPoint<T>, retryCount: Int = 1) async throws -> T {
         do {
             var logOutput: String = ""
             
-            guard var url = URL(string: "http://\(BaseUrl.current)\(endPoint.path)") else {
+            guard var url = URL(string: "http://\(BaseUrl.current)\(endPoint.path.value)") else {
                 throw (RemoteNetworkError.requestURLNotExistError)
             }
             
@@ -65,7 +65,7 @@ public final class ApiService {
                 do {
                     let decodedResponse = try JSONDecoder().decode(T.self, from: data)
                     checkCookieForRefreshToken(
-                        path: endPoint.path,
+                        path: endPoint.path.value,
                         response: response
                     )
                     return decodedResponse
@@ -77,13 +77,54 @@ public final class ApiService {
             }
             
             if case .unAuthorizationError = error {
-                // TODO: 401 에러 핸들
+                if retryCount >= 1 {
+                    let retryCount = retryCount - 1
+                    
+                    let isRefreshTokenPublished = await requestNewAuthorizationFromRefreshToken(retryCount)
+                    if isRefreshTokenPublished {
+                        return try await self.call(endPoint, retryCount: retryCount)
+                    } else {
+                        throw RemoteNetworkError.unAuthorizationError
+                    }
+                }
+                
                 throw RemoteNetworkError.unAuthorizationError
             } else {
                 throw error
             }
         } catch {
             try handleNetworkError(error)
+        }
+    }
+}
+
+private extension ApiService {
+    func requestNewAuthorizationFromRefreshToken(_ retryCount: Int) async -> Bool {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<RefreshTokenResponse>>.postRefreshToken()
+            let response = try await self.call(endPoint, retryCount: retryCount)
+            let tokenPair = AuthMapper.toRefreshTokenResult(response.data)
+            
+            let accessToken = tokenPair.0
+            let refreshToken = tokenPair.1
+            
+            if accessToken.isEmpty || refreshToken.isEmpty {
+                return false
+            }
+            
+            tokenProvider.setAccessToken(accessToken)
+            tokenProvider.setRefreshToken(refreshToken)
+            
+            return true
+        } catch {
+            let message = """
+            🛑 RefreshToken API 호출 시 알 수 없는 에러 발생
+              - 타입: \(type(of: error))
+              - 설명: \(error.localizedDescription)
+            """
+            OLogger.error.log(message)
+            
+            return false
         }
     }
 }
@@ -117,16 +158,19 @@ private extension ApiService {
 
 private extension ApiService {
     func checkCookieForRefreshToken(path: String, response: URLResponse) {
-        if path.contains("/auth/login/") {
+        let loginPath = EndPointPath.postSignIn("")
+        
+        if path.contains(loginPath.value) {
             guard let httpResponse = response as? HTTPURLResponse,
                   let headerFields = httpResponse.allHeaderFields as? [String: String],
                   let url = httpResponse.url else { return }
             
             let cookies = HTTPCookie.cookies(withResponseHeaderFields: headerFields, for: url)
-
+            
             if let refreshCookie = cookies.first(where: { $0.name == "refresh_token" }) {
                 let refreshToken = refreshCookie.value
                 tokenProvider.setRefreshToken(refreshToken)
+                OLogger.network.log("🚀 RefreshToken 발급 완료")
             }
         }
     }
