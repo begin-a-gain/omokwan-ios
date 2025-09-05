@@ -6,14 +6,14 @@
 //
 
 struct EndPoint<T>: EndPointProtocol {
-    public var path: String
+    public var path: EndPointPath
     public var method: HttpMethod
     public var headers: [String: String]?
     public var queryParameters: Encodable?
     public var requestBody: Encodable?
     
     public init(
-        path: String,
+        path: EndPointPath,
         method: HttpMethod,
         headers: [String: String]? = nil,
         queryParameters: Encodable? = nil,
@@ -30,40 +30,44 @@ struct EndPoint<T>: EndPointProtocol {
 // MARK: Server
 extension EndPoint {
     static func getHealthCheck() -> EndPoint<T> {
-        return EndPoint(path: "/actuator/health", method: .GET)
+        return EndPoint(path: .getHealthCheck, method: .GET)
     }
 }
 
 // MARK: Account
 extension EndPoint {
     static func postSignIn(provider: String, requestBody: SignInRequest) -> EndPoint<T> {
-        return EndPoint(path: "/auth/login/\(provider)", method: .POST, requestBody: requestBody)
+        return EndPoint(path: .postSignIn(provider), method: .POST, requestBody: requestBody)
     }
     
     static func postNicknameDuplicated(requestBody: NicknameValidationRequest) -> EndPoint<T> {
-        return EndPoint(path: "/users/nicknames/validations", method: .POST, requestBody: requestBody)
+        return EndPoint(path: .postNicknameDuplicated, method: .POST, requestBody: requestBody)
     }
     
     static func putNickname(requestBody: UpdateNicknameRequest) -> EndPoint<T> {
-        return EndPoint(path: "/users/nicknames", method: .PUT, requestBody: requestBody)
+        return EndPoint(path: .putNickname, method: .PUT, requestBody: requestBody)
     }
     
     static func getUserInfo() -> EndPoint<T> {
-        return EndPoint(path: "/users/info", method: .GET)
+        return EndPoint(path: .getUserInfo, method: .GET)
+    }
+    
+    static func postRefreshToken() -> EndPoint<T> {
+        return EndPoint(path: .postRefreshToken, method: .POST)
     }
 }
 
 // MARK: Game
 extension EndPoint {
     static func getGameInfoFromDate(queryParameters: GameInfoRequest) -> EndPoint<T> {
-        return EndPoint(path: "/matches", method: .GET, queryParameters: queryParameters)
+        return EndPoint(path: .getGameInfoFromDate, method: .GET, queryParameters: queryParameters)
     }
     
     static func postCreateGame(requestBody: CreateGameRequest) -> EndPoint<T> {
-        return EndPoint(path: "/matches", method: .POST, requestBody: requestBody)
+        return EndPoint(path: .postCreateGame, method: .POST, requestBody: requestBody)
     }
     
     static func getGameCategories() -> EndPoint<T> {
-        return EndPoint(path: "/matches/categories", method: .GET)
+        return EndPoint(path: .getGameCategories, method: .GET)
     }
 }

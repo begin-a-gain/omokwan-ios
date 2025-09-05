@@ -6,7 +6,7 @@
 //
 
 protocol EndPointProtocol {
-    var path: String { get }
+    var path: EndPointPath { get }
     var method: HttpMethod { get }
     var headers: [String: String]? { get }
     var queryParameters: Encodable? { get }

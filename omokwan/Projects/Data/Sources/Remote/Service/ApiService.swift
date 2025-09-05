@@ -16,11 +16,11 @@ public final class ApiService {
         self.tokenProvider = tokenProvider
     }
     
-    func call<T: Decodable>(_ endPoint: EndPoint<T>) async throws -> T {
+    func call<T: Decodable>(_ endPoint: EndPoint<T>, retryCount: Int = 1) async throws -> T {
         do {
             var logOutput: String = ""
             
-            guard var url = URL(string: "http://\(BaseUrl.current)\(endPoint.path)") else {
+            guard var url = URL(string: "http://\(BaseUrl.current)\(endPoint.path.value)") else {
                 throw (RemoteNetworkError.requestURLNotExistError)
             }
             
@@ -61,67 +61,70 @@ public final class ApiService {
             logOutput += "-----------------------------\n"
             OLogger.network.log(logOutput)
             
-            switch statusCode {
-            case 200...299:
+            guard let error = mapStatusCodeToRemoteNetworkError(statusCode) else {
                 do {
                     let decodedResponse = try JSONDecoder().decode(T.self, from: data)
+                    checkCookieForRefreshToken(
+                        path: endPoint.path.value,
+                        response: response
+                    )
                     return decodedResponse
                 } catch let error as DecodingError {
                     throw RemoteNetworkError.decodingError(error)
                 } catch {
                     throw RemoteNetworkError.unKnownError
                 }
-            case 401:
-                throw RemoteNetworkError.unAuthorizationError
-            case 403:
-                throw RemoteNetworkError.forbidden
-            case 404:
-                throw RemoteNetworkError.notFound
-            case 400:
-                throw RemoteNetworkError.badRequest
-            case 400...499:
-                throw RemoteNetworkError.clientError
-            case 503:
-                throw RemoteNetworkError.serverMaintenanceError
-            case 504:
-                throw RemoteNetworkError.gatewayTimeout
-            case 500:
-                throw RemoteNetworkError.internalServerError
-            case 500...599:
-                throw RemoteNetworkError.serverUnknownError
-            default:
-                throw RemoteNetworkError.unKnownError
             }
-        } catch let error as URLError {
-            let message = """
-            ❌ URLError 발생
-              - 종류: \(error.code.rawValue) (\(error.code))
-              - 설명: \(error.localizedDescription)
-            """
-            OLogger.error.log(message)
             
-            switch error.code {
-            case .timedOut, .networkConnectionLost:
-                throw RemoteNetworkError.timeout
-            default:
-                throw RemoteNetworkError.urlError(error)
+            if case .unAuthorizationError = error {
+                if retryCount >= 1 {
+                    let retryCount = retryCount - 1
+                    
+                    let isRefreshTokenPublished = await requestNewAuthorizationFromRefreshToken(retryCount)
+                    if isRefreshTokenPublished {
+                        return try await self.call(endPoint, retryCount: retryCount)
+                    } else {
+                        throw RemoteNetworkError.unAuthorizationError
+                    }
+                }
+                
+                throw RemoteNetworkError.unAuthorizationError
+            } else {
+                throw error
             }
-        } catch let error as RemoteNetworkError {
-            let message = """
-            🚨 RemoteNetworkError 발생
-              - 에러 타입: \(error)
-              - 설명: \(error.localizedDescription)
-            """
-            OLogger.error.log(message)
-            throw error
+        } catch {
+            try handleNetworkError(error)
+        }
+    }
+}
+
+private extension ApiService {
+    func requestNewAuthorizationFromRefreshToken(_ retryCount: Int) async -> Bool {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<RefreshTokenResponse>>.postRefreshToken()
+            let response = try await self.call(endPoint, retryCount: retryCount)
+            let tokenPair = AuthMapper.toRefreshTokenResult(response.data)
+            
+            let accessToken = tokenPair.0
+            let refreshToken = tokenPair.1
+            
+            if accessToken.isEmpty || refreshToken.isEmpty {
+                return false
+            }
+            
+            tokenProvider.setAccessToken(accessToken)
+            tokenProvider.setRefreshToken(refreshToken)
+            
+            return true
         } catch {
             let message = """
-            🛑 알 수 없는 에러 발생 (RemoteNetworkError.unKnownError)
+            🛑 RefreshToken API 호출 시 알 수 없는 에러 발생
               - 타입: \(type(of: error))
               - 설명: \(error.localizedDescription)
             """
             OLogger.error.log(message)
-            throw RemoteNetworkError.unKnownError
+            
+            return false
         }
     }
 }
@@ -153,28 +156,77 @@ private extension ApiService {
     }
 }
 
-// MARK: URLRequest
-//private extension ApiService {
-//    func makeURLRequest(url: URL, endPoint: EndPoint) -> URLRequest {
-//        var urlRequest = URLRequest(url: url)
-//        urlRequest.timeoutInterval = 30
-//        urlRequest.httpMethod = endPoint.method.rawValue
-//        if let headers = endPoint.headers {
-//            headers.forEach { key, value in
-//                urlRequest.setValue(value, forHTTPHeaderField: key)
-//            }
-//        }
-//
-//        return urlRequest
-//    }
-//    
-//    func getHeaders() -> [String: String] {
-//        let accessToken: String = ""
-//        let tokenString: String = accessToken.isEmpty ? "" : "Bearer \(accessToken)"
-//        return  [
-//            "Authorization": tokenString,
-//            "Content-Type": "application/json; charset=utf-8",
-//            "Accept-Charset": "UTF-8"
-//        ]
-//    }
-//}
+private extension ApiService {
+    func checkCookieForRefreshToken(path: String, response: URLResponse) {
+        let loginPath = EndPointPath.postSignIn("")
+        
+        if path.contains(loginPath.value) {
+            guard let httpResponse = response as? HTTPURLResponse,
+                  let headerFields = httpResponse.allHeaderFields as? [String: String],
+                  let url = httpResponse.url else { return }
+            
+            let cookies = HTTPCookie.cookies(withResponseHeaderFields: headerFields, for: url)
+            
+            if let refreshCookie = cookies.first(where: { $0.name == "refresh_token" }) {
+                let refreshToken = refreshCookie.value
+                tokenProvider.setRefreshToken(refreshToken)
+                OLogger.network.log("🚀 RefreshToken 발급 완료")
+            }
+        }
+    }
+}
+
+private extension ApiService {
+    func mapStatusCodeToRemoteNetworkError(_ code: Int) -> RemoteNetworkError? {
+        switch code {
+        case 200...299: return nil
+        case 400: return .badRequest
+        case 401: return .unAuthorizationError
+        case 403: return .forbidden
+        case 404: return .notFound
+        case 400...499: return .clientError
+        case 500: return .internalServerError
+        case 503: return .serverMaintenanceError
+        case 504: return .gatewayTimeout
+        case 500...599: return .serverUnknownError
+        default: return .unKnownError
+        }
+    }
+}
+
+private extension ApiService {
+    func handleNetworkError(_ error: Error) throws -> Never {
+        switch error {
+        case let urlError as URLError:
+            let message = """
+            ❌ URLError 발생
+              - 종류: \(urlError.code.rawValue) (\(urlError.code))
+              - 설명: \(urlError.localizedDescription)
+            """
+            OLogger.error.log(message)
+            
+            switch urlError.code {
+            case .timedOut, .networkConnectionLost:
+                throw RemoteNetworkError.timeout
+            default:
+                throw RemoteNetworkError.urlError(urlError)
+            }
+        case let remoteNetworkError as RemoteNetworkError:
+            let message = """
+            🚨 RemoteNetworkError 발생
+              - 에러 타입: \(remoteNetworkError)
+              - 설명: \(remoteNetworkError.localizedDescription)
+            """
+            OLogger.error.log(message)
+            throw remoteNetworkError
+        default:
+            let message = """
+            🛑 알 수 없는 에러 발생 (RemoteNetworkError.unKnownError)
+              - 타입: \(type(of: error))
+              - 설명: \(error.localizedDescription)
+            """
+            OLogger.error.log(message)
+            throw RemoteNetworkError.unKnownError
+        }
+    }
+}
