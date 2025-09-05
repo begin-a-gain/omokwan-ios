@@ -11,6 +11,7 @@ import Dependencies
 public struct LocalUseCase {
     public let getAccessToken: () -> String?
     public let setAccessToken: (_ accessToken: String) -> Bool
+    public let getSignUpCompleted: () -> Bool
 }
 
 extension LocalUseCase: DependencyKey {
@@ -22,6 +23,9 @@ extension LocalUseCase: DependencyKey {
             },
             setAccessToken: { accessToken in
                 return repository.setAccessToken(accessToken)
+            },
+            getSignUpCompleted: {
+                return repository.getSignUpCompleted()
             }
         )
     }()

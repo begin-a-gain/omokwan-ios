@@ -9,6 +9,7 @@ import ComposableArchitecture
 import SignIn
 import SignUp
 import Main
+import Splash
 
 extension RootFeature {
     @Reducer
@@ -19,6 +20,7 @@ extension RootFeature {
             case signUp(SignUpFeature.State)
             case signUpDone(SignUpDoneFeature.State)
             case main(MainCoordinatorFeature.State)
+            case splash(SplashFeature.State)
         }
 
         public enum Action {
@@ -26,6 +28,7 @@ extension RootFeature {
             case signUp(SignUpFeature.Action)
             case signUpDone(SignUpDoneFeature.Action)
             case main(MainCoordinatorFeature.Action)
+            case splash(SplashFeature.Action)
         }
         
         public var body: some ReducerOf<Self> {
@@ -40,6 +43,9 @@ extension RootFeature {
             }
             Scope(state: \.main, action: \.main) {
                 MainCoordinatorFeature()
+            }
+            Scope(state: \.splash, action: \.splash) {
+                SplashFeature()
             }
         }
     }
