@@ -11,7 +11,8 @@ let dependencyInfo: [DependencyInformation: [DependencyInformation]] = [
     .Omokwan: [.Root, .DI, .Data, .KakaoSDKUser],
     .Domain: [.DI, .ComposableArchitecture],
     .Data: [.Domain, .KakaoSDKUser, .Util],
-    .Root: [.SignIn, .SignUp, .Main],
+    .Root: [.SignIn, .SignUp, .Main, .Splash],
+    .Splash: [.Base],
     .SignIn: [.Base],
     .SignUp: [.Base, .Util],
     .Main: [.MyGame, .MyGameAdd, .MyGameParticipate, .GameDetail],
@@ -42,6 +43,7 @@ public enum DependencyInformation: String, Sendable {
     case MyGameAdd = "MyGameAdd"
     case MyGameParticipate = "MyGameParticipate"
     case GameDetail = "GameDetail"
+    case Splash = "Splash"
 }
 
 public enum PresentationDependencyInformation: String, CaseIterable {
@@ -54,6 +56,7 @@ public enum PresentationDependencyInformation: String, CaseIterable {
     case MyGameAdd = "MyGameAdd"
     case MyGameParticipate = "MyGameParticipate"
     case GameDetail = "GameDetail"
+    case Splash = "Splash"
 }
 
 public enum UtilsDependencyInformation: String, CaseIterable {
