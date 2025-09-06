@@ -8,4 +8,5 @@
 public protocol LocalRepositoryProtocol {
     func getAccessToken() -> String?
     func setAccessToken(_ accessToken: String) -> Bool
+    func getSignUpCompleted() -> Bool
 }

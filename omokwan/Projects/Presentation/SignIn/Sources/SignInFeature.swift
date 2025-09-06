@@ -12,7 +12,6 @@ import ComposableArchitecture
 @Reducer
 public struct SignInFeature {
     @Dependency(\.socialUseCase) private var socialUseCase
-    @Dependency(\.serverUseCase) private var serverUseCase
     @Dependency(\.accountUseCase) private var accountUseCase
     @Dependency(\.localUseCase) private var localUseCase
 

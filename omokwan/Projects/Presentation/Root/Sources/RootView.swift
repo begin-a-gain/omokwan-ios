@@ -10,6 +10,7 @@ import ComposableArchitecture
 import SignIn
 import SignUp
 import Main
+import Splash
 
 public struct RootView: View {
     private let store: StoreOf<RootFeature>
@@ -64,6 +65,10 @@ private extension RootView {
             if let signUpDoneStore = pathStore.scope(state: \.signUpDone, action: \.signUpDone) {
                 SignUpDoneView(store: signUpDoneStore)
             }
+        case .splash:
+            if let splashStore = pathStore.scope(state: \.splash, action: \.splash) {
+                SplashView(store: splashStore)
+            }
         default:
             EmptyView()
         }
@@ -85,6 +90,10 @@ private extension RootView {
         case .signUpDone:
             CaseLet(\RootFeature.RootPath.State.signUpDone, action: RootFeature.RootPath.Action.signUpDone) { store in
                 SignUpDoneView(store: store)
+            }
+        case .splash:
+            CaseLet(\RootFeature.RootPath.State.splash, action: RootFeature.RootPath.Action.splash) { store in
+                SplashView(store: store)
             }
         default:
             EmptyView()

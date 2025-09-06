@@ -26,4 +26,13 @@ public struct LocalRepository: LocalRepositoryProtocol {
             return false
         }
     }
+    
+    public func getSignUpCompleted() -> Bool {
+        do {
+            // TODO: Bool도 받을 수 있게 KeyChainStorage 변경 필요
+            return true
+        } catch {
+            return false
+        }
+    }
 }
