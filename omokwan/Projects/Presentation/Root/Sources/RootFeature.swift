@@ -9,6 +9,7 @@ import ComposableArchitecture
 import SignIn
 import SignUp
 import Main
+import Splash
 
 @Reducer
 public struct RootFeature {
@@ -17,7 +18,7 @@ public struct RootFeature {
     public struct State: Equatable {
         public init() {}
         
-        var path: RootPath.State = .signIn(.init())
+        var path: RootPath.State = .splash(.init())
         var navigationPath: StackState<RootPath.State> = .init()
         
         @BindingState var isToastPresented: Bool = false
@@ -56,6 +57,8 @@ public struct RootFeature {
                 default:
                     return .none
                 }
+            case .path(.splash(let splashNavigationAction)):
+                return splashNavigation(&state, splashNavigationAction)
             default:
                 return .none
             }
@@ -124,6 +127,22 @@ private extension RootFeature {
 //            state.navigationPath = .init()
 //            state.path = .signIn(.init())
 //            return .none
+        default:
+            return .none
+        }
+    }
+}
+
+// Splash
+private extension RootFeature {
+    private func splashNavigation(_ state: inout State, _ action: SplashFeature.Action) -> Effect<Action> {
+        switch action {
+        case .navigateToSignIn:
+            state.path = .signIn(.init())
+            return .none
+        case .navigateToMain:
+            state.path = .main(.init())
+            return .none
         default:
             return .none
         }

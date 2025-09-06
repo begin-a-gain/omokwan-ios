@@ -12,7 +12,6 @@ import ComposableArchitecture
 @Reducer
 public struct SignInFeature {
     @Dependency(\.socialUseCase) private var socialUseCase
-    @Dependency(\.serverUseCase) private var serverUseCase
     @Dependency(\.accountUseCase) private var accountUseCase
     @Dependency(\.localUseCase) private var localUseCase
 
@@ -129,6 +128,7 @@ private extension SignInFeature {
         switch response {
         case let .success(signInResult):
             _ = localUseCase.setAccessToken(signInResult.accessToken)
+            localUseCase.setSignUpCompleted(signInResult.signUpComplete)
             
             if signInResult.signUpComplete {
                 return .fetchUserInfo

@@ -7,30 +7,39 @@
 
 import Foundation
 import Security
+import Util
 
 protocol KeyChainStorageProtocol {
-    func save(key: String, data: String) throws
-    func read(key: String) throws -> String
-    func update(key: String, data: String) throws
+    func save<T: KeyChainStorable>(key: String, value: T) throws
+    func read<T: KeyChainStorable>(key: String, type: T.Type) throws -> T
+    func update<T: KeyChainStorable>(key: String, value: T) throws
     func delete(key: String) throws
 }
 
 public final class KeyChainStorage: KeyChainStorageProtocol {
     public init() {}
     
-    func save(key: String, data: String) throws {
+    func save<T: KeyChainStorable>(key: String, value: T) throws {
+        guard let data = value.toData() else {
+            let error = KeyChainStorageError.dataConversionFailed
+            OLogger.error.log(error.descrption)
+            throw error
+        }
+
         let query = baseQuery(key)
-        query[kSecValueData] = data.data(using: .utf8, allowLossyConversion: false) as Any
+        query[kSecValueData] = data
         
         SecItemDelete(query)
 
         let status = SecItemAdd(query, nil)
         guard status == errSecSuccess else {
-            throw KeyChainStorageError.unExpectedStatus(status)
+            let error = KeyChainStorageError.unExpectedStatus(status)
+            OLogger.error.log(error.descrption)
+            throw error
         }
     }
     
-    func read(key: String) throws -> String {
+    func read<T: KeyChainStorable>(key: String, type: T.Type) throws -> T {
         let query = baseQuery(key)
         query[kSecReturnData] = true
         query[kSecMatchLimit] = kSecMatchLimitOne
@@ -40,23 +49,28 @@ public final class KeyChainStorage: KeyChainStorageProtocol {
 
         guard status == errSecSuccess else {
             if status == errSecItemNotFound {
-                throw KeyChainStorageError.noMatchKeyError
+                let error = KeyChainStorageError.noMatchKeyError
+                OLogger.error.log(error.descrption)
+                throw error
             }
             
-            throw KeyChainStorageError.unExpectedStatus(status)
+            let error = KeyChainStorageError.unExpectedStatus(status)
+            OLogger.error.log(error.descrption)
+            throw error
         }
         
         guard let retrievedData = dataTypeRef as? Data,
-              let value = String(data: retrievedData, encoding: String.Encoding.utf8) else {
-            throw KeyChainStorageError.dataConversionFailed
+              let value = T.fromData(retrievedData) else {
+            let error = KeyChainStorageError.dataConversionFailed
+            OLogger.error.log(error.descrption)
+            throw error
         }
         
         return value
     }
     
-    func update(key: String, data: String) throws {
-        try delete(key: key)
-        try save(key: key, data: data)
+    func update<T: KeyChainStorable>(key: String, value: T) throws {
+        try save(key: key, value: value)
     }
     
     func delete(key: String) throws {
@@ -65,10 +79,14 @@ public final class KeyChainStorage: KeyChainStorageProtocol {
         
         guard status == errSecSuccess else {
             if status == errSecItemNotFound {
-                throw KeyChainStorageError.noMatchKeyError
+                let error = KeyChainStorageError.noMatchKeyError
+                OLogger.error.log(error.descrption)
+                throw error
             }
             
-            throw KeyChainStorageError.unExpectedStatus(status)
+            let error = KeyChainStorageError.unExpectedStatus(status)
+            OLogger.error.log(error.descrption)
+            throw error
         }
     }
 }
@@ -79,23 +97,5 @@ private extension KeyChainStorage {
             kSecClass: kSecClassGenericPassword,
             kSecAttrAccount: key
         ]
-    }
-}
-
-extension KeyChainStorage: TokenProvider {
-    public func getAccessToken() -> String {
-        return (try? read(key: KeyChainStorageKeys.ACCESS_TOKEN)) ?? ""
-    }
-    
-    public func setAccessToken(_ accessToken: String) {
-        try? save(key: KeyChainStorageKeys.ACCESS_TOKEN, data: accessToken)
-    }
-    
-    public func getRefreshToken() -> String {
-        return (try? read(key: KeyChainStorageKeys.REFRESH_TOKEN)) ?? ""
-    }
-    
-    public func setRefreshToken(_ refreshToken: String) {
-        try? save(key: KeyChainStorageKeys.REFRESH_TOKEN, data: refreshToken)
     }
 }
