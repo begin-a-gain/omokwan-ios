@@ -15,12 +15,12 @@ public struct LocalRepository: LocalRepositoryProtocol {
     }
     
     public func getAccessToken() -> String? {
-        return try? keyChainStorage.read(key: KeyChainStorageKeys.ACCESS_TOKEN)
+        return try? keyChainStorage.read(key: KeyChainStorageKeys.ACCESS_TOKEN, type: String.self)
     }
 
     public func setAccessToken(_ accessToken: String) -> Bool {
         do {
-            try keyChainStorage.save(key: KeyChainStorageKeys.ACCESS_TOKEN, data: accessToken)
+            try keyChainStorage.save(key: KeyChainStorageKeys.ACCESS_TOKEN, value: accessToken)
             return true
         } catch {
             return false
@@ -28,11 +28,10 @@ public struct LocalRepository: LocalRepositoryProtocol {
     }
     
     public func getSignUpCompleted() -> Bool {
-        do {
-            // TODO: Bool도 받을 수 있게 KeyChainStorage 변경 필요
-            return true
-        } catch {
-            return false
-        }
+        return (try? keyChainStorage.read(key: KeyChainStorageKeys.SIGN_UP_COMPLETED, type: Bool.self)) ?? false
+    }
+    
+    public func setSignUpCompleted(_ value: Bool) {
+        try? keyChainStorage.save(key: KeyChainStorageKeys.SIGN_UP_COMPLETED, value: value)
     }
 }
