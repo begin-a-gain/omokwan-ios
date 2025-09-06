@@ -128,6 +128,7 @@ private extension SignInFeature {
         switch response {
         case let .success(signInResult):
             _ = localUseCase.setAccessToken(signInResult.accessToken)
+            localUseCase.setSignUpCompleted(signInResult.signUpComplete)
             
             if signInResult.signUpComplete {
                 return .fetchUserInfo
