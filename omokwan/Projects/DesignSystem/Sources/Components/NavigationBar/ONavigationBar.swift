@@ -41,35 +41,37 @@ public struct ONavigationBar: View {
     }
     
     public var body: some View {
-        HStack(spacing: 0) {
-            if isMain {
-                mainLogoView
-            } else {
-                if let leadingIcon = leadingIcon {
-                    leadingIconView(leadingIcon)
-                }
-                ZStack {
-                    if let title = title {
-                        OText(
-                            title,
-                            token: .headline,
-                            color: OColors.text01.swiftUIColor
-                        )
-                        .vPadding(14)
-                        .greedyWidth()
-                    }
-                }
+        ZStack {
+            if let title = title {
+                OText(
+                    title,
+                    token: .headline,
+                    color: OColors.text01.swiftUIColor
+                )
+                .vPadding(14)
+                .greedyWidth()
+                .hPadding(60)
             }
-            if isSkip {
-                skipButton
-            } else {
-                HStack(spacing: 0) {
-                    Spacer()
-                    if let trailingAdditionalIcon = trailingAdditionalIcon {
-                        trailingAdditionalIconView(trailingAdditionalIcon)
+            
+            HStack(spacing: 0) {
+                if isMain {
+                    mainLogoView
+                } else {
+                    if let leadingIcon = leadingIcon {
+                        leadingIconView(leadingIcon)
                     }
-                    if let trailingIcon = trailingIcon {
-                        trailingIconView(trailingIcon)
+                }
+                if isSkip {
+                    skipButton
+                } else {
+                    HStack(spacing: 0) {
+                        Spacer()
+                        if let trailingAdditionalIcon = trailingAdditionalIcon {
+                            trailingAdditionalIconView(trailingAdditionalIcon)
+                        }
+                        if let trailingIcon = trailingIcon {
+                            trailingIconView(trailingIcon)
+                        }
                     }
                 }
             }
