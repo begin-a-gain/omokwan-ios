@@ -83,8 +83,15 @@ extension MainCoordinatorFeature {
         case .navigateToBack:
             _ = state.path.popLast()
             return .none
-        case .navigateToGameDetail(let roomInfo):
-            state.path.append(.gameDetail(GameDetailFeature.State(roomInfo: roomInfo)))
+        case let .navigateToGameDetail(id, title):
+            state.path.append(
+                .gameDetail(
+                    GameDetailFeature.State(
+                        gameID: id,
+                        gameTitle: title
+                    )
+                )
+            )
             return .none
         default:
             return .none

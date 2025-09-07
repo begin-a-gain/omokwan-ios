@@ -7,6 +7,7 @@
 
 import Base
 import ComposableArchitecture
+import GameDetail
 
 @Reducer
 public struct MainCoordinatorFeature {
@@ -46,6 +47,16 @@ public struct MainCoordinatorFeature {
                     return .none
                 case .navigateToMyGameParticipate:
                     state.path.append(.myGameParticipate(.init()))
+                    return .none
+                case let .navigateToGameDetail(id, title):
+                    state.path.append(
+                        .gameDetail(
+                            GameDetailFeature.State(
+                                gameID: id,
+                                gameTitle: title
+                            )
+                        )
+                    )
                     return .none
                 default:
                     return .none

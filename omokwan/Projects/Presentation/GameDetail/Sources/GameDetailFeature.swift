@@ -15,11 +15,13 @@ public struct GameDetailFeature {
     public init() {}
     
     public struct State: Equatable {
-        public init(roomInfo: GameRoomInformation) {
-            self.roomInfo = roomInfo
+        public init(gameID: Int, gameTitle: String) {
+            self.gameID = gameID
+            self.gameTitle = gameTitle
         }
         
-        var roomInfo: GameRoomInformation
+        let gameID: Int
+        let gameTitle: String
         var now: Date = Date()
         
         // About Date

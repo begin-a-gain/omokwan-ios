@@ -14,15 +14,18 @@ struct MyGameStone: View {
     let stoneSize: CGFloat
     let item: MyGameModel
     let omokStoneType: OmokStoneType
+    let stoneTapAction: (MyGameModel) -> Void
     
     init(
         fullRectSize: CGFloat,
         stoneSize: CGFloat,
-        item: MyGameModel
+        item: MyGameModel,
+        stoneTapAction: @escaping (MyGameModel) -> Void
     ) {
         self.fullRectSize = fullRectSize
         self.stoneSize = stoneSize
         self.item = item
+        self.stoneTapAction = stoneTapAction
         
         self.omokStoneType = switch item.myGameCompleteStatus {
         case .complete: .primary
@@ -32,11 +35,15 @@ struct MyGameStone: View {
     
     var body: some View {
         ZStack {
-            OmokStone(
-                stoneSize: stoneSize,
-                stoneType: omokStoneType
-            ).overlay {
-                stoneContents
+            Button {
+                stoneTapAction(item)
+            } label: {
+                OmokStone(
+                    stoneSize: stoneSize,
+                    stoneType: omokStoneType
+                ).overlay {
+                    stoneContents
+                }
             }
             
             stoneStatusView

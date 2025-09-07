@@ -44,6 +44,8 @@ public struct MyGameFeature {
         case setLoading(Bool)
         case fetchGameInfo
         case passError(NetworkError)
+        case stoneTapped(MyGameModel)
+        case navigateToGameDetail(Int, String)
     }
     
     public var body: some ReducerOf<Self> {
@@ -136,6 +138,11 @@ public struct MyGameFeature {
             case .setLoading:
                 return .none
             case .passError:
+                return .none
+            case .stoneTapped(let stoneInfo):
+                // TODO: 추방 당한, 셀프로 나간, 끝난 대국에 대한 API가 나오면 그 때 세부 작업. 현재는 detail로 이동만.
+                return .send(.navigateToGameDetail(stoneInfo.gameID, stoneInfo.name))
+            case .navigateToGameDetail:
                 return .none
             }
         }
