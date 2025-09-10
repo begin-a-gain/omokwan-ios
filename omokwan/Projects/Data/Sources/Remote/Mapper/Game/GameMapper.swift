@@ -51,4 +51,21 @@ struct GameMapper {
             )
         }
     }
+    
+    static func toMyGameDetailInfo(_ response: GameDetailPagingResponse?) throws -> MyGameDetailInfo {
+        guard let response = response else {
+            throw RemoteNetworkError.responseDataNilError
+        }
+        
+        return MyGameDetailInfo(
+            users: response.users?.map {
+                $0.toDomain()
+            } ?? [],
+            dates: response.dates?.map {
+                $0.toDomain()
+            } ?? [],
+            previousDate: response.previousDate ?? "",
+            nextDate: response.nextDate ?? ""
+        )
+    }
 }

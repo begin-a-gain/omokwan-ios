@@ -9,17 +9,30 @@ import ComposableArchitecture
 import Domain
 import Foundation
 import Util
+import Base
 
 @Reducer
 public struct GameDetailFeature {
+    @Dependency(\.gameUseCase) private var gameUseCase
+
     public init() {}
     
     public struct State: Equatable {
-        public init(roomInfo: GameRoomInformation) {
-            self.roomInfo = roomInfo
+        public init(gameID: Int, gameTitle: String) {
+            self.gameID = gameID
+            self.gameTitle = gameTitle
         }
         
-        var roomInfo: GameRoomInformation
+        public enum AlertCase: Equatable {
+            case error(NetworkError)
+        }
+        
+        var alertCase: AlertCase?
+        var alertState: AlertFeature.State = .init()
+        var isLoading: Bool = false
+        
+        let gameID: Int
+        let gameTitle: String
         var now: Date = Date()
         
         // About Date
@@ -51,19 +64,77 @@ public struct GameDetailFeature {
         case onAppear
         case navigateToBack
         case menuButtonTapped
+        case alertAction(AlertFeature.Action)
+        case showAlert(State.AlertCase)
+        
+        case fetchInfoWithPaging(MyGameDetailPagingRequest)
+        case gameDetailInfoFetched(MyGameDetailInfo)
     }
     
     public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                print("## dateDictionary:\(state.dateDictionary)")
+                let request = MyGameDetailPagingRequest(
+                    gameID: state.gameID,
+                    pageSize: 10,
+                    date: state.now
+                        .formattedString(format: DateFormatConstants.yearMonthDayRequestFormat),
+                    previousDate: "",
+                    nextDate: "",
+                    needNextPaging: false
+                )
+                return .send(.fetchInfoWithPaging(request))
+            case .fetchInfoWithPaging(let request):
+                state.isLoading = true
+                return .run { send in
+                    await send(fetchDetailInfoWithPaging(request: request))
+                }
+            case .gameDetailInfoFetched(let info):
+                state.isLoading = false
+                
                 return .none
             case .navigateToBack:
                 return .none
             case .menuButtonTapped:
                 return .none
+            case .alertAction:
+                return .none
+            case .showAlert(let alertCase):
+                state.isLoading = false
+                state.alertCase = alertCase
+                return .send(.alertAction(.present))
             }
+        }
+        Scope(state: \.alertState, action: \.alertAction) {
+            AlertFeature()
+        }
+    }
+}
+
+private extension GameDetailFeature {
+    func fetchDetailInfoWithPaging(request: MyGameDetailPagingRequest) async -> Action {
+        var dateString: String {
+            if request.nextDate.isEmpty || request.previousDate.isEmpty {
+                return request.date
+            } else {
+                return request.needNextPaging
+                ? request.nextDate
+                : request.previousDate
+            }
+        }
+        
+        let response = await gameUseCase.fetchDetailInfoWithPaging(
+            request.gameID,
+            dateString,
+            request.pageSize
+        )
+        
+        switch response {
+        case .success(let myGameDetailInfo):
+            return .gameDetailInfoFetched(myGameDetailInfo)
+        case .failure(let error):
+            return .showAlert(.error(error))
         }
     }
 }

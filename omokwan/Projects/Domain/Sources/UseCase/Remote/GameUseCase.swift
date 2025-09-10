@@ -12,6 +12,7 @@ public struct GameUseCase {
     public let fetchGameInfosFromDate: (_ dateString: String, _ isToday: Bool) async -> Result<[MyGameModel], NetworkError>
     public let createGame: (_ configuration: MyGameAddConfiguration) async -> Result<Void, NetworkError>
     public let fetchGameCategories: () async -> Result<[GameCategory], NetworkError>
+    public let fetchDetailInfoWithPaging: (_ gameID: Int, _ dateString: String, _ pageSize: Int) async -> Result<MyGameDetailInfo, NetworkError>
 }
 
 extension GameUseCase: DependencyKey {
@@ -26,6 +27,13 @@ extension GameUseCase: DependencyKey {
             },
             fetchGameCategories: {
                 await repository.getGameCategories()
+            },
+            fetchDetailInfoWithPaging: { gameID, dateString, pageSize in
+                await repository.getDetailInfoWithPaging(
+                    gameID: gameID,
+                    dateString: dateString,
+                    pageSize: pageSize
+                )
             }
         )
     }()

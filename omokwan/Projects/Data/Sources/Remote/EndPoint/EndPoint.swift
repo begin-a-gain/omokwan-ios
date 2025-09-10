@@ -70,4 +70,12 @@ extension EndPoint {
     static func getGameCategories() -> EndPoint<T> {
         return EndPoint(path: .getGameCategories, method: .GET)
     }
+    
+    static func getDetailInfoWithPaging(gameID: Int, request: GameDetailPagingRequest) -> EndPoint<T> {
+        return EndPoint(
+            path: .getDetailInfoWithPaging(gameID),
+            method: .GET,
+            queryParameters: request
+        )
+    }
 }

@@ -66,7 +66,10 @@ struct MyGameMainContentView: View {
             MyGameStone(
                 fullRectSize: geometry.size.width/2,
                 stoneSize: geometry.size.width/2 - (MyGameConstants.stonePadding * 2),
-                item: item
+                item: item,
+                stoneTapAction: { info in
+                    viewStore.send(.stoneTapped(info))
+                }
             )
         }
     }

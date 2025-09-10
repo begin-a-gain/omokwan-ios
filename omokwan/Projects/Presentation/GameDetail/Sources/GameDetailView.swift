@@ -44,7 +44,7 @@ public struct GameDetailView: View {
     private var gameDetailBody: some View {
         VStack(spacing: 0) {
             ONavigationBar(
-                title: viewStore.roomInfo.title,
+                title: viewStore.gameTitle,
                 leadingIcon: OImages.icArrowLeft.swiftUIImage,
                 leadingIconAction: {
                     viewStore.send(.navigateToBack)
