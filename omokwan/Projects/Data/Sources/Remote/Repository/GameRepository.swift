@@ -54,4 +54,25 @@ public struct GameRepository: GameRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func getDetailInfoWithPaging(
+        gameID: Int,
+        dateString: String,
+        pageSize: Int
+    ) async -> Result<MyGameDetailInfo, NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<GameDetailPagingResponse>>.getDetailInfoWithPaging(
+                gameID: gameID,
+                request: GameDetailPagingRequest(
+                    date: dateString,
+                    size: pageSize
+                )
+            )
+            
+            let response = try await apiService.call(endPoint)
+            return .success(try GameMapper.toMyGameDetailInfo(response.data))
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }

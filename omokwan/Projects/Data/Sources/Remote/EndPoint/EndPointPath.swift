@@ -15,6 +15,7 @@ enum EndPointPath {
     case getGameInfoFromDate
     case postCreateGame
     case getGameCategories
+    case getDetailInfoWithPaging(Int)
     
     var value: String {
         switch self {
@@ -36,6 +37,8 @@ enum EndPointPath {
             "/matches"
         case .getGameCategories:
             "/matches/categories"
+        case .getDetailInfoWithPaging(let id):
+            "/matches/\(id)/board"
         }
     }
 }

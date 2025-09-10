@@ -55,8 +55,8 @@ public struct MyGameFeature {
             case .onAppear:
                 return .send(.fetchGameInfo)
             case .fetchGameInfo:
-                let dateString = state.selectedDate.formattedString(format: DateFormatConstants.calendarGameRequestFormat)
-                let isToday = Date.now.formattedString(format: DateFormatConstants.calendarGameRequestFormat) == dateString
+                let dateString = state.selectedDate.formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
+                let isToday = Date.now.formattedString(format: DateFormatConstants.yearMonthDayRequestFormat) == dateString
                 return .merge([
                     .send(.setLoading(true)),
                     .run { send in
