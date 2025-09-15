@@ -69,6 +69,7 @@ public struct GameDetailFeature {
         
         case fetchInfoWithPaging(MyGameDetailPagingRequest)
         case gameDetailInfoFetched(MyGameDetailInfo)
+        case avatarButtonTapped(Int)
     }
     
     public var body: some ReducerOf<Self> {
@@ -104,6 +105,10 @@ public struct GameDetailFeature {
                 state.isLoading = false
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
+            case .avatarButtonTapped(let id):
+                // TODO: id -> 상세 sheet 띄우기
+                print("## id \(id)")
+                return .none
             }
         }
         Scope(state: \.alertState, action: \.alertAction) {

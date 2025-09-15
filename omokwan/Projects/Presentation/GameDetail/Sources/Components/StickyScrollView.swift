@@ -11,21 +11,21 @@ import Foundation
 import Util
 
 struct StickyScrollView: View {
-    let dateDictionary: [String: [Date]]
-    private let hPadding: CGFloat = 20
+    private let dateDictionary: [String: [Date]]
+    private let hPadding: CGFloat
     private let availableWidth: CGFloat
     private let textWidth: CGFloat
     private let stoneRowWidth: CGFloat
     private let itemSize: CGFloat
     
-    init(dateDictionary: [String : [Date]]) {
-        let deviceWidth: CGFloat = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first { $0.activationState == .foregroundActive }?
-            .windows.first { $0.isKeyWindow }?.bounds.width ?? 376
-
+    init(
+        dateDictionary: [String : [Date]],
+        availableWidth: CGFloat,
+        hPadding: CGFloat
+    ) {
         self.dateDictionary = dateDictionary
-        self.availableWidth = deviceWidth - (hPadding * 2)
+        self.availableWidth = availableWidth
+        self.hPadding = hPadding
         self.textWidth = GameDetailConstants.calendarDayTextWidthRatio * availableWidth
         self.stoneRowWidth = GameDetailConstants.stoneRowWidthRatio * availableWidth
         self.itemSize = stoneRowWidth / 5
@@ -35,14 +35,16 @@ struct StickyScrollView: View {
         ScrollViewReader { scrollProxy in
             ScrollView {
                 LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
-                    ForEach(dateDictionary.keys.sorted(), id: \.self) { key in
+                    let keys = dateDictionary.keys.sorted()
+
+                    ForEach(Array(zip(keys.indices, keys)), id: \.1) { index, key in
                         if let dates = dateDictionary[key] {
                             Section(header: monthHeaderView(key)) {
                                 monthSectionBody(
                                     headerString: key,
                                     dates: dates
                                 )
-                                    .padding(.bottom, 20)
+                                .padding(.bottom, index == (dateDictionary.count - 1) ? 0 : 20)
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: 8)
@@ -58,7 +60,6 @@ struct StickyScrollView: View {
 //                    scrollProxy.scrollTo(today, anchor: .top)
 //                }
             }
-            .padding(.bottom, 8)
         }
     }
 }

@@ -14,10 +14,18 @@ import Base
 public struct GameDetailView: View {
     let store: StoreOf<GameDetailFeature>
     @ObservedObject var viewStore: ViewStoreOf<GameDetailFeature>
+    private let availableWidth: CGFloat
+    private let hPadding: CGFloat = 20
     
     public init(store: StoreOf<GameDetailFeature>) {
+        let deviceWidth: CGFloat = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }?
+            .windows.first { $0.isKeyWindow }?.bounds.width ?? 376
+        
         self.store = store
         self.viewStore = ViewStore(store, observe: { $0 })
+        self.availableWidth = deviceWidth - (hPadding * 2)
     }
     
     public var body: some View {
@@ -61,23 +69,30 @@ public struct GameDetailView: View {
             )
             
             StickyScrollView(
-                dateDictionary: viewStore.dateDictionary
+                dateDictionary: viewStore.dateDictionary,
+                availableWidth: availableWidth,
+                hPadding: hPadding
             )
-//                .padding(.bottom, 8)
+            .padding(.bottom, 8)
             
-//            userAvatarView
-//                .padding(.bottom, 20)
+            DetailUserAvatarView(
+                availableWidth: availableWidth,
+                hPadding: hPadding,
+                userInfos: [
+                    .init(userID: 5, nickname: "오목왕빡빡이"),
+                    .init(userID: 2, nickname: "오목왕갹갹이"),
+                    .init(userID: 3, nickname: "빡빡이"),
+                    .init(userID: 4, nickname: "갹갹이"),
+                    .init(userID: 1, nickname: "나는빡빡이다")
+                ],
+                action: { id in
+                    viewStore.send(.avatarButtonTapped(id))
+                }
+            )
+            .padding(.bottom, 20)
             
         }
         .background(OColors.uiBackground.swiftUIColor)
-    }
-}
-
-private extension GameDetailView {
-    var userAvatarView: some View {
-        Rectangle()
-            .height(50)
-            .greedyWidth()
     }
 }
 
