@@ -12,8 +12,8 @@ import Util
 import Base
 
 public struct GameDetailView: View {
-    let store: StoreOf<GameDetailFeature>
-    @ObservedObject var viewStore: ViewStoreOf<GameDetailFeature>
+    private let store: StoreOf<GameDetailFeature>
+    @ObservedObject private var viewStore: ViewStoreOf<GameDetailFeature>
     private let availableWidth: CGFloat
     private let hPadding: CGFloat = 20
     
@@ -51,6 +51,10 @@ public struct GameDetailView: View {
         .oLoading(isPresent: viewStore.isLoading)
         .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
             alertView
+        }
+        .sheet(store: store.scope(state: \.$userAvatarInfoSheet, action: \.userAvatarInfoSheet)) { store in
+            UserAvatarInfoView(store: store)
+                .modifier(CommonSheetModifier(detent: [.medium]))
         }
     }
     

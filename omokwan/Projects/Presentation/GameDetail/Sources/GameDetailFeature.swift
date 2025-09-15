@@ -58,6 +58,8 @@ public struct GameDetailFeature {
         }
         
         var isBottomButtonEnable: Bool = true
+        
+        @PresentationState var userAvatarInfoSheet: UserAvatarInfoFeature.State?
     }
     
     public enum Action {
@@ -71,6 +73,8 @@ public struct GameDetailFeature {
         case gameDetailInfoFetched(MyGameDetailInfo)
         case avatarButtonTapped(Int)
         case detailUserInfoFetched(DetailUserInfo)
+        
+        case userAvatarInfoSheet(PresentationAction<UserAvatarInfoFeature.Action>)
     }
     
     public var body: some ReducerOf<Self> {
@@ -115,12 +119,26 @@ public struct GameDetailFeature {
                 }
             case .detailUserInfoFetched(let detailUserInfo):
                 state.isLoading = false
-                // TODO: id -> 상세 sheet 띄우기
+                state.userAvatarInfoSheet = .init(detailUserInfo: detailUserInfo)
 
-                print(detailUserInfo)
                 return .none
+                
+            case .userAvatarInfoSheet(let presentationAction):
+                switch presentationAction {
+                case .presented(let sheetAction):
+                    switch sheetAction {
+                    case .onAppear:
+                        return .none
+                    }
+                default:
+                    return .none
+                }
             }
         }
+        .ifLet(\.$userAvatarInfoSheet, action: \.userAvatarInfoSheet) {
+            UserAvatarInfoFeature()
+        }
+
         Scope(state: \.alertState, action: \.alertAction) {
             AlertFeature()
         }

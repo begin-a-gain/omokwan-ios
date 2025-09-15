@@ -5,7 +5,7 @@
 //  Created by 김동준 on 9/15/25
 //
 
-public struct DetailUserInfo {
+public struct DetailUserInfo: Equatable {
     public let nickname: String
     public let combo: Int
     public let stones: Int
