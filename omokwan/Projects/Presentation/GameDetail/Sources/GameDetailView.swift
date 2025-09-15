@@ -9,6 +9,7 @@ import ComposableArchitecture
 import SwiftUI
 import DesignSystem
 import Util
+import Base
 
 public struct GameDetailView: View {
     let store: StoreOf<GameDetailFeature>
@@ -39,6 +40,10 @@ public struct GameDetailView: View {
         .onAppear {
             viewStore.send(.onAppear)
         }
+        .oLoading(isPresent: viewStore.isLoading)
+        .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
+            alertView
+        }
     }
     
     private var gameDetailBody: some View {
@@ -55,7 +60,9 @@ public struct GameDetailView: View {
                 }
             )
             
-            stickyScrollView
+            StickyScrollView(
+                dateDictionary: viewStore.dateDictionary
+            )
 //                .padding(.bottom, 8)
             
 //            userAvatarView
@@ -63,81 +70,6 @@ public struct GameDetailView: View {
             
         }
         .background(OColors.uiBackground.swiftUIColor)
-    }
-}
-
-// MARK: About ScrollView
-private extension GameDetailView {
-    var stickyScrollView: some View {
-        ScrollViewReader { scrollProxy in
-            ScrollView {
-                LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
-                    ForEach(viewStore.dateDictionary.keys.sorted(), id: \.self) { key in
-                        if let dates = viewStore.dateDictionary[key] {
-                            Section(header: monthHeaderView(key)) {
-                                monthSectionBody(headerString: key, dates: dates)
-                                    .padding(.bottom, 20)
-                            }
-                            .background(OColors.uiBackground.swiftUIColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                        }
-                    }
-                }
-            }
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    let today = viewStore.now.seoulNow.formattedString(format: DateFormatConstants.scrollCalendarFormat)
-                    scrollProxy.scrollTo(today, anchor: .top)
-                }
-            }
-            .padding(.bottom, 8)
-        }
-    }
-    
-    func monthHeaderView(_ headerString: String) -> some View {
-        ZStack(alignment: .bottom) {
-            OText(
-                headerString,
-                token: .title_02,
-                color: OColors.text01.swiftUIColor
-            )
-            .greedyWidth()
-            .vPadding(8)
-            .background(OColors.ui02.swiftUIColor)
-            
-            Rectangle()
-                .height(2)
-                .greedyWidth()
-                .foregroundStyle(OColors.stroke02.swiftUIColor)
-        }
-        .cornerRadius(8, corners: [.topLeft, .topRight])
-        .hPadding(20)
-    }
-    
-    func monthSectionBody(headerString: String, dates: [Date]) -> some View {
-        VStack(spacing: 0) {
-            ForEach(dates, id: \.self) { date in
-                HStack(spacing: 0) {
-                    dateView(date)
-                        .greedyWidth(.leading)
-                }.id(date.formattedString(format: DateFormatConstants.scrollCalendarFormat))
-            }
-        }
-        .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
-        .hPadding(20)
-    }
-    
-    func dateView(_ date: Date) -> some View {
-        OText(
-            date.formattedString(format: DateFormatConstants.detailGameSectionRowDateFormat),
-            token: .subtitle_03,
-            color: OColors.text01.swiftUIColor
-        )
-        .width(30)
-        .vPadding(20)
-        .hPadding(4)
-        .hPadding(12)
-        .background(OColors.ui02.swiftUIColor)
     }
 }
 
@@ -184,5 +116,20 @@ private extension GameDetailView {
                 radius: 20,
                 x: 0, y: 0
             )
+    }
+}
+
+private extension GameDetailView {
+    var alertView: some View {
+        Group {
+            if let alertCase = viewStore.alertCase {
+                switch alertCase {
+                case .error(let networkError):
+                    CommonErrorAlertView(networkError) {
+                        viewStore.send(.alertAction(.dismiss))
+                    }
+                }
+            }
+        }
     }
 }

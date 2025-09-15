@@ -9,13 +9,13 @@ import SwiftUI
 
 public struct CrossLineView: View {
     let crossLineSize: CGFloat
-    let circleSize: CGFloat
+    let circleSize: CGFloat?
     let strokeColor: Color
     let hasData: Bool
     
     public init(
         crossLineSize: CGFloat,
-        circleSize: CGFloat,
+        circleSize: CGFloat? = nil,
         strokeColor: Color,
         hasData: Bool
     ) {
