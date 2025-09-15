@@ -70,6 +70,7 @@ public struct GameDetailFeature {
         case fetchInfoWithPaging(MyGameDetailPagingRequest)
         case gameDetailInfoFetched(MyGameDetailInfo)
         case avatarButtonTapped(Int)
+        case detailUserInfoFetched(DetailUserInfo)
     }
     
     public var body: some ReducerOf<Self> {
@@ -105,9 +106,18 @@ public struct GameDetailFeature {
                 state.isLoading = false
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
-            case .avatarButtonTapped(let id):
+            case .avatarButtonTapped(let userID):
+                state.isLoading = true
+                
+                let gameID = state.gameID
+                return .run { send in
+                    await send(fetchDetailUserInfo(gameID: gameID, userID: userID))
+                }
+            case .detailUserInfoFetched(let detailUserInfo):
+                state.isLoading = false
                 // TODO: id -> 상세 sheet 띄우기
-                print("## id \(id)")
+
+                print(detailUserInfo)
                 return .none
             }
         }
@@ -138,6 +148,17 @@ private extension GameDetailFeature {
         switch response {
         case .success(let myGameDetailInfo):
             return .gameDetailInfoFetched(myGameDetailInfo)
+        case .failure(let error):
+            return .showAlert(.error(error))
+        }
+    }
+    
+    func fetchDetailUserInfo(gameID: Int, userID: Int) async -> Action {
+        let response = await gameUseCase.fetchDetailUserInfo(gameID, userID)
+        
+        switch response {
+        case .success(let detailUserInfo):
+            return .detailUserInfoFetched(detailUserInfo)
         case .failure(let error):
             return .showAlert(.error(error))
         }

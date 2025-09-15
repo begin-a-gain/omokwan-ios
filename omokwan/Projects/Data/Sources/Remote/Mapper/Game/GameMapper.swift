@@ -68,4 +68,17 @@ struct GameMapper {
             nextDate: response.nextDate ?? ""
         )
     }
+    
+    static func toDetailUserInfo(_ response: DetailUserInfoResponse?) throws -> DetailUserInfo {
+        guard let response = response else {
+            throw RemoteNetworkError.responseDataNilError
+        }
+
+        return DetailUserInfo(
+            nickname: response.nickName ?? "",
+            combo: response.combo ?? 0,
+            stones: response.participantNumbers ?? 0,
+            participantDays: response.participantDays ?? 0
+        )
+    }
 }

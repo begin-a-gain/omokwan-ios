@@ -78,4 +78,11 @@ extension EndPoint {
             queryParameters: request
         )
     }
+    
+    static func getDetailUserInfo(gameID: Int, userID: Int) -> EndPoint<T> {
+        return EndPoint(
+            path: .getDetailUserInfo(gameID, userID),
+            method: .GET
+        )
+    }
 }
