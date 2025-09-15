@@ -9,18 +9,18 @@ import SwiftUI
 
 struct CrossLineModifier: ViewModifier {
     let hasData: Bool
-    let circleSize: CGFloat
+    let circleSize: CGFloat?
     
     init(
         hasData: Bool,
-        circleSize: CGFloat
+        circleSize: CGFloat?
     ) {
         self.hasData = hasData
         self.circleSize = circleSize
     }
     
     func body(content: Content) -> some View {
-        if hasData {
+        if let circleSize = circleSize, hasData {
             content
                 .mask(
                     Rectangle()
