@@ -16,7 +16,7 @@ public struct MainCoordinatorFeature {
     public struct State: Equatable {
         public init() {}
 
-        var path: StackState<MainPath.State> = .init()
+        public var path: StackState<MainPath.State> = .init()
         var mainState: MainFeature.State = .init()
     }
 

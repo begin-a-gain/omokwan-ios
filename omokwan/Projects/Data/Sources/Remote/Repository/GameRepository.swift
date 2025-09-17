@@ -75,4 +75,18 @@ public struct GameRepository: GameRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func getDetailUserInfo(gameID: Int, userID: Int) async -> Result<DetailUserInfo, NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<DetailUserInfoResponse>>.getDetailUserInfo(
+                gameID: gameID,
+                userID: userID
+            )
+            
+            let response = try await apiService.call(endPoint)
+            return .success(try GameMapper.toDetailUserInfo(response.data))
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }
