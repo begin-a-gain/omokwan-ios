@@ -12,6 +12,8 @@ public struct OAlert: View {
     let title: String
     let content: String
     let primaryButtonAction: () -> Void
+    let secondaryButtonTitle: String?
+    let secondaryButtonBackgroundColor: Color?
     let secondaryButtonAction: (() -> Void)?
     
     public init(
@@ -19,12 +21,16 @@ public struct OAlert: View {
         title: String,
         content: String,
         primaryButtonAction: @escaping () -> Void,
+        secondaryButtonTitle: String? = nil,
+        secondaryButtonBackgroundColor: Color? = nil,
         secondaryButtonAction: (() -> Void)? = nil
     ) {
         self.type = type
         self.title = title
         self.content = content
         self.primaryButtonAction = primaryButtonAction
+        self.secondaryButtonTitle = secondaryButtonTitle
+        self.secondaryButtonBackgroundColor = secondaryButtonBackgroundColor
         self.secondaryButtonAction = secondaryButtonAction
     }
     
@@ -65,13 +71,13 @@ public struct OAlert: View {
                         }
                     } label: {
                         OText(
-                            "확인",
+                            secondaryButtonTitle ?? "확인",
                             token: .title_02,
                             color: OColors.textOn01.swiftUIColor
                         )
                         .vPadding(16)
                         .greedyWidth()
-                        .background(okbuttonBackgroundColor)
+                        .background(secondaryButtonBackgroundColor ?? okbuttonBackgroundColor)
                     }
                 }
             }
@@ -87,7 +93,7 @@ public struct OAlert: View {
     @ViewBuilder
     private var alertContents: some View {
         switch type {
-        case .default, .defaultOnlyOK, .defaultWithOpacity:
+        case .default, .defaultOnlyOK, .defaultWithOpacity, .customButton:
             VStack(spacing: 8) {
                 OText(
                     title,
@@ -129,4 +135,5 @@ public enum OAlertType {
     case defaultOnlyOK
     case onlyTextDefault
     case onlyTextWithOpacity
+    case customButton
 }
