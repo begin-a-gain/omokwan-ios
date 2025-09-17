@@ -54,7 +54,7 @@ public struct GameDetailView: View {
         }
         .sheet(store: store.scope(state: \.$userAvatarInfoSheet, action: \.userAvatarInfoSheet)) { store in
             UserAvatarInfoView(store: store)
-                .modifier(CommonSheetModifier(detent: [.medium]))
+                .modifier(DynamicSheetModifier())
         }
     }
     
@@ -147,8 +147,26 @@ private extension GameDetailView {
                     CommonErrorAlertView(networkError) {
                         viewStore.send(.alertAction(.dismiss))
                     }
+                case .kickOut(let nickname):
+                    kickOutAlertView(nickname)
                 }
             }
         }
+    }
+    
+    func kickOutAlertView(_ nickname: String) -> some View {
+        OAlert(
+            type: .default,
+            title: "이 멤버를 내보낼까요?",
+            content: "해당 멤버에 대한 기록이 대국에서 사라지며  복구 할 수 없어요.",
+            primaryButtonAction: {
+                viewStore.send(.alertAction(.dismiss))
+            },
+            secondaryButtonTitle: "내보내기",
+            secondaryButtonBackgroundColor: OColors.uiAlert.swiftUIColor,
+            secondaryButtonAction: {
+                viewStore.send(.kickOutAlertButtonTapped(nickname))
+            }
+        )
     }
 }

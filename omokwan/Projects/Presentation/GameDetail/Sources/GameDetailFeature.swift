@@ -25,6 +25,7 @@ public struct GameDetailFeature {
         
         public enum AlertCase: Equatable {
             case error(NetworkError)
+            case kickOut(String)
         }
         
         var alertCase: AlertCase?
@@ -75,6 +76,9 @@ public struct GameDetailFeature {
         case detailUserInfoFetched(DetailUserInfo)
         
         case userAvatarInfoSheet(PresentationAction<UserAvatarInfoFeature.Action>)
+        case shootStoneSuccess(String)
+        case shootStoneFailed
+        case kickOutAlertButtonTapped(String)
     }
     
     public var body: some ReducerOf<Self> {
@@ -119,20 +123,41 @@ public struct GameDetailFeature {
                 }
             case .detailUserInfoFetched(let detailUserInfo):
                 state.isLoading = false
-                state.userAvatarInfoSheet = .init(detailUserInfo: detailUserInfo)
+                let roles: [ParticipantRole] = [.me, .host, .other]
+                let index = Int.random(in: 0..<roles.count)
+                let role = roles[index]
+
+                // TODO: 방장 확인한 뒤, role 정확히 보내기
+                state.userAvatarInfoSheet = .init(detailUserInfo: detailUserInfo, participantRole: role)
 
                 return .none
-                
-            case .userAvatarInfoSheet(let presentationAction):
-                switch presentationAction {
-                case .presented(let sheetAction):
-                    switch sheetAction {
-                    case .onAppear:
-                        return .none
+            case .userAvatarInfoSheet(.presented(let sheetAction)):
+                switch sheetAction {
+                case .shootStoneButtonTapped(let nickname):
+                    let randomValue = Int.random(in: 0..<2)
+                    if randomValue == 0 {
+                        state.userAvatarInfoSheet = nil
+                        return .send(.shootStoneSuccess(nickname))
+                    } else {
+                        // TODO: 실패 어떻게 처리할지 논의 필요
+                        state.userAvatarInfoSheet = nil
+                        return .send(.shootStoneFailed)
                     }
+                case .kickOutButtonTapped(let nickname):
+                    state.userAvatarInfoSheet = nil
+                    
+                    return .send(.showAlert(.kickOut(nickname)))
                 default:
                     return .none
                 }
+            case .userAvatarInfoSheet(.dismiss):
+                return .none
+            case .shootStoneSuccess:
+                return .none
+            case .shootStoneFailed:
+                return .none
+            case .kickOutAlertButtonTapped:
+                return .send(.alertAction(.dismiss))
             }
         }
         .ifLet(\.$userAvatarInfoSheet, action: \.userAvatarInfoSheet) {
