@@ -6,6 +6,8 @@
 //
 
 import Domain
+import Foundation
+import Util
 
 public struct GameRepository: GameRepositoryProtocol {
     private let apiService: ApiService
@@ -89,4 +91,20 @@ public struct GameRepository: GameRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func putTodayGameStatus(_ gameID: Int) async -> Result<OmokStoneStatus, NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<TodayGameStatusResponse>>.putTodayGameStatus(
+                gameID: gameID,
+                queryParameters: TodayGameStatusRequest(
+                    date: Date.now.formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
+                )
+            )
+            let response = try await apiService.call(endPoint)
+            return .success(try GameMapper.toOmokStoneStatus(response.data))
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
+
 }

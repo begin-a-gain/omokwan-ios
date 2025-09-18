@@ -85,4 +85,12 @@ extension EndPoint {
             method: .GET
         )
     }
+    
+    static func putTodayGameStatus(gameID: Int, queryParameters: TodayGameStatusRequest) -> EndPoint<T> {
+        return EndPoint(
+            path: .putTodayGameStatus(gameID),
+            method: .PUT,
+            queryParameters: queryParameters
+        )
+    }
 }

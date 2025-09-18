@@ -81,4 +81,12 @@ struct GameMapper {
             participantDays: response.participantDays ?? 0
         )
     }
+    
+    static func toOmokStoneStatus(_ response: TodayGameStatusResponse?) throws -> OmokStoneStatus {
+        guard let response = response else {
+            throw RemoteNetworkError.responseDataNilError
+        }
+        
+        return (response.completed ?? false) ? .completed : .inCompleted
+    }
 }
