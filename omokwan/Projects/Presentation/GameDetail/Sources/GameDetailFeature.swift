@@ -79,6 +79,8 @@ public struct GameDetailFeature {
         case shootStoneSuccess(String)
         case shootStoneFailed
         case kickOutAlertButtonTapped(String)
+        case updateTodayOmokStatus
+        case omokStatusUpdated(OmokStoneStatus)
     }
     
     public var body: some ReducerOf<Self> {
@@ -158,6 +160,17 @@ public struct GameDetailFeature {
                 return .none
             case .kickOutAlertButtonTapped:
                 return .send(.alertAction(.dismiss))
+            case .updateTodayOmokStatus:
+                state.isLoading = true
+                let gameID = state.gameID
+                return .run { send in
+                    await send(updateTodayOmokStatus(gameID))
+                }
+            case .omokStatusUpdated(let status):
+                state.isLoading = false
+                state.isBottomButtonEnable = status == .inCompleted
+                // TODO: 오늘의 오목돌 바꾸기
+                return .none
             }
         }
         .ifLet(\.$userAvatarInfoSheet, action: \.userAvatarInfoSheet) {
@@ -202,6 +215,17 @@ private extension GameDetailFeature {
         switch response {
         case .success(let detailUserInfo):
             return .detailUserInfoFetched(detailUserInfo)
+        case .failure(let error):
+            return .showAlert(.error(error))
+        }
+    }
+    
+    func updateTodayOmokStatus(_ gameID: Int) async -> Action {
+        let response = await gameUseCase.updateTodayGameStatus(gameID)
+        
+        switch response {
+        case .success(let status):
+            return .omokStatusUpdated(status)
         case .failure(let error):
             return .showAlert(.error(error))
         }
