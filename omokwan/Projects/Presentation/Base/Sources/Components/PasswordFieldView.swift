@@ -1,25 +1,23 @@
 //
-//  MyGameAddPasswordField.swift
-//  MyGameAdd
+//  PasswordFieldView.swift
+//  Base
 //
-//  Created by 김동준 on 12/22/24
+//  Created by 김동준 on 9/21/25
 //
 
 import SwiftUI
 import DesignSystem
 
-struct MyGameAddPasswordField: View {
-    typealias PasswordFocusField = MyGameAddFeature.State.PasswordFocusField
-    
+struct PasswordFieldView: View {
     @Binding private var text: String
-    @FocusState.Binding private var focusedField: PasswordFocusField?
-    private let focusedFieldType: PasswordFocusField
+    @FocusState.Binding private var focusedField: PasswordField?
+    private let focusedFieldType: PasswordField
     private let refreshAction: () -> Void
     
     init(
         text: Binding<String>,
-        focusedField: FocusState<PasswordFocusField?>.Binding,
-        focusedFieldType: PasswordFocusField,
+        focusedField: FocusState<PasswordField?>.Binding,
+        focusedFieldType: PasswordField,
         refreshAction: @escaping () -> Void
     ) {
         self._text = text
@@ -60,6 +58,7 @@ struct MyGameAddPasswordField: View {
             .frame(20, 20)
             .padding(16)
             .tint(text.isEmpty ? OColors.strokeFocus.swiftUIColor : .clear)
+            .allowsHitTesting(false)
         }
         .onTapGesture {
             focusedField = .thousandsPlace
