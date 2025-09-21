@@ -9,14 +9,23 @@ import ComposableArchitecture
 import SwiftUI
 import DesignSystem
 import Util
+import Base
 
 public struct GameDetailView: View {
-    let store: StoreOf<GameDetailFeature>
-    @ObservedObject var viewStore: ViewStoreOf<GameDetailFeature>
+    private let store: StoreOf<GameDetailFeature>
+    @ObservedObject private var viewStore: ViewStoreOf<GameDetailFeature>
+    private let availableWidth: CGFloat
+    private let hPadding: CGFloat = 20
     
     public init(store: StoreOf<GameDetailFeature>) {
+        let deviceWidth: CGFloat = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }?
+            .windows.first { $0.isKeyWindow }?.bounds.width ?? 376
+        
         self.store = store
         self.viewStore = ViewStore(store, observe: { $0 })
+        self.availableWidth = deviceWidth - (hPadding * 2)
     }
     
     public var body: some View {
@@ -39,12 +48,20 @@ public struct GameDetailView: View {
         .onAppear {
             viewStore.send(.onAppear)
         }
+        .oLoading(isPresent: viewStore.isLoading)
+        .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
+            alertView
+        }
+        .sheet(store: store.scope(state: \.$userAvatarInfoSheet, action: \.userAvatarInfoSheet)) { store in
+            UserAvatarInfoView(store: store)
+                .modifier(DynamicSheetModifier())
+        }
     }
     
     private var gameDetailBody: some View {
         VStack(spacing: 0) {
             ONavigationBar(
-                title: viewStore.roomInfo.title,
+                title: viewStore.gameTitle,
                 leadingIcon: OImages.icArrowLeft.swiftUIImage,
                 leadingIconAction: {
                     viewStore.send(.navigateToBack)
@@ -55,97 +72,31 @@ public struct GameDetailView: View {
                 }
             )
             
-            stickyScrollView
-//                .padding(.bottom, 8)
+            StickyScrollView(
+                dateDictionary: viewStore.dateDictionary,
+                availableWidth: availableWidth,
+                hPadding: hPadding
+            )
+            .padding(.bottom, 8)
             
-//            userAvatarView
-//                .padding(.bottom, 20)
+            DetailUserAvatarView(
+                availableWidth: availableWidth,
+                hPadding: hPadding,
+                userInfos: [
+                    .init(userID: 5, nickname: "오목왕빡빡이"),
+                    .init(userID: 2, nickname: "오목왕갹갹이"),
+                    .init(userID: 3, nickname: "빡빡이"),
+                    .init(userID: 4, nickname: "갹갹이"),
+                    .init(userID: 1, nickname: "나는빡빡이다")
+                ],
+                action: { id in
+                    viewStore.send(.avatarButtonTapped(id))
+                }
+            )
+            .padding(.bottom, 20)
             
         }
         .background(OColors.uiBackground.swiftUIColor)
-    }
-}
-
-// MARK: About ScrollView
-private extension GameDetailView {
-    var stickyScrollView: some View {
-        ScrollViewReader { scrollProxy in
-            ScrollView {
-                LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
-                    ForEach(viewStore.dateDictionary.keys.sorted(), id: \.self) { key in
-                        if let dates = viewStore.dateDictionary[key] {
-                            Section(header: monthHeaderView(key)) {
-                                monthSectionBody(headerString: key, dates: dates)
-                                    .padding(.bottom, 20)
-                            }
-                            .background(OColors.uiBackground.swiftUIColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                        }
-                    }
-                }
-            }
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    let today = viewStore.now.seoulNow.formattedString(format: DateFormatConstants.scrollCalendarFormat)
-                    scrollProxy.scrollTo(today, anchor: .top)
-                }
-            }
-            .padding(.bottom, 8)
-        }
-    }
-    
-    func monthHeaderView(_ headerString: String) -> some View {
-        ZStack(alignment: .bottom) {
-            OText(
-                headerString,
-                token: .title_02,
-                color: OColors.text01.swiftUIColor
-            )
-            .greedyWidth()
-            .vPadding(8)
-            .background(OColors.ui02.swiftUIColor)
-            
-            Rectangle()
-                .height(2)
-                .greedyWidth()
-                .foregroundStyle(OColors.stroke02.swiftUIColor)
-        }
-        .cornerRadius(8, corners: [.topLeft, .topRight])
-        .hPadding(20)
-    }
-    
-    func monthSectionBody(headerString: String, dates: [Date]) -> some View {
-        VStack(spacing: 0) {
-            ForEach(dates, id: \.self) { date in
-                HStack(spacing: 0) {
-                    dateView(date)
-                        .greedyWidth(.leading)
-                }.id(date.formattedString(format: DateFormatConstants.scrollCalendarFormat))
-            }
-        }
-        .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
-        .hPadding(20)
-    }
-    
-    func dateView(_ date: Date) -> some View {
-        OText(
-            date.formattedString(format: DateFormatConstants.detailGameSectionRowDateFormat),
-            token: .subtitle_03,
-            color: OColors.text01.swiftUIColor
-        )
-        .width(30)
-        .vPadding(20)
-        .hPadding(4)
-        .hPadding(12)
-        .background(OColors.ui02.swiftUIColor)
-    }
-}
-
-private extension GameDetailView {
-    var userAvatarView: some View {
-        Rectangle()
-            .height(50)
-            .greedyWidth()
     }
 }
 
@@ -161,17 +112,9 @@ private extension GameDetailView {
             title: buttonTitle,
             status: viewStore.isBottomButtonEnable ? .default : .disable,
             type: .default
-        )
-        .vPadding(16)
-        .hPadding(20)
-    }
-    
-    var buttonView: some View {
-        OButton(
-            title: buttonTitle,
-            status: viewStore.isBottomButtonEnable ? .default : .disable,
-            type: .default
-        )
+        ) {
+            viewStore.send(.updateTodayOmokStatus)
+        }
         .vPadding(16)
         .hPadding(20)
     }
@@ -184,5 +127,38 @@ private extension GameDetailView {
                 radius: 20,
                 x: 0, y: 0
             )
+    }
+}
+
+private extension GameDetailView {
+    var alertView: some View {
+        Group {
+            if let alertCase = viewStore.alertCase {
+                switch alertCase {
+                case .error(let networkError):
+                    CommonErrorAlertView(networkError) {
+                        viewStore.send(.alertAction(.dismiss))
+                    }
+                case .kickOut(let nickname):
+                    kickOutAlertView(nickname)
+                }
+            }
+        }
+    }
+    
+    func kickOutAlertView(_ nickname: String) -> some View {
+        OAlert(
+            type: .default,
+            title: "이 멤버를 내보낼까요?",
+            content: "해당 멤버에 대한 기록이 대국에서 사라지며  복구 할 수 없어요.",
+            primaryButtonAction: {
+                viewStore.send(.alertAction(.dismiss))
+            },
+            secondaryButtonTitle: "내보내기",
+            secondaryButtonBackgroundColor: OColors.uiAlert.swiftUIColor,
+            secondaryButtonAction: {
+                viewStore.send(.kickOutAlertButtonTapped(nickname))
+            }
+        )
     }
 }

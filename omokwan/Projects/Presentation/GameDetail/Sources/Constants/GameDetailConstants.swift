@@ -11,4 +11,8 @@ struct GameDetailConstants {
     static let bottomTabBarHeight: Double = 100
     static let bottomPadding: CGFloat = 64
     static let homeIndicatorHeight: Double = 20
+    
+    static let calendarDayTextWidthRatio: CGFloat = 64.0 / 354.0
+    static let stoneRowWidthRatio: CGFloat = 290.0 / 354.0
+    static let calendarDayTextBorderWidthRadio: CGFloat = 37 / 64
 }

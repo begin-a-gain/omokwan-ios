@@ -74,7 +74,7 @@ public struct MyGameParticipateFeature {
         case showDoubleCheckAlert(GameRoomInformation)
         case alertAction(AlertFeature.Action)
         case alertParticipateButtonTapped(GameRoomInformation)
-        case navigateToGameDetail(GameRoomInformation)
+        case navigateToGameDetail(Int, String)
         
         case categoriesFetched([GameCategory])
         case passwordAlertCancelButtonTapped
@@ -193,7 +193,8 @@ public struct MyGameParticipateFeature {
                 } else {
                     return .merge([
                         .send(.alertAction(.dismiss)),
-                        .send(.navigateToGameDetail(roomInfo))
+                        // TODO: 나중에 API 나오고 roomInfo modeling 변경, 넘기는 파라미터 수정
+                        .send(.navigateToGameDetail(1, roomInfo.title))
                     ])
                 }
             case .navigateToGameDetail:

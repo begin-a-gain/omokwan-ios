@@ -10,6 +10,7 @@ import SignIn
 import SignUp
 import Main
 import Splash
+import GameDetail
 
 @Reducer
 public struct RootFeature {
@@ -54,8 +55,13 @@ public struct RootFeature {
                 switch mainCoordinatorAction {
                 case .mainAction(let mainAction):
                     return mainNavigation(&state, mainAction)
-                default:
-                    return .none
+                case .path(let pathAction):
+                    switch pathAction {
+                    case .element(id: _, action: MainCoordinatorFeature.MainPath.Action.gameDetail(let gameDetailAction)):
+                        return handleGameDetailAction(&state, gameDetailAction)
+                    default:
+                        return .none
+                    }
                 }
             case .path(.splash(let splashNavigationAction)):
                 return splashNavigation(&state, splashNavigationAction)
@@ -135,13 +141,35 @@ private extension RootFeature {
 
 // Splash
 private extension RootFeature {
-    private func splashNavigation(_ state: inout State, _ action: SplashFeature.Action) -> Effect<Action> {
+    func splashNavigation(_ state: inout State, _ action: SplashFeature.Action) -> Effect<Action> {
         switch action {
         case .navigateToSignIn:
             state.path = .signIn(.init())
             return .none
         case .navigateToMain:
             state.path = .main(.init())
+            return .none
+        default:
+            return .none
+        }
+    }
+}
+
+private extension RootFeature {
+    func handleGameDetailAction(_ state: inout State, _ action: GameDetailFeature.Action) -> Effect<Action> {
+        switch action {
+        case .shootStoneSuccess(let nickname):
+            state.toastMessage = "팅, ‘\(nickname)’님에게 오목알을 튕겼어요."
+            state.isToastPresented = true
+            return .none
+        case .shootStoneFailed:
+            // TODO: 실패 케이스 논의 후 적용 필요
+            state.toastMessage = "오목알 튕기기 실패!"
+            state.isToastPresented = true
+            return .none
+        case .kickOutAlertButtonTapped(let nickname):
+            state.toastMessage = "‘\(nickname)’님을 내보냈어요."
+            state.isToastPresented = true
             return .none
         default:
             return .none

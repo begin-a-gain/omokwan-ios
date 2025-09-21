@@ -51,4 +51,42 @@ struct GameMapper {
             )
         }
     }
+    
+    static func toMyGameDetailInfo(_ response: GameDetailPagingResponse?) throws -> MyGameDetailInfo {
+        guard let response = response else {
+            throw RemoteNetworkError.responseDataNilError
+        }
+        
+        return MyGameDetailInfo(
+            users: response.users?.map {
+                $0.toDomain()
+            } ?? [],
+            dates: response.dates?.map {
+                $0.toDomain()
+            } ?? [],
+            previousDate: response.previousDate ?? "",
+            nextDate: response.nextDate ?? ""
+        )
+    }
+    
+    static func toDetailUserInfo(_ response: DetailUserInfoResponse?) throws -> DetailUserInfo {
+        guard let response = response else {
+            throw RemoteNetworkError.responseDataNilError
+        }
+
+        return DetailUserInfo(
+            nickname: response.nickName ?? "",
+            combo: response.combo ?? 0,
+            stones: response.participantNumbers ?? 0,
+            participantDays: response.participantDays ?? 0
+        )
+    }
+    
+    static func toOmokStoneStatus(_ response: TodayGameStatusResponse?) throws -> OmokStoneStatus {
+        guard let response = response else {
+            throw RemoteNetworkError.responseDataNilError
+        }
+        
+        return (response.completed ?? false) ? .completed : .inCompleted
+    }
 }

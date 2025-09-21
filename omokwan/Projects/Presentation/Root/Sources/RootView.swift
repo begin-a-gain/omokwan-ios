@@ -106,9 +106,12 @@ private extension RootView {
         let bottomTabBarHeight = MainUtil.getBottomTabBarHeight(hasBottomSafeArea)
         let defaultPadding: Double = 24
         
-        if case .main = viewStore.path {
-            return bottomTabBarHeight + defaultPadding
-        } else {
+        switch viewStore.path {
+        case .main(let mainState):
+            return mainState.path.contains { if case .gameDetail = $0 { true } else { false } }
+                ? bottomTabBarHeight
+                : bottomTabBarHeight + defaultPadding
+        default:
             return defaultPadding
         }
     }

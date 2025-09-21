@@ -6,6 +6,8 @@
 //
 
 import Domain
+import Foundation
+import Util
 
 public struct GameRepository: GameRepositoryProtocol {
     private let apiService: ApiService
@@ -54,4 +56,55 @@ public struct GameRepository: GameRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func getDetailInfoWithPaging(
+        gameID: Int,
+        dateString: String,
+        pageSize: Int
+    ) async -> Result<MyGameDetailInfo, NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<GameDetailPagingResponse>>.getDetailInfoWithPaging(
+                gameID: gameID,
+                request: GameDetailPagingRequest(
+                    date: dateString,
+                    size: pageSize
+                )
+            )
+            
+            let response = try await apiService.call(endPoint)
+            return .success(try GameMapper.toMyGameDetailInfo(response.data))
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
+    
+    public func getDetailUserInfo(gameID: Int, userID: Int) async -> Result<DetailUserInfo, NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<DetailUserInfoResponse>>.getDetailUserInfo(
+                gameID: gameID,
+                userID: userID
+            )
+            
+            let response = try await apiService.call(endPoint)
+            return .success(try GameMapper.toDetailUserInfo(response.data))
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
+    
+    public func putTodayGameStatus(_ gameID: Int) async -> Result<OmokStoneStatus, NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<TodayGameStatusResponse>>.putTodayGameStatus(
+                gameID: gameID,
+                queryParameters: TodayGameStatusRequest(
+                    date: Date.now.formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
+                )
+            )
+            let response = try await apiService.call(endPoint)
+            return .success(try GameMapper.toOmokStoneStatus(response.data))
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
+
 }
