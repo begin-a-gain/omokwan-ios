@@ -11,17 +11,22 @@ import Base
 
 @Reducer
 public struct MyGameParticipateFeature {
+    @Dependency(\.gameUseCase) private var gameUseCase
+
     public init() {}
     
     public struct State: Equatable {
         public init() {}
         
         public enum AlertCase: Equatable {
+            case error(NetworkError)
             case participateDoubleCheck(GameRoomInformation)
+            case password
         }
         var alertCase: AlertCase?
         var alertState: AlertFeature.State = .init()
-        
+        var isLoading: Bool = false
+
         enum CategoryFilterType {
             case availableRoom
             case category
@@ -46,11 +51,19 @@ public struct MyGameParticipateFeature {
         
         var selectedCategoryTitles: [String] = []
         var gameRoomInformationList: [GameRoomInformation] = []
+        var categories: [GameCategory] = []
+        
+        @BindingState var thousandsPlace: String = ""
+        @BindingState var hundredsPlace: String = ""
+        @BindingState var tensPlace: String = ""
+        @BindingState var onesPlace: String = ""
     }
     
     public enum Action: BindableAction {
         case onAppear
         case binding(BindingAction<State>)
+        case showAlert(State.AlertCase)
+
         case navigateToBack
         case resetFilterButtonTapped
         case availableParticipateRoomFilterTapped
@@ -62,16 +75,25 @@ public struct MyGameParticipateFeature {
         case alertAction(AlertFeature.Action)
         case alertParticipateButtonTapped(GameRoomInformation)
         case navigateToGameDetail(GameRoomInformation)
+        
+        case categoriesFetched([GameCategory])
+        case passwordAlertCancelButtonTapped
+        case passwordAlertConfirmButtonTapped
     }
     
     public var body: some ReducerOf<Self> {
         BindingReducer()
+        Scope(state: \.alertState, action: \.alertAction) {
+            AlertFeature()
+        }
         Reduce { state, action in
             switch action {
             case .alertAction:
                 return .none
-            case .binding:
-                return .none
+            case .showAlert(let alertCase):
+                state.isLoading = false
+                state.alertCase = alertCase
+                return .send(.alertAction(.present))
             case .onAppear:
                 state.gameRoomInformationList = [
                     .init(
@@ -115,6 +137,10 @@ public struct MyGameParticipateFeature {
                         roomStatus: .unavailable
                     )
                 ]
+                return .run { send in
+                    await send(fetchCategories())
+                }
+            case .binding:
                 return .none
             case .navigateToBack:
                 return .none
@@ -126,7 +152,10 @@ public struct MyGameParticipateFeature {
                 state.isAvailableParticipateRoomSelected.toggle()
                 return .none
             case .categoryFilterTapped:
-                state.categorySheet = .init(selectedCategoryTitles: state.selectedCategoryTitles)
+                state.categorySheet = .init(
+                    categories: state.categories,
+                    selectedCategoryTitles: state.selectedCategoryTitles
+                )
                 return .none
             case .searchBarClearButtonTapped:
                 state.searchText = ""
@@ -159,6 +188,7 @@ public struct MyGameParticipateFeature {
             case .alertParticipateButtonTapped(let roomInfo):
                 if roomInfo.isPrivateRoom {
                     // TODO: 비공개코드 alert 필요
+                    state.alertCase = .password
                     return .none
                 } else {
                     return .merge([
@@ -168,13 +198,41 @@ public struct MyGameParticipateFeature {
                 }
             case .navigateToGameDetail:
                 return .none
+            case .categoriesFetched(let categories):
+                state.isLoading = false
+                state.categories = categories
+                return .none
+            case .passwordAlertCancelButtonTapped:
+                return .send(.alertAction(.dismiss))
+            case .passwordAlertConfirmButtonTapped:
+                guard let thousands = Int(state.thousandsPlace),
+                      let hundreds = Int(state.hundredsPlace),
+                      let tens = Int(state.tensPlace),
+                      let ones = Int(state.onesPlace)
+                else { return .none }
+                
+                let password = (1000 * thousands) + (100 * hundreds) + (10 * tens) + ones
+                
+                print("password = \(password)")
+                // TODO: 참여 API 호출
+                
+                return .send(.alertAction(.dismiss))
             }
         }
         .ifLet(\.$categorySheet, action: \.categorySheet) {
             MyGameParticipateCategorySheetFeature()
         }
-        Scope(state: \.alertState, action: \.alertAction) {
-            AlertFeature()
+    }
+}
+
+private extension MyGameParticipateFeature {
+    func fetchCategories() async -> Action {
+        let response = await gameUseCase.fetchGameCategories()
+        switch response {
+        case .success(let categories):
+            return .categoriesFetched(categories)
+        case .failure(let error):
+            return .showAlert(.error(error))
         }
     }
 }

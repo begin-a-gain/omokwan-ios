@@ -12,8 +12,9 @@ import Base
 import Domain
 
 public struct MyGameParticipateView: View {
-    let store: StoreOf<MyGameParticipateFeature>
-    @ObservedObject var viewStore: ViewStoreOf<MyGameParticipateFeature>
+    private let store: StoreOf<MyGameParticipateFeature>
+    @ObservedObject private var viewStore: ViewStoreOf<MyGameParticipateFeature>
+    @FocusState private var passwordFocusedField: PasswordField?
 
     public init(store: StoreOf<MyGameParticipateFeature>) {
         self.store = store
@@ -29,15 +30,9 @@ public struct MyGameParticipateView: View {
             MyGameParticipateCategorySheetView(store: store)
                 .modifier(CommonSheetModifier(detent: [.medium]))
         }
+        .oLoading(isPresent: viewStore.isLoading)
         .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {
-            Group {
-                if let alertCase = viewStore.alertCase {
-                    switch alertCase {
-                    case .participateDoubleCheck(let roomInfo):
-                        participateDoubleCheckAlertView(roomInfo: roomInfo)
-                    }
-                }
-            }
+            alertView
         }
     }
     
@@ -82,7 +77,7 @@ private extension MyGameParticipateView {
             Spacer().width(4)
             
             TextField(
-                "대국 이름, 대국방 ID, 방장으로 검색하기",
+                "대국 이름, 대국 ID, 대국장으로 검색하기",
                 text: viewStore.$searchText
             )
             .multilineTextAlignment(.leading)
@@ -176,6 +171,7 @@ private extension MyGameParticipateView {
                             viewStore.send(.participateButtonTapped(roomInfo))
                         }
                     )
+                    .id(roomInfo.title) // TODO: API 응답 값 보고 id 값으로 변경 (아직 안나옴)
                 }
             }.clipShape(RoundedRectangle(cornerRadius: 8))
             .padding(20)
@@ -184,6 +180,21 @@ private extension MyGameParticipateView {
 }
 
 private extension MyGameParticipateView {
+    var alertView: some View {
+        Group {
+            if let alertCase = viewStore.alertCase {
+                switch alertCase {
+                case .error(let error):
+                    errorAlertView(error)
+                case .participateDoubleCheck(let roomInfo):
+                    participateDoubleCheckAlertView(roomInfo: roomInfo)
+                case .password:
+                    passwordAlertView
+                }
+            }
+        }
+    }
+    
     func participateDoubleCheckAlertView(roomInfo: GameRoomInformation) -> some View {
         OAlert(
             type: .default,
@@ -196,6 +207,23 @@ private extension MyGameParticipateView {
                 viewStore.send(.alertParticipateButtonTapped(roomInfo))
             }
         )
-
+    }
+    
+    func errorAlertView(_ networkError: NetworkError) -> some View {
+        CommonErrorAlertView(networkError) {
+            viewStore.send(.alertAction(.dismiss))
+        }
+    }
+    
+    var passwordAlertView: some View {
+        CommonPasswordAlertView(
+            focusedField: $passwordFocusedField,
+            thousandsPlaceText: viewStore.$thousandsPlace,
+            hundredsPlaceText: viewStore.$hundredsPlace,
+            tensPlaceText: viewStore.$tensPlace,
+            onesPlaceText: viewStore.$onesPlace,
+            primaryButtonAction: { viewStore.send(.passwordAlertCancelButtonTapped) },
+            secondaryButtonAction: { viewStore.send(.passwordAlertConfirmButtonTapped) }
+        )
     }
 }

@@ -116,7 +116,7 @@ private extension GameRoomCardView {
 private extension GameRoomCardView {
     var hostSection: some View {
         OText(
-            roomInfo.hostName,
+            "\(roomInfo.hostName)님의 대국",
             token: .caption,
             color: OColors.text01.swiftUIColor
         ).greedyWidth(.leading)

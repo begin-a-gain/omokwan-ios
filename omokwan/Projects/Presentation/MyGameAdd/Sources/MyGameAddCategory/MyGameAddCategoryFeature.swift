@@ -8,7 +8,6 @@
 import ComposableArchitecture
 import Domain
 import Base
-import Domain
 
 @Reducer
 public struct MyGameAddCategoryFeature {
