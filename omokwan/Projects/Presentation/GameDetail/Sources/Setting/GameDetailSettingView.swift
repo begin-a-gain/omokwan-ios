@@ -8,6 +8,8 @@
 import ComposableArchitecture
 import SwiftUI
 import DesignSystem
+import Base
+import Domain
 
 public struct GameDetailSettingView: View {
     private let store: StoreOf<GameDetailSettingFeature>
@@ -25,6 +27,13 @@ public struct GameDetailSettingView: View {
     
     public var body: some View {
         settingBody
+            .onAppear {
+                viewStore.send(.onAppear)
+            }
+            .oLoading(isPresent: viewStore.isLoading)
+            .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
+                alertView
+            }
     }
     
     private var settingBody: some View {
@@ -101,5 +110,24 @@ private extension GameDetailSettingView {
             isLabel: true,
             placeholder: "대국 이름을 적어주세요."
         )
+    }
+}
+
+private extension GameDetailSettingView {
+    var alertView: some View {
+        Group {
+            if let alertCase = viewStore.alertCase {
+                switch alertCase {
+                case .error(let error):
+                    errorAlertView(error)
+                }
+            }
+        }
+    }
+    
+    func errorAlertView(_ networkError: NetworkError) -> some View {
+        CommonErrorAlertView(networkError) {
+            viewStore.send(.alertAction(.dismiss))
+        }
     }
 }
