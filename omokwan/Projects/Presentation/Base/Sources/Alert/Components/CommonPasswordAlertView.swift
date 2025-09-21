@@ -18,7 +18,6 @@ public struct CommonPasswordAlertView: View {
 
     private let primaryButtonAction: () -> Void
     private let secondaryButtonAction: () -> Void
-    private let passwordRefreshAction: () -> Void
 
     public init(
         focusedField: FocusState<PasswordField?>.Binding,
@@ -27,8 +26,7 @@ public struct CommonPasswordAlertView: View {
         tensPlaceText: Binding<String>,
         onesPlaceText: Binding<String>,
         primaryButtonAction: @escaping () -> Void,
-        secondaryButtonAction: @escaping () -> Void,
-        passwordRefreshAction: @escaping () -> Void
+        secondaryButtonAction: @escaping () -> Void
     ) {
         self._focusedField = focusedField
         self._thousandsPlaceText = thousandsPlaceText
@@ -37,7 +35,6 @@ public struct CommonPasswordAlertView: View {
         self._onesPlaceText = onesPlaceText
         self.primaryButtonAction = primaryButtonAction
         self.secondaryButtonAction = secondaryButtonAction
-        self.passwordRefreshAction = passwordRefreshAction
     }
     
     public var body: some View {
@@ -88,5 +85,12 @@ public struct CommonPasswordAlertView: View {
             focusedField = .thousandsPlace
             passwordRefreshAction()
         }
+    }
+    
+    private func passwordRefreshAction() {
+        thousandsPlaceText = ""
+        hundredsPlaceText = ""
+        tensPlaceText = ""
+        onesPlaceText = ""
     }
 }

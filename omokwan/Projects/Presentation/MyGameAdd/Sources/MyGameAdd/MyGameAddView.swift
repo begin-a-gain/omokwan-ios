@@ -313,8 +313,7 @@ private extension MyGameAddView {
             tensPlaceText: viewStore.$tensPlace,
             onesPlaceText: viewStore.$onesPlace,
             primaryButtonAction: { viewStore.send(.passwordAlertCancelButtonTapped) },
-            secondaryButtonAction: { viewStore.send(.passwordAlertConfirmButtonTapped) },
-            passwordRefreshAction: { viewStore.send(.passwordRefresh) }
+            secondaryButtonAction: { viewStore.send(.passwordAlertConfirmButtonTapped) }
         )
     }
 

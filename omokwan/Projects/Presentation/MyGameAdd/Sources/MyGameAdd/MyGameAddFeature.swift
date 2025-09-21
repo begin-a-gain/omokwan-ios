@@ -100,7 +100,6 @@ public struct MyGameAddFeature {
         case showAlert(State.AlertCase)
         case passwordAlertConfirmButtonTapped
         case passwordAlertCancelButtonTapped
-        case passwordRefresh
         case privateRoomCodeButtonTapped
         case gameStartButtonTapped
         case createAlertCancelButtonTapped
@@ -221,12 +220,6 @@ public struct MyGameAddFeature {
                 return .send(.alertAction(.dismiss))
             case .passwordAlertCancelButtonTapped:
                 return .send(.alertAction(.dismiss))
-            case .passwordRefresh:
-                state.thousandsPlace = ""
-                state.hundredsPlace = ""
-                state.tensPlace = ""
-                state.onesPlace = ""
-                return .none
             case .privateRoomCodeButtonTapped:
                 if let _ = state.privateRoomPassword {
                     if state.isPrivateRoomSelected {
