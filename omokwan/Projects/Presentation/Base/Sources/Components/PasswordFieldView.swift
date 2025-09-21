@@ -58,6 +58,7 @@ struct PasswordFieldView: View {
             .frame(20, 20)
             .padding(16)
             .tint(text.isEmpty ? OColors.strokeFocus.swiftUIColor : .clear)
+            .allowsHitTesting(false)
         }
         .onTapGesture {
             focusedField = .thousandsPlace
