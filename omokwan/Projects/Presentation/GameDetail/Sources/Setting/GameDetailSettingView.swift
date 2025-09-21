@@ -223,7 +223,7 @@ private extension GameDetailSettingView {
 
     var selectedCategoryString: String {
         if let category = viewStore.selectedCategory {
-            return category.rawValue
+            return category.category
         } else {
             return "선택"
         }
