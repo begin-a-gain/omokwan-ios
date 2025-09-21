@@ -14,6 +14,7 @@ import Domain
 public struct MyGameParticipateView: View {
     private let store: StoreOf<MyGameParticipateFeature>
     @ObservedObject private var viewStore: ViewStoreOf<MyGameParticipateFeature>
+    @FocusState private var passwordFocusedField: PasswordField?
 
     public init(store: StoreOf<MyGameParticipateFeature>) {
         self.store = store
@@ -187,6 +188,8 @@ private extension MyGameParticipateView {
                     errorAlertView(error)
                 case .participateDoubleCheck(let roomInfo):
                     participateDoubleCheckAlertView(roomInfo: roomInfo)
+                case .password:
+                    passwordAlertView
                 }
             }
         }
@@ -210,5 +213,17 @@ private extension MyGameParticipateView {
         CommonErrorAlertView(networkError) {
             viewStore.send(.alertAction(.dismiss))
         }
+    }
+    
+    var passwordAlertView: some View {
+        CommonPasswordAlertView(
+            focusedField: $passwordFocusedField,
+            thousandsPlaceText: viewStore.$thousandsPlace,
+            hundredsPlaceText: viewStore.$hundredsPlace,
+            tensPlaceText: viewStore.$tensPlace,
+            onesPlaceText: viewStore.$onesPlace,
+            primaryButtonAction: { viewStore.send(.passwordAlertCancelButtonTapped) },
+            secondaryButtonAction: { viewStore.send(.passwordAlertConfirmButtonTapped) }
+        )
     }
 }

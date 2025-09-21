@@ -21,6 +21,7 @@ public struct MyGameParticipateFeature {
         public enum AlertCase: Equatable {
             case error(NetworkError)
             case participateDoubleCheck(GameRoomInformation)
+            case password
         }
         var alertCase: AlertCase?
         var alertState: AlertFeature.State = .init()
@@ -51,6 +52,11 @@ public struct MyGameParticipateFeature {
         var selectedCategoryTitles: [String] = []
         var gameRoomInformationList: [GameRoomInformation] = []
         var categories: [GameCategory] = []
+        
+        @BindingState var thousandsPlace: String = ""
+        @BindingState var hundredsPlace: String = ""
+        @BindingState var tensPlace: String = ""
+        @BindingState var onesPlace: String = ""
     }
     
     public enum Action: BindableAction {
@@ -71,15 +77,18 @@ public struct MyGameParticipateFeature {
         case navigateToGameDetail(GameRoomInformation)
         
         case categoriesFetched([GameCategory])
+        case passwordAlertCancelButtonTapped
+        case passwordAlertConfirmButtonTapped
     }
     
     public var body: some ReducerOf<Self> {
         BindingReducer()
+        Scope(state: \.alertState, action: \.alertAction) {
+            AlertFeature()
+        }
         Reduce { state, action in
             switch action {
             case .alertAction:
-                return .none
-            case .binding:
                 return .none
             case .showAlert(let alertCase):
                 state.isLoading = false
@@ -131,6 +140,8 @@ public struct MyGameParticipateFeature {
                 return .run { send in
                     await send(fetchCategories())
                 }
+            case .binding:
+                return .none
             case .navigateToBack:
                 return .none
             case .resetFilterButtonTapped:
@@ -177,6 +188,7 @@ public struct MyGameParticipateFeature {
             case .alertParticipateButtonTapped(let roomInfo):
                 if roomInfo.isPrivateRoom {
                     // TODO: 비공개코드 alert 필요
+                    state.alertCase = .password
                     return .none
                 } else {
                     return .merge([
@@ -190,13 +202,25 @@ public struct MyGameParticipateFeature {
                 state.isLoading = false
                 state.categories = categories
                 return .none
+            case .passwordAlertCancelButtonTapped:
+                return .send(.alertAction(.dismiss))
+            case .passwordAlertConfirmButtonTapped:
+                guard let thousands = Int(state.thousandsPlace),
+                      let hundreds = Int(state.hundredsPlace),
+                      let tens = Int(state.tensPlace),
+                      let ones = Int(state.onesPlace)
+                else { return .none }
+                
+                let password = (1000 * thousands) + (100 * hundreds) + (10 * tens) + ones
+                
+                print("password = \(password)")
+                // TODO: 참여 API 호출
+                
+                return .send(.alertAction(.dismiss))
             }
         }
         .ifLet(\.$categorySheet, action: \.categorySheet) {
             MyGameParticipateCategorySheetFeature()
-        }
-        Scope(state: \.alertState, action: \.alertAction) {
-            AlertFeature()
         }
     }
 }
