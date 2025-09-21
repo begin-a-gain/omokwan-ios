@@ -13,6 +13,8 @@ import Base
 
 @Reducer
 public struct GameDetailSettingFeature {
+    @Dependency(\.gameUseCase) private var gameUseCase
+
     public init() {}
     
     public struct State: Equatable {
@@ -29,6 +31,8 @@ public struct GameDetailSettingFeature {
         @BindingState var gameName: String = ""
         var maxNumOfPeople: Int = 5
         var selectedCategory: GameCategory?
+        var categories: [GameCategory] = []
+        
         var privateRoomPassword: String?
         @BindingState var isPrivateRoomSelected: Bool = false
         let isHost: Bool = true
@@ -47,6 +51,7 @@ public struct GameDetailSettingFeature {
         case inviteButtonTapped
         case hostChangeButtonTapped
         case exitButtonTapped
+        case categoriesFetched([GameCategory])
     }
     
     public var body: some ReducerOf<Self> {
@@ -84,7 +89,23 @@ public struct GameDetailSettingFeature {
                 return .none
             case .exitButtonTapped:
                 return .none
+            case .categoriesFetched(let categories):
+                state.isLoading = false
+                state.categories = categories
+                return .none
             }
+        }
+    }
+}
+
+private extension GameDetailSettingFeature {
+    func fetchCategories() async -> Action {
+        let response = await gameUseCase.fetchGameCategories()
+        switch response {
+        case .success(let categories):
+            return .categoriesFetched(categories)
+        case .failure(let error):
+            return .showAlert(.error(error))
         }
     }
 }
