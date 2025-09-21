@@ -30,14 +30,6 @@ public struct MyGameAddFeature {
             case error(NetworkError)
         }
         
-        // MARK: Password Focus Field
-        public enum PasswordFocusField {
-            case thousandsPlace
-            case hundredsPlace
-            case tensPlace
-            case onesPlace
-        }
-        
         enum GameNameValidStatus {
             case empty
             case valid
