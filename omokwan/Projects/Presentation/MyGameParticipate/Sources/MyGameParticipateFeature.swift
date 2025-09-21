@@ -11,17 +11,21 @@ import Base
 
 @Reducer
 public struct MyGameParticipateFeature {
+    @Dependency(\.gameUseCase) private var gameUseCase
+
     public init() {}
     
     public struct State: Equatable {
         public init() {}
         
         public enum AlertCase: Equatable {
+            case error(NetworkError)
             case participateDoubleCheck(GameRoomInformation)
         }
         var alertCase: AlertCase?
         var alertState: AlertFeature.State = .init()
-        
+        var isLoading: Bool = false
+
         enum CategoryFilterType {
             case availableRoom
             case category
@@ -46,11 +50,14 @@ public struct MyGameParticipateFeature {
         
         var selectedCategoryTitles: [String] = []
         var gameRoomInformationList: [GameRoomInformation] = []
+        var categories: [GameCategory] = []
     }
     
     public enum Action: BindableAction {
         case onAppear
         case binding(BindingAction<State>)
+        case showAlert(State.AlertCase)
+
         case navigateToBack
         case resetFilterButtonTapped
         case availableParticipateRoomFilterTapped
@@ -62,6 +69,8 @@ public struct MyGameParticipateFeature {
         case alertAction(AlertFeature.Action)
         case alertParticipateButtonTapped(GameRoomInformation)
         case navigateToGameDetail(GameRoomInformation)
+        
+        case categoriesFetched([GameCategory])
     }
     
     public var body: some ReducerOf<Self> {
@@ -72,6 +81,10 @@ public struct MyGameParticipateFeature {
                 return .none
             case .binding:
                 return .none
+            case .showAlert(let alertCase):
+                state.isLoading = false
+                state.alertCase = alertCase
+                return .send(.alertAction(.present))
             case .onAppear:
                 state.gameRoomInformationList = [
                     .init(
@@ -115,7 +128,9 @@ public struct MyGameParticipateFeature {
                         roomStatus: .unavailable
                     )
                 ]
-                return .none
+                return .run { send in
+                    await send(fetchCategories())
+                }
             case .navigateToBack:
                 return .none
             case .resetFilterButtonTapped:
@@ -126,7 +141,10 @@ public struct MyGameParticipateFeature {
                 state.isAvailableParticipateRoomSelected.toggle()
                 return .none
             case .categoryFilterTapped:
-                state.categorySheet = .init(selectedCategoryTitles: state.selectedCategoryTitles)
+                state.categorySheet = .init(
+                    categories: state.categories,
+                    selectedCategoryTitles: state.selectedCategoryTitles
+                )
                 return .none
             case .searchBarClearButtonTapped:
                 state.searchText = ""
@@ -168,6 +186,10 @@ public struct MyGameParticipateFeature {
                 }
             case .navigateToGameDetail:
                 return .none
+            case .categoriesFetched(let categories):
+                state.isLoading = false
+                state.categories = categories
+                return .none
             }
         }
         .ifLet(\.$categorySheet, action: \.categorySheet) {
@@ -175,6 +197,18 @@ public struct MyGameParticipateFeature {
         }
         Scope(state: \.alertState, action: \.alertAction) {
             AlertFeature()
+        }
+    }
+}
+
+private extension MyGameParticipateFeature {
+    func fetchCategories() async -> Action {
+        let response = await gameUseCase.fetchGameCategories()
+        switch response {
+        case .success(let categories):
+            return .categoriesFetched(categories)
+        case .failure(let error):
+            return .showAlert(.error(error))
         }
     }
 }

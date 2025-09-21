@@ -12,11 +12,15 @@ public struct MyGameParticipateCategorySheetFeature: Reducer {
     public init() {}
     
     public struct State: Equatable {
-        public init(selectedCategoryTitles: [String]) {
+        public init(
+            categories: [GameCategory],
+            selectedCategoryTitles: [String]
+        ) {
+            self.categories = categories
             self.selectedCategoryTitles = Set(selectedCategoryTitles)
         }
         
-        var categories: [GameCategory] = []
+        var categories: [GameCategory]
         var selectedCategoryTitles: Set<String>
     }
     
