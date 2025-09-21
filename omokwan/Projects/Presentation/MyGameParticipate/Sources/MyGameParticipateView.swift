@@ -170,6 +170,7 @@ private extension MyGameParticipateView {
                             viewStore.send(.participateButtonTapped(roomInfo))
                         }
                     )
+                    .id(roomInfo.title) // TODO: API 응답 값 보고 id 값으로 변경 (아직 안나옴)
                 }
             }.clipShape(RoundedRectangle(cornerRadius: 8))
             .padding(20)
