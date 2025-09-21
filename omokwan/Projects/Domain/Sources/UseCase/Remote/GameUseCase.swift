@@ -14,6 +14,7 @@ public struct GameUseCase {
     public let fetchGameCategories: () async -> Result<[GameCategory], NetworkError>
     public let fetchDetailInfoWithPaging: (_ gameID: Int, _ dateString: String, _ pageSize: Int) async -> Result<MyGameDetailInfo, NetworkError>
     public let fetchDetailUserInfo: (_ gameID: Int, _ userID: Int) async -> Result<DetailUserInfo, NetworkError>
+    public let updateTodayGameStatus: (_ gameID: Int) async -> Result<OmokStoneStatus, NetworkError>
 }
 
 extension GameUseCase: DependencyKey {
@@ -41,6 +42,9 @@ extension GameUseCase: DependencyKey {
                     gameID: gameID,
                     userID: userID
                 )
+            },
+            updateTodayGameStatus: { gameID in
+                await repository.putTodayGameStatus(gameID)
             }
         )
     }()

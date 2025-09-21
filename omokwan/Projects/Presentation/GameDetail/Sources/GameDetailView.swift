@@ -112,17 +112,9 @@ private extension GameDetailView {
             title: buttonTitle,
             status: viewStore.isBottomButtonEnable ? .default : .disable,
             type: .default
-        )
-        .vPadding(16)
-        .hPadding(20)
-    }
-    
-    var buttonView: some View {
-        OButton(
-            title: buttonTitle,
-            status: viewStore.isBottomButtonEnable ? .default : .disable,
-            type: .default
-        )
+        ) {
+            viewStore.send(.updateTodayOmokStatus)
+        }
         .vPadding(16)
         .hPadding(20)
     }

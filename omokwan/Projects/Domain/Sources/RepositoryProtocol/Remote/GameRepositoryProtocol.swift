@@ -11,4 +11,5 @@ public protocol GameRepositoryProtocol {
     func getGameCategories() async -> Result<[GameCategory], NetworkError>
     func getDetailInfoWithPaging(gameID: Int, dateString: String, pageSize: Int) async -> Result<MyGameDetailInfo, NetworkError>
     func getDetailUserInfo(gameID: Int, userID: Int) async -> Result<DetailUserInfo, NetworkError>
+    func putTodayGameStatus(_ gameID: Int) async -> Result<OmokStoneStatus, NetworkError>
 }
