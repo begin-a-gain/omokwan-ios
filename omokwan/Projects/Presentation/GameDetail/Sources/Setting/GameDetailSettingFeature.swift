@@ -22,6 +22,7 @@ public struct GameDetailSettingFeature {
         
         public enum AlertCase: Equatable {
             case error(NetworkError)
+            case password
         }
         
         var alertCase: AlertCase?
@@ -35,6 +36,11 @@ public struct GameDetailSettingFeature {
         
         var privateRoomPassword: String?
         var isPrivateRoom: Bool = false
+        @BindingState var thousandsPlace: String = ""
+        @BindingState var hundredsPlace: String = ""
+        @BindingState var tensPlace: String = ""
+        @BindingState var onesPlace: String = ""
+
         let isHost: Bool = true
         
         @PresentationState var maxNumOfPeopleSheet: CommonMaxNumOfPeopleFeature.State?
@@ -56,6 +62,7 @@ public struct GameDetailSettingFeature {
         case exitButtonTapped
         case categoriesFetched([GameCategory])
         case maxNumOfPeopleSheet(PresentationAction<CommonMaxNumOfPeopleFeature.Action>)
+        case passwordAlertConfirmButtonTapped
     }
     
     public var body: some ReducerOf<Self> {
@@ -85,6 +92,12 @@ public struct GameDetailSettingFeature {
             case .gameCategorySettingButtonTapped:
                 return .none
             case .privateRoomCodeButtonTapped:
+                if let _ = state.privateRoomPassword {
+                    if state.isPrivateRoom {
+                        return .send(.showAlert(.password))
+                    }
+                }
+                
                 return .none
             case .privateRoomButtonAction:
                 if state.isHost {
@@ -96,6 +109,15 @@ public struct GameDetailSettingFeature {
                     return .none
                 }
             case .privateRoomToggleButtonTapped:
+                if state.isPrivateRoom {
+                    state.isPrivateRoom = false
+                } else {
+                    if let _ = state.privateRoomPassword {
+                        state.isPrivateRoom = true
+                    } else {
+                        return .send(.showAlert(.password))
+                    }
+                }
                 return .none
             case .inviteButtonTapped:
                 return .none
@@ -118,6 +140,18 @@ public struct GameDetailSettingFeature {
                 }
             case .maxNumOfPeopleSheet(.dismiss):
                 return .none
+            case .passwordAlertConfirmButtonTapped:
+                guard let thousands = Int(state.thousandsPlace),
+                      let hundreds = Int(state.hundredsPlace),
+                      let tens = Int(state.tensPlace),
+                      let ones = Int(state.onesPlace)
+                else { return .none }
+                
+                let password = (1000 * thousands) + (100 * hundreds) + (10 * tens) + ones
+                state.privateRoomPassword = String(password)
+                state.isPrivateRoom = true
+                
+                return .send(.alertAction(.dismiss))
             }
         }
         .ifLet(\.$maxNumOfPeopleSheet, action: \.maxNumOfPeopleSheet) {

@@ -15,6 +15,7 @@ public struct GameDetailSettingView: View {
     private let store: StoreOf<GameDetailSettingFeature>
     @ObservedObject private var viewStore: ViewStoreOf<GameDetailSettingFeature>
     @FocusState private var focusedField: GameDetailSettingTextFieldType?
+    @FocusState private var passwordFocusedField: PasswordField?
 
     private enum GameDetailSettingTextFieldType {
         case gameName
@@ -130,6 +131,8 @@ private extension GameDetailSettingView {
                 switch alertCase {
                 case .error(let error):
                     errorAlertView(error)
+                case .password:
+                    passwordAlertView
                 }
             }
         }
@@ -139,5 +142,17 @@ private extension GameDetailSettingView {
         CommonErrorAlertView(networkError) {
             viewStore.send(.alertAction(.dismiss))
         }
+    }
+    
+    var passwordAlertView: some View {
+        CommonPasswordAlertView(
+            focusedField: $passwordFocusedField,
+            thousandsPlaceText: viewStore.$thousandsPlace,
+            hundredsPlaceText: viewStore.$hundredsPlace,
+            tensPlaceText: viewStore.$tensPlace,
+            onesPlaceText: viewStore.$onesPlace,
+            primaryButtonAction: { viewStore.send(.alertAction(.dismiss)) },
+            secondaryButtonAction: { viewStore.send(.passwordAlertConfirmButtonTapped) }
+        )
     }
 }
