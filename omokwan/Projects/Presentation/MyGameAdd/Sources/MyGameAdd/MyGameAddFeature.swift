@@ -51,7 +51,7 @@ public struct MyGameAddFeature {
         @BindingState var isRemindAlarmSelected: Bool = false
         
         @PresentationState var repeatDaySheet: MyGameRepeatDaySheetFeature.State?
-        @PresentationState var maxNumOfPeopleSheet: MyGameMaxNumOfPeopleSheetFeature.State?
+        @PresentationState var maxNumOfPeopleSheet: CommonMaxNumOfPeopleFeature.State?
         @PresentationState var gameCategorySheet: MyGameCategorySheetFeature.State?
         
         // MARK: 비공개 설정
@@ -93,7 +93,7 @@ public struct MyGameAddFeature {
         case maxNumOfPeopleButtonTapped
         case gameCategorySettingButtonTapped
         case repeatDaySheet(PresentationAction<MyGameRepeatDaySheetFeature.Action>)
-        case maxNumOfPeopleSheet(PresentationAction<MyGameMaxNumOfPeopleSheetFeature.Action>)
+        case maxNumOfPeopleSheet(PresentationAction<CommonMaxNumOfPeopleFeature.Action>)
         case gameCategorySheet(PresentationAction<MyGameCategorySheetFeature.Action>)
         case privateRoomToggleButtonTapped
         case alertAction(AlertFeature.Action)
@@ -260,7 +260,7 @@ public struct MyGameAddFeature {
             MyGameRepeatDaySheetFeature()
         }
         .ifLet(\.$maxNumOfPeopleSheet, action: \.maxNumOfPeopleSheet) {
-            MyGameMaxNumOfPeopleSheetFeature()
+            CommonMaxNumOfPeopleFeature()
         }
         .ifLet(\.$gameCategorySheet, action: \.gameCategorySheet) {
             MyGameCategorySheetFeature()

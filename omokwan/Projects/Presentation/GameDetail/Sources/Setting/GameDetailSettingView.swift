@@ -34,6 +34,10 @@ public struct GameDetailSettingView: View {
             .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
                 alertView
             }
+            .sheet(store: store.scope(state: \.$maxNumOfPeopleSheet, action: \.maxNumOfPeopleSheet)) { store in
+                CommonMaxNumOfPeopleView(store: store)
+                    .modifier(CommonSheetModifier(detent: [.medium]))
+            }
     }
     
     private var settingBody: some View {
@@ -57,8 +61,13 @@ private extension GameDetailSettingView {
                 gameNameSection
                 
                 GameDefaultSettingView(
-                    maxNumOfPeople: viewStore.maxNumOfPeople
+                    maxNumOfPeople: viewStore.maxNumOfPeople,
+                    canChangeMaxNumOfPeopleSetting: viewStore.isHost,
+                    maxNumOfPeopleButtonAction: {
+                        viewStore.send(.maxNumOfPeopleButtonTapped)
+                    }
                 )
+                
                 GameOhterSettingView(
                     gameCategory: viewStore.selectedCategory,
                     privateRoomPassword: viewStore.privateRoomPassword,

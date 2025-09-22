@@ -36,6 +36,8 @@ public struct GameDetailSettingFeature {
         var privateRoomPassword: String?
         @BindingState var isPrivateRoomSelected: Bool = false
         let isHost: Bool = true
+        
+        @PresentationState var maxNumOfPeopleSheet: CommonMaxNumOfPeopleFeature.State?
     }
     
     public enum Action: BindableAction {
@@ -52,6 +54,7 @@ public struct GameDetailSettingFeature {
         case hostChangeButtonTapped
         case exitButtonTapped
         case categoriesFetched([GameCategory])
+        case maxNumOfPeopleSheet(PresentationAction<CommonMaxNumOfPeopleFeature.Action>)
     }
     
     public var body: some ReducerOf<Self> {
@@ -76,6 +79,7 @@ public struct GameDetailSettingFeature {
             case .binding:
                 return .none
             case .maxNumOfPeopleButtonTapped:
+                state.maxNumOfPeopleSheet = .init(selectedMaxNumOfPeopleCount: state.maxNumOfPeople)
                 return .none
             case .gameCategorySettingButtonTapped:
                 return .none
@@ -93,8 +97,23 @@ public struct GameDetailSettingFeature {
                 state.isLoading = false
                 state.categories = categories
                 return .none
+            case .maxNumOfPeopleSheet(.presented(let presentAction)):
+                switch presentAction {
+                case .selectButtonTapped(let value):
+                    state.maxNumOfPeopleSheet = nil
+                    state.maxNumOfPeople = value
+                    return .none
+                default:
+                    return .none
+                }
+            case .maxNumOfPeopleSheet(.dismiss):
+                return .none
             }
         }
+        .ifLet(\.$maxNumOfPeopleSheet, action: \.maxNumOfPeopleSheet) {
+            CommonMaxNumOfPeopleFeature()
+        }
+
     }
 }
 

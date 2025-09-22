@@ -10,13 +10,16 @@ import DesignSystem
 
 struct GameDefaultSettingView: View {
     private let maxNumOfPeople: Int
+    private let canChangeMaxNumOfPeopleSetting: Bool
     private let maxNumOfPeopleButtonAction: (() -> Void)?
     
     init(
         maxNumOfPeople: Int,
+        canChangeMaxNumOfPeopleSetting: Bool,
         maxNumOfPeopleButtonAction: (() -> Void)? = nil
     ) {
         self.maxNumOfPeople = maxNumOfPeople
+        self.canChangeMaxNumOfPeopleSetting = canChangeMaxNumOfPeopleSetting
         self.maxNumOfPeopleButtonAction = maxNumOfPeopleButtonAction
     }
     
@@ -100,6 +103,7 @@ private extension GameDefaultSettingView {
         OInputField(
             title: "최대 인원 수",
             value: "\(maxNumOfPeople)",
+            arrowVisible: canChangeMaxNumOfPeopleSetting,
             buttonAction: {
                 maxNumOfPeopleButtonAction?()
             }

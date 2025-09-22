@@ -36,7 +36,7 @@ public struct MyGameAddView: View {
                 .modifier(CommonSheetModifier(detent: [.medium]))
         }
         .sheet(store: store.scope(state: \.$maxNumOfPeopleSheet, action: \.maxNumOfPeopleSheet)) { store in
-            MyGameMaxNumOfPeopleSheetView(store: store)
+            CommonMaxNumOfPeopleView(store: store)
                 .modifier(CommonSheetModifier(detent: [.medium]))
         }
         .sheet(store: store.scope(state: \.$gameCategorySheet, action: \.gameCategorySheet)) { store in

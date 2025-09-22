@@ -10,15 +10,18 @@ import SwiftUI
 public struct OInputField: View {
     let title: String
     let value: String?
+    let arrowVisible: Bool
     let buttonAction: () -> Void
     
     public init(
         title: String,
         value: String? = nil,
+        arrowVisible: Bool = true,
         buttonAction: @escaping () -> Void
     ) {
         self.title = title
         self.value = value
+        self.arrowVisible = arrowVisible
         self.buttonAction = buttonAction
     }
     
@@ -40,8 +43,11 @@ public struct OInputField: View {
                             color: OColors.text02.swiftUIColor
                         )
                     }
-                    OImages.icArrowRight.swiftUIImage.resizedToFit(16,16).vPadding(2)
+                    if arrowVisible {
+                        OImages.icArrowRight.swiftUIImage.resizedToFit(16,16).vPadding(2)
+                    }
                 }
+                .disabled(!arrowVisible)
             }
         }.padding(16)
     }
