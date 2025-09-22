@@ -71,15 +71,16 @@ private extension GameDetailSettingView {
                 GameOhterSettingView(
                     gameCategory: viewStore.selectedCategory,
                     privateRoomPassword: viewStore.privateRoomPassword,
-                    isPrivateRoomSelected: viewStore.isPrivateRoomSelected,
+                    isPrivateRoom: viewStore.isPrivateRoom,
+                    canChangeSetting: viewStore.isHost,
                     categoryButtonAction: {
                         viewStore.send(.gameCategorySettingButtonTapped)
                     },
                     privateRoomCodeAreaButtonAction: {
                         viewStore.send(.privateRoomCodeButtonTapped)
                     },
-                    privateRoomToggleButtonAction: {
-                        viewStore.send(.privateRoomToggleButtonTapped)
+                    privateRoomButtonAction: {
+                        viewStore.send(.privateRoomButtonAction)
                     }
                 )
                 

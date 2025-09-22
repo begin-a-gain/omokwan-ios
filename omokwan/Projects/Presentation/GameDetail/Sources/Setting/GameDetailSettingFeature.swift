@@ -34,7 +34,7 @@ public struct GameDetailSettingFeature {
         var categories: [GameCategory] = []
         
         var privateRoomPassword: String?
-        @BindingState var isPrivateRoomSelected: Bool = false
+        var isPrivateRoom: Bool = false
         let isHost: Bool = true
         
         @PresentationState var maxNumOfPeopleSheet: CommonMaxNumOfPeopleFeature.State?
@@ -49,6 +49,7 @@ public struct GameDetailSettingFeature {
         case maxNumOfPeopleButtonTapped
         case gameCategorySettingButtonTapped
         case privateRoomCodeButtonTapped
+        case privateRoomButtonAction
         case privateRoomToggleButtonTapped
         case inviteButtonTapped
         case hostChangeButtonTapped
@@ -85,6 +86,15 @@ public struct GameDetailSettingFeature {
                 return .none
             case .privateRoomCodeButtonTapped:
                 return .none
+            case .privateRoomButtonAction:
+                if state.isHost {
+                    return .send(.privateRoomToggleButtonTapped)
+                } else {
+                    if state.isPrivateRoom {
+                        // TODO: 클립보드에 복사됐습니다 토스트
+                    }
+                    return .none
+                }
             case .privateRoomToggleButtonTapped:
                 return .none
             case .inviteButtonTapped:
