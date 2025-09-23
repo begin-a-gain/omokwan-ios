@@ -40,7 +40,7 @@ public struct MyGameAddView: View {
                 .modifier(CommonSheetModifier(detent: [.medium]))
         }
         .sheet(store: store.scope(state: \.$gameCategorySheet, action: \.gameCategorySheet)) { store in
-            MyGameCategorySheetView(store: store)
+            CommonCategoryView(store: store)
                 .modifier(CommonSheetModifier(detent: [.medium]))
         }
         .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
