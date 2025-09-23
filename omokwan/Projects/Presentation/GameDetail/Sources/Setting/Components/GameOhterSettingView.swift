@@ -46,8 +46,11 @@ struct GameOhterSettingView: View {
             .hPadding(16)
             .greedyWidth(.leading)
             VStack(spacing: 0) {
-                gameCategoryView
-                StrokeDivider(color: OColors.stroke02.swiftUIColor)
+                if isShowCategoryView {
+                    gameCategoryView
+                    StrokeDivider(color: OColors.stroke02.swiftUIColor)
+                }
+                
                 OInputToggleField(
                     title: "리마인드 알림",
                     additionalInfo: "오전 9:00",
@@ -62,6 +65,10 @@ struct GameOhterSettingView: View {
 }
 
 private extension GameOhterSettingView {
+    var isShowCategoryView: Bool {
+        return canChangeSetting || gameCategory != nil
+    }
+    
     var gameCategoryView: some View {
         OInputField(
             title: "대국 카테고리",

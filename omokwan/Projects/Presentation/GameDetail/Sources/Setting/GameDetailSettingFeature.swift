@@ -44,6 +44,7 @@ public struct GameDetailSettingFeature {
         let isHost: Bool = true
         
         @PresentationState var maxNumOfPeopleSheet: CommonMaxNumOfPeopleFeature.State?
+        @PresentationState var categorySheet: CommonCategoryFeature.State?
     }
     
     public enum Action: BindableAction {
@@ -62,6 +63,7 @@ public struct GameDetailSettingFeature {
         case exitButtonTapped
         case categoriesFetched([GameCategory])
         case maxNumOfPeopleSheet(PresentationAction<CommonMaxNumOfPeopleFeature.Action>)
+        case categorySheet(PresentationAction<CommonCategoryFeature.Action>)
         case passwordAlertConfirmButtonTapped
     }
     
@@ -75,7 +77,11 @@ public struct GameDetailSettingFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                return .none
+                state.isLoading = true
+                
+                return .run { send in
+                    await send(fetchCategories())
+                }
             case .navigateToBack:
                 return .none
             case .alertAction:
@@ -88,8 +94,6 @@ public struct GameDetailSettingFeature {
                 return .none
             case .maxNumOfPeopleButtonTapped:
                 state.maxNumOfPeopleSheet = .init(selectedMaxNumOfPeopleCount: state.maxNumOfPeople)
-                return .none
-            case .gameCategorySettingButtonTapped:
                 return .none
             case .privateRoomCodeButtonTapped:
                 if let _ = state.privateRoomPassword {
@@ -125,10 +129,6 @@ public struct GameDetailSettingFeature {
                 return .none
             case .exitButtonTapped:
                 return .none
-            case .categoriesFetched(let categories):
-                state.isLoading = false
-                state.categories = categories
-                return .none
             case .maxNumOfPeopleSheet(.presented(let presentAction)):
                 switch presentAction {
                 case .selectButtonTapped(let value):
@@ -152,12 +152,35 @@ public struct GameDetailSettingFeature {
                 state.isPrivateRoom = true
                 
                 return .send(.alertAction(.dismiss))
+            case .categoriesFetched(let categories):
+                state.isLoading = false
+                state.categories = categories
+                return .none
+            case .gameCategorySettingButtonTapped:
+                state.categorySheet = .init(
+                    categories: state.categories,
+                    selectedCategory: state.selectedCategory
+                )
+                return .none
+            case .categorySheet(.presented(let presentAction)):
+                switch presentAction {
+                case .selectButtonTapped(let value):
+                    state.categorySheet = nil
+                    state.selectedCategory = value
+                    return .none
+                default:
+                    return .none
+                }
+            case .categorySheet(.dismiss):
+                return .none
             }
         }
         .ifLet(\.$maxNumOfPeopleSheet, action: \.maxNumOfPeopleSheet) {
             CommonMaxNumOfPeopleFeature()
         }
-
+        .ifLet(\.$categorySheet, action: \.categorySheet) {
+            CommonCategoryFeature()
+        }
     }
 }
 

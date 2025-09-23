@@ -39,6 +39,10 @@ public struct GameDetailSettingView: View {
                 CommonMaxNumOfPeopleView(store: store)
                     .modifier(CommonSheetModifier(detent: [.medium]))
             }
+            .sheet(store: store.scope(state: \.$categorySheet, action: \.categorySheet)) { store in
+                CommonCategoryView(store: store)
+                    .modifier(CommonSheetModifier(detent: [.medium]))
+            }
     }
     
     private var settingBody: some View {
