@@ -1,18 +1,22 @@
 //
-//  MyGameCategorySheetFeature.swift
-//  MyGameAdd
+//  CommonCategoryFeature.swift
+//  Base
 //
-//  Created by 김동준 on 12/7/24
+//  Created by 김동준 on 9/23/25
 //
 
 import ComposableArchitecture
 import Domain
 
-public struct MyGameCategorySheetFeature: Reducer {
+@Reducer
+public struct CommonCategoryFeature {
     public init() {}
     
     public struct State: Equatable {
-        public init(categories: [GameCategory], selectedCategory: GameCategory?) {
+        public init(
+            categories: [GameCategory],
+            selectedCategory: GameCategory?
+        ) {
             self.categories = categories
             self.selectedCategory = selectedCategory
         }

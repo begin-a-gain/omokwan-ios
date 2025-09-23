@@ -101,7 +101,10 @@ public final class ApiService {
 private extension ApiService {
     func requestNewAuthorizationFromRefreshToken(_ retryCount: Int) async -> Bool {
         do {
-            let endPoint = EndPoint<RemoteResponseModel<RefreshTokenResponse>>.postRefreshToken()
+            let savedRefreshToken = tokenProvider.getRefreshToken()
+            let endPoint = EndPoint<RemoteResponseModel<RefreshTokenResponse>>.postRefreshToken(
+                refreshToken: savedRefreshToken
+            )
             let response = try await self.call(endPoint, retryCount: retryCount)
             let tokenPair = AuthMapper.toRefreshTokenResult(response.data)
             

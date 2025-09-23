@@ -8,11 +8,14 @@
 import ComposableArchitecture
 import SwiftUI
 import DesignSystem
+import Base
+import Domain
 
 public struct GameDetailSettingView: View {
     private let store: StoreOf<GameDetailSettingFeature>
     @ObservedObject private var viewStore: ViewStoreOf<GameDetailSettingFeature>
     @FocusState private var focusedField: GameDetailSettingTextFieldType?
+    @FocusState private var passwordFocusedField: PasswordField?
 
     private enum GameDetailSettingTextFieldType {
         case gameName
@@ -25,6 +28,21 @@ public struct GameDetailSettingView: View {
     
     public var body: some View {
         settingBody
+            .onAppear {
+                viewStore.send(.onAppear)
+            }
+            .oLoading(isPresent: viewStore.isLoading)
+            .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
+                alertView
+            }
+            .sheet(store: store.scope(state: \.$maxNumOfPeopleSheet, action: \.maxNumOfPeopleSheet)) { store in
+                CommonMaxNumOfPeopleView(store: store)
+                    .modifier(CommonSheetModifier(detent: [.medium]))
+            }
+            .sheet(store: store.scope(state: \.$categorySheet, action: \.categorySheet)) { store in
+                CommonCategoryView(store: store)
+                    .modifier(CommonSheetModifier(detent: [.medium]))
+            }
     }
     
     private var settingBody: some View {
@@ -48,20 +66,26 @@ private extension GameDetailSettingView {
                 gameNameSection
                 
                 GameDefaultSettingView(
-                    maxNumOfPeople: viewStore.maxNumOfPeople
+                    maxNumOfPeople: viewStore.maxNumOfPeople,
+                    canChangeMaxNumOfPeopleSetting: viewStore.isHost,
+                    maxNumOfPeopleButtonAction: {
+                        viewStore.send(.maxNumOfPeopleButtonTapped)
+                    }
                 )
+                
                 GameOhterSettingView(
                     gameCategory: viewStore.selectedCategory,
                     privateRoomPassword: viewStore.privateRoomPassword,
-                    isPrivateRoomSelected: viewStore.isPrivateRoomSelected,
+                    isPrivateRoom: viewStore.isPrivateRoom,
+                    canChangeSetting: viewStore.isHost,
                     categoryButtonAction: {
                         viewStore.send(.gameCategorySettingButtonTapped)
                     },
                     privateRoomCodeAreaButtonAction: {
                         viewStore.send(.privateRoomCodeButtonTapped)
                     },
-                    privateRoomToggleButtonAction: {
-                        viewStore.send(.privateRoomToggleButtonTapped)
+                    privateRoomButtonAction: {
+                        viewStore.send(.privateRoomButtonAction)
                     }
                 )
                 
@@ -99,7 +123,51 @@ private extension GameDetailSettingView {
             focusedFieldType: .gameName,
             label: "대국 이름",
             isLabel: true,
-            placeholder: "대국 이름을 적어주세요."
+            placeholder: "대국 이름을 적어주세요.",
+            errorMessage: mappingGameNameErrorMessage(viewStore.gameNameValidStatus),
+            trailingIcon: OImages.icCancel.swiftUIImage,
+            trailingIconButtonAction: {
+                viewStore.send(.binding(.set(\.$gameName, "")))
+            }
+        )
+    }
+    
+    func mappingGameNameErrorMessage(_ status: GameNameValidStatus?) -> String {
+        guard let status = status else { return "" }
+        
+        return status.errorMessage
+    }
+}
+
+private extension GameDetailSettingView {
+    var alertView: some View {
+        Group {
+            if let alertCase = viewStore.alertCase {
+                switch alertCase {
+                case .error(let error):
+                    errorAlertView(error)
+                case .password:
+                    passwordAlertView
+                }
+            }
+        }
+    }
+    
+    func errorAlertView(_ networkError: NetworkError) -> some View {
+        CommonErrorAlertView(networkError) {
+            viewStore.send(.alertAction(.dismiss))
+        }
+    }
+    
+    var passwordAlertView: some View {
+        CommonPasswordAlertView(
+            focusedField: $passwordFocusedField,
+            thousandsPlaceText: viewStore.$thousandsPlace,
+            hundredsPlaceText: viewStore.$hundredsPlace,
+            tensPlaceText: viewStore.$tensPlace,
+            onesPlaceText: viewStore.$onesPlace,
+            primaryButtonAction: { viewStore.send(.alertAction(.dismiss)) },
+            secondaryButtonAction: { viewStore.send(.passwordAlertConfirmButtonTapped) }
         )
     }
 }

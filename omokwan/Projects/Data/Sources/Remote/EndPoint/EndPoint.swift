@@ -52,8 +52,12 @@ extension EndPoint {
         return EndPoint(path: .getUserInfo, method: .GET)
     }
     
-    static func postRefreshToken() -> EndPoint<T> {
-        return EndPoint(path: .postRefreshToken, method: .POST)
+    static func postRefreshToken(refreshToken: String) -> EndPoint<T> {
+        return EndPoint(
+            path: .postRefreshToken,
+            method: .POST,
+            headers: ["Cookie": "refresh_token=\(refreshToken)"]
+        )
     }
 }
 
