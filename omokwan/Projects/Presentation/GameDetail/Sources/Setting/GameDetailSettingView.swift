@@ -123,8 +123,19 @@ private extension GameDetailSettingView {
             focusedFieldType: .gameName,
             label: "대국 이름",
             isLabel: true,
-            placeholder: "대국 이름을 적어주세요."
+            placeholder: "대국 이름을 적어주세요.",
+            errorMessage: mappingGameNameErrorMessage(viewStore.gameNameValidStatus),
+            trailingIcon: OImages.icCancel.swiftUIImage,
+            trailingIconButtonAction: {
+                viewStore.send(.binding(.set(\.$gameName, "")))
+            }
         )
+    }
+    
+    func mappingGameNameErrorMessage(_ status: GameNameValidStatus?) -> String {
+        guard let status = status else { return "" }
+        
+        return status.errorMessage
     }
 }
 

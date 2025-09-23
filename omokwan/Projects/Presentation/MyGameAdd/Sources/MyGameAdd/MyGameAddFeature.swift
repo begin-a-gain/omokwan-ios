@@ -30,12 +30,6 @@ public struct MyGameAddFeature {
             case error(NetworkError)
         }
         
-        enum GameNameValidStatus {
-            case empty
-            case valid
-            case inValidFormat
-        }
-        
         var alertCase: AlertCase?
         var alertState: AlertFeature.State = .init()
         var isLoading: Bool = false

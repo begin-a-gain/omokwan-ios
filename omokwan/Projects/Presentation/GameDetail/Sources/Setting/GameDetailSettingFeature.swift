@@ -30,6 +30,8 @@ public struct GameDetailSettingFeature {
         var isLoading: Bool = false
         
         @BindingState var gameName: String = ""
+        var gameNameValidStatus: GameNameValidStatus?
+
         var maxNumOfPeople: Int = 5
         var selectedCategory: GameCategory?
         var categories: [GameCategory] = []
@@ -41,7 +43,7 @@ public struct GameDetailSettingFeature {
         @BindingState var tensPlace: String = ""
         @BindingState var onesPlace: String = ""
 
-        let isHost: Bool = true
+        let isHost: Bool = false
         
         @PresentationState var maxNumOfPeopleSheet: CommonMaxNumOfPeopleFeature.State?
         @PresentationState var categorySheet: CommonCategoryFeature.State?
@@ -90,6 +92,18 @@ public struct GameDetailSettingFeature {
                 state.isLoading = false
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
+            case .binding(\.$gameName):
+                if state.gameName.isEmpty {
+                    state.gameNameValidStatus = .empty
+                    return .none
+                }
+                
+                let isValid = state.gameName.checkRegexValidation(
+                    pattern: RegexPattern.gameName.regex
+                )
+                
+                state.gameNameValidStatus = isValid ? .valid : .inValidFormat
+                return .none
             case .binding:
                 return .none
             case .maxNumOfPeopleButtonTapped:

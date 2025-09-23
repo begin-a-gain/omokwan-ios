@@ -107,15 +107,10 @@ private extension MyGameAddView {
         )
     }
     
-    func mappingGameNameErrorMessage(_ status: MyGameAddFeature.State.GameNameValidStatus?) -> String {
+    func mappingGameNameErrorMessage(_ status: GameNameValidStatus?) -> String {
         guard let status = status else { return "" }
         
-        switch status {
-        case .empty, .valid:
-            return ""
-        case .inValidFormat:
-            return "1~30글자 사이의 한글 혹은 영문만 입력해주세요."
-        }
+        return status.errorMessage
     }
 }
 
