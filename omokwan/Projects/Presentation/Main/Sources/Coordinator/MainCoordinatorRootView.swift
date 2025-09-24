@@ -56,6 +56,13 @@ public struct MainCoordinatorRootView: View {
                 ) { store in
                     GameDetailSettingView(store: store)
                 }
+            case .hostChange:
+                CaseLet(
+                    \MainCoordinatorFeature.MainPath.State.hostChange,
+                     action: MainCoordinatorFeature.MainPath.Action.hostChange
+                ) { store in
+                    HostChangeView(store: store)
+                }
             }
         }
     }

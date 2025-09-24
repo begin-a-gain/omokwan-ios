@@ -122,6 +122,21 @@ extension MainCoordinatorFeature {
         case .navigateToBack:
             _ = state.path.popLast()
             return .none
+        case .hostChangeButtonTapped:
+            state.path.append(.hostChange(.init()))
+            return .none
+        default:
+            return .none
+        }
+    }
+}
+
+extension MainCoordinatorFeature {
+    func hostChangeNavigation(_ state: inout State, _ action: HostChangeFeature.Action) -> Effect<Action> {
+        switch action {
+        case .navigateToBack:
+            _ = state.path.popLast()
+            return .none
         default:
             return .none
         }
