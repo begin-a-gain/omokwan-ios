@@ -58,6 +58,9 @@ public struct MainView: View {
             MainSheetView(store: store)
                 .modifier(CommonSheetModifier(detent: [.medium]))
         }
+        .onAppear {
+            viewStore.send(.onAppear)
+        }
     }
     
     private func mainContentView(_ hasBottomSafeArea: Bool) -> some View {
