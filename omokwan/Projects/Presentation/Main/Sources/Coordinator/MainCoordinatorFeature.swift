@@ -50,28 +50,34 @@ public struct MainCoordinatorFeature {
             case .navigationPath:
                 return .none
             case .mainAction(let mainAction):
-                switch mainAction {
-                case .navigateToMyGameAddCategory:
-                    state.navigationPath.append(.myGameAddCategory(.init()))
-                    return .none
-                case .navigateToMyGameParticipate:
-                    state.navigationPath.append(.myGameParticipate(.init()))
-                    return .none
-                case let .navigateToGameDetail(id, title):
-                    state.navigationPath.append(
-                        .gameDetail(
-                            GameDetailFeature.State(
-                                gameID: id,
-                                gameTitle: title
-                            )
-                        )
-                    )
-                    return .none
-                default:
-                    return .none
-                }
+                return handleMainAction(&state, mainAction)
             }
         }
         .forEach(\.navigationPath, action: \.navigationPath)
+    }
+}
+
+private extension MainCoordinatorFeature {
+    func handleMainAction(_ state: inout State, _ mainAction: MainFeature.Action) -> Effect<Action> {
+        switch mainAction {
+        case .navigateToMyGameAddCategory:
+            state.navigationPath.append(.myGameAddCategory(.init()))
+            return .none
+        case .navigateToMyGameParticipate:
+            state.navigationPath.append(.myGameParticipate(.init()))
+            return .none
+        case let .navigateToGameDetail(id, title):
+            state.navigationPath.append(
+                .gameDetail(
+                    GameDetailFeature.State(
+                        gameID: id,
+                        gameTitle: title
+                    )
+                )
+            )
+            return .none
+        default:
+            return .none
+        }
     }
 }
