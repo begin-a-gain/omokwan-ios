@@ -15,14 +15,15 @@ struct DetailUserAvatarView: View {
     private let stoneRowWidth: CGFloat
     private let itemSize: CGFloat
     private let avatarSize: CGFloat
-    private let userInfos: [GameUserInfo]
-    private let action: (Int) -> Void
+    private let userInfos: [GameUserInfo?]
+    private let action: (Int?) -> Void
+    private let textWidth: CGFloat
     
     init(
         availableWidth: CGFloat,
         hPadding: CGFloat,
-        userInfos: [GameUserInfo],
-        action: @escaping (Int) -> Void
+        userInfos: [GameUserInfo?],
+        action: @escaping (Int?) -> Void
     ) {
         self.availableWidth = availableWidth
         self.hPadding = hPadding
@@ -31,43 +32,77 @@ struct DetailUserAvatarView: View {
         self.avatarSize = itemSize - 10
         self.userInfos = userInfos
         self.action = action
+        self.textWidth = GameDetailConstants.calendarDayTextWidthRatio * availableWidth
     }
     
     var body: some View {
         HStack(spacing: 0) {
-            Spacer()
-            
             ForEach(0..<userInfos.count, id: \.self) { index in
-                let userInfo = userInfos[index]
-                
-                Button {
-                    action(userInfo.userID)
-                } label: {
-                    VStack(spacing: 0) {
-                        Circle()
-                            .fill(circleFillColor(index))
-                            .frame(width: avatarSize, height: avatarSize)
-                            .overlay {
-                                OText(
-                                    String(userInfo.nickname.prefix(1)),
-                                    token: .display,
-                                    color: circleTextColor(index)
-                                )
-                            }
-                        
-                        OText(
-                            userInfo.nickname,
-                            token: .subtitle_01,
-                            color: nicknameTextColor(index)
-                        )
-                        .frame(width: avatarSize)
-                    }
-                    .frame(width: itemSize, height: itemSize)
-                    .vPadding(8)
+                if let userInfo = userInfos[index] {
+                    normalUserView(userInfo, index)
+                } else {
+                    emptyUserView
                 }
             }
         }
+        .greedyWidth(.leading)
+        .padding(.leading, textWidth)
         .hPadding(hPadding)
+    }
+    
+    private func normalUserView(_ userInfo: GameUserInfo, _ index: Int) -> some View {
+        Button {
+            action(userInfo.userID)
+        } label: {
+            VStack(spacing: 0) {
+                Circle()
+                    .fill(circleFillColor(index))
+                    .frame(width: avatarSize, height: avatarSize)
+                    .overlay {
+                        OText(
+                            String(userInfo.nickname.prefix(1)),
+                            token: .display,
+                            color: circleTextColor(index)
+                        )
+                    }
+                
+                OText(
+                    userInfo.nickname,
+                    token: .subtitle_01,
+                    color: nicknameTextColor(index)
+                )
+                .frame(width: avatarSize)
+            }
+            .frame(width: itemSize, height: itemSize)
+            .vPadding(8)
+        }
+    }
+    
+    private var emptyUserView: some View {
+        Button {
+            action(nil)
+        } label: {
+            VStack(spacing: 0) {
+                Circle()
+                    .stroke(OColors.strokeDisable.swiftUIColor, style: StrokeStyle(lineWidth: 2, dash: [3, 3]))
+                    .frame(width: avatarSize, height: avatarSize)
+                    .overlay {
+                        OImages.icPlus.swiftUIImage
+                            .renderingMode(.template)
+                            .resizedToFit(24, 24)
+                            .foregroundColor(OColors.strokeDisable.swiftUIColor)
+                    }
+                
+                OText(
+                    "멤버 추가",
+                    token: .subtitle_01,
+                    color: OColors.textDisable.swiftUIColor
+                )
+                .frame(width: avatarSize)
+            }
+            .frame(width: itemSize, height: itemSize)
+            .vPadding(8)
+        }
     }
 }
 

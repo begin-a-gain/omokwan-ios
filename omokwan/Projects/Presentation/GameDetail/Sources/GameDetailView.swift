@@ -82,13 +82,7 @@ public struct GameDetailView: View {
             DetailUserAvatarView(
                 availableWidth: availableWidth,
                 hPadding: hPadding,
-                userInfos: [
-                    .init(userID: 5, nickname: "오목왕빡빡이"),
-                    .init(userID: 2, nickname: "오목왕갹갹이"),
-                    .init(userID: 3, nickname: "빡빡이"),
-                    .init(userID: 4, nickname: "갹갹이"),
-                    .init(userID: 1, nickname: "나는빡빡이다")
-                ],
+                userInfos: viewStore.gameUserInfos,
                 action: { id in
                     viewStore.send(.avatarButtonTapped(id))
                 }
