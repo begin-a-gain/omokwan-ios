@@ -35,6 +35,7 @@ public struct GameDetailFeature {
         let gameID: Int
         let gameTitle: String
         var now: Date = Date()
+        var gameUserInfos: [GameUserInfo?] = []
         
         // About Date
         var previousScrollCount: Int = 1
@@ -72,7 +73,7 @@ public struct GameDetailFeature {
         
         case fetchInfoWithPaging(MyGameDetailPagingRequest)
         case gameDetailInfoFetched(MyGameDetailInfo)
-        case avatarButtonTapped(Int)
+        case avatarButtonTapped(Int?)
         case detailUserInfoFetched(DetailUserInfo)
         
         case userAvatarInfoSheet(PresentationAction<UserAvatarInfoFeature.Action>)
@@ -91,10 +92,7 @@ public struct GameDetailFeature {
                     gameID: state.gameID,
                     pageSize: 10,
                     date: state.now
-                        .formattedString(format: DateFormatConstants.yearMonthDayRequestFormat),
-                    previousDate: "",
-                    nextDate: "",
-                    needNextPaging: false
+                        .formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
                 )
                 return .send(.fetchInfoWithPaging(request))
             case .fetchInfoWithPaging(let request):
@@ -105,6 +103,7 @@ public struct GameDetailFeature {
             case .gameDetailInfoFetched(let info):
                 state.isLoading = false
                 
+                setGameUserInfo(&state, info.users)
                 return .none
             case .navigateToBack:
                 return .none
@@ -117,6 +116,11 @@ public struct GameDetailFeature {
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
             case .avatarButtonTapped(let userID):
+                guard let userID else {
+                    // TODO: 초대 유도
+                    return .none
+                }
+                
                 state.isLoading = true
                 
                 let gameID = state.gameID
@@ -185,19 +189,9 @@ public struct GameDetailFeature {
 
 private extension GameDetailFeature {
     func fetchDetailInfoWithPaging(request: MyGameDetailPagingRequest) async -> Action {
-        var dateString: String {
-            if request.nextDate.isEmpty || request.previousDate.isEmpty {
-                return request.date
-            } else {
-                return request.needNextPaging
-                ? request.nextDate
-                : request.previousDate
-            }
-        }
-        
         let response = await gameUseCase.fetchDetailInfoWithPaging(
             request.gameID,
-            dateString,
+            request.date,
             request.pageSize
         )
         
@@ -229,5 +223,21 @@ private extension GameDetailFeature {
         case .failure(let error):
             return .showAlert(.error(error))
         }
+    }
+}
+
+private extension GameDetailFeature {
+    func setGameUserInfo(_ state: inout State, _ infos: [GameUserInfo]) {
+        if infos.compactMap({ $0 }).count == state.gameUserInfos.count {
+            return
+        }
+        
+        var newInfos: [GameUserInfo?] = infos.map { $0 }
+        
+        if newInfos.count < 5 {
+            newInfos.append(nil)
+        }
+        
+        state.gameUserInfos = newInfos
     }
 }
