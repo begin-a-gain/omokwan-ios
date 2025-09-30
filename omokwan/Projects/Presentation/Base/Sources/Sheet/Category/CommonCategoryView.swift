@@ -1,24 +1,24 @@
 //
-//  MyGameCategorySheetView.swift
-//  MyGameAdd
+//  CommonCategoryView.swift
+//  Base
 //
-//  Created by 김동준 on 12/7/24
+//  Created by 김동준 on 9/23/25
 //
 
 import ComposableArchitecture
 import SwiftUI
 import DesignSystem
 
-struct MyGameCategorySheetView: View {
-    let store: StoreOf<MyGameCategorySheetFeature>
-    @ObservedObject var viewStore: ViewStoreOf<MyGameCategorySheetFeature>
+public struct CommonCategoryView: View {
+    private let store: StoreOf<CommonCategoryFeature>
+    @ObservedObject private var viewStore: ViewStoreOf<CommonCategoryFeature>
     
-    init(store: StoreOf<MyGameCategorySheetFeature>) {
+    public init(store: StoreOf<CommonCategoryFeature>) {
         self.store = store
         self.viewStore = ViewStore(store, observe: { $0 })
     }
     
-    var body: some View {
+    public var body: some View {
         OSheetView(
             title: "대국 카테고리",
             sheetContent: sheetContent,

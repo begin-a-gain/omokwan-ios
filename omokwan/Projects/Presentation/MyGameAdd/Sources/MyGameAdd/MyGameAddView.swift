@@ -36,11 +36,11 @@ public struct MyGameAddView: View {
                 .modifier(CommonSheetModifier(detent: [.medium]))
         }
         .sheet(store: store.scope(state: \.$maxNumOfPeopleSheet, action: \.maxNumOfPeopleSheet)) { store in
-            MyGameMaxNumOfPeopleSheetView(store: store)
+            CommonMaxNumOfPeopleView(store: store)
                 .modifier(CommonSheetModifier(detent: [.medium]))
         }
         .sheet(store: store.scope(state: \.$gameCategorySheet, action: \.gameCategorySheet)) { store in
-            MyGameCategorySheetView(store: store)
+            CommonCategoryView(store: store)
                 .modifier(CommonSheetModifier(detent: [.medium]))
         }
         .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
@@ -107,15 +107,10 @@ private extension MyGameAddView {
         )
     }
     
-    func mappingGameNameErrorMessage(_ status: MyGameAddFeature.State.GameNameValidStatus?) -> String {
+    func mappingGameNameErrorMessage(_ status: GameNameValidStatus?) -> String {
         guard let status = status else { return "" }
         
-        switch status {
-        case .empty, .valid:
-            return ""
-        case .inValidFormat:
-            return "1~30글자 사이의 한글 혹은 영문만 입력해주세요."
-        }
+        return status.errorMessage
     }
 }
 

@@ -1,14 +1,15 @@
 //
-//  MyGameMaxNumOfPeopleSheetFeature.swift
-//  MyGameAdd
+//  CommonMaxNumOfPeopleFeature.swift
+//  Base
 //
-//  Created by 김동준 on 12/7/24
+//  Created by 김동준 on 9/22/25
 //
 
 import ComposableArchitecture
 import Domain
 
-public struct MyGameMaxNumOfPeopleSheetFeature: Reducer {
+@Reducer
+public struct CommonMaxNumOfPeopleFeature {
     public init() {}
     
     public struct State: Equatable {

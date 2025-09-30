@@ -7,45 +7,40 @@
 
 import ComposableArchitecture
 import SignIn
-import SignUp
 import Main
 import Splash
+import SignUp
 
 extension RootFeature {
     @Reducer
     public struct RootPath {
         @ObservableState
-        public enum State: Equatable {
-            case signIn(SignInFeature.State)
-            case signUp(SignUpFeature.State)
-            case signUpDone(SignUpDoneFeature.State)
+        public enum State {
+            case signIn(SignInCoordinatorFeature.State)
             case main(MainCoordinatorFeature.State)
             case splash(SplashFeature.State)
+            case signUpDone(SignUpDoneFeature.State)
         }
 
         public enum Action {
-            case signIn(SignInFeature.Action)
-            case signUp(SignUpFeature.Action)
-            case signUpDone(SignUpDoneFeature.Action)
+            case signIn(SignInCoordinatorFeature.Action)
             case main(MainCoordinatorFeature.Action)
             case splash(SplashFeature.Action)
+            case signUpDone(SignUpDoneFeature.Action)
         }
         
         public var body: some ReducerOf<Self> {
             Scope(state: \.signIn, action: \.signIn) {
-                SignInFeature()
-            }
-            Scope(state: \.signUp, action: \.signUp) {
-                SignUpFeature()
-            }
-            Scope(state: \.signUpDone, action: \.signUpDone) {
-                SignUpDoneFeature()
+                SignInCoordinatorFeature()
             }
             Scope(state: \.main, action: \.main) {
                 MainCoordinatorFeature()
             }
             Scope(state: \.splash, action: \.splash) {
                 SplashFeature()
+            }
+            Scope(state: \.signUpDone, action: \.signUpDone) {
+                SignUpDoneFeature()
             }
         }
     }
