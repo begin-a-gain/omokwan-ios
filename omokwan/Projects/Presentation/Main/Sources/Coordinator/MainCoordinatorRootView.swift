@@ -13,42 +13,31 @@ import MyGameParticipate
 import GameDetail
 
 public struct MainCoordinatorRootView: View {
-    private let store: StoreOf<MainCoordinatorFeature>
-    @ObservedObject private var viewStore: ViewStoreOf<MainCoordinatorFeature>
+    @Bindable private var store: StoreOf<MainCoordinatorFeature>
 
     public init(store: StoreOf<MainCoordinatorFeature>) {
         self.store = store
-        self.viewStore = ViewStore(store, observe: { $0 })
     }
     
     public var body: some View {
-        NavigationStackStore(store.scope(state: \.path, action: \.path)) {
+        NavigationStack(path: $store.scope(state: \.navigationPath, action: \.navigationPath)) {
             MainView(store: store.scope(state: \.mainState, action: \.mainAction))
         } destination: { store in
-            switch store {
-            case .myGame:
-                CaseLet(\MainCoordinatorFeature.MainPath.State.myGame, action: MainCoordinatorFeature.MainPath.Action.myGame) { store in
-                    MyGameView(store: store)
-                }
-            case .myGameAdd:
-                CaseLet(\MainCoordinatorFeature.MainPath.State.myGameAdd, action: MainCoordinatorFeature.MainPath.Action.myGameAdd) { store in
-                    MyGameAddView(store: store)
-                }
-            case .myGameAddCategory:
-                CaseLet(\MainCoordinatorFeature.MainPath.State.myGameAddCategory, action: MainCoordinatorFeature.MainPath.Action.myGameAddCategory) { store in
-                    MyGameAddCategoryView(store: store)
-                }
-            case .myGameParticipate:
-                CaseLet(\MainCoordinatorFeature.MainPath.State.myGameParticipate, action: MainCoordinatorFeature.MainPath.Action.myGameParticipate) { store in
-                    MyGameParticipateView(store: store)
-                }
-            case .gameDetail:
-                CaseLet(
-                    \MainCoordinatorFeature.MainPath.State.gameDetail,
-                     action: MainCoordinatorFeature.MainPath.Action.gameDetail
-                ) { store in
-                    GameDetailView(store: store)
-                }
+            switch store.case {
+            case .myGame(let store):
+                MyGameView(store: store)
+            case .myGameAdd(let store):
+                MyGameAddView(store: store)
+            case .myGameAddCategory(let store):
+                MyGameAddCategoryView(store: store)
+            case .myGameParticipate(let store):
+                MyGameParticipateView(store: store)
+            case .gameDetail(let store):
+                GameDetailView(store: store)
+            case .gameDetailSetting(let store):
+                GameDetailSettingView(store: store)
+            case .hostChange(let store):
+                HostChangeView(store: store)
             }
         }
     }

@@ -30,12 +30,6 @@ public struct MyGameAddFeature {
             case error(NetworkError)
         }
         
-        enum GameNameValidStatus {
-            case empty
-            case valid
-            case inValidFormat
-        }
-        
         var alertCase: AlertCase?
         var alertState: AlertFeature.State = .init()
         var isLoading: Bool = false
@@ -51,8 +45,8 @@ public struct MyGameAddFeature {
         @BindingState var isRemindAlarmSelected: Bool = false
         
         @PresentationState var repeatDaySheet: MyGameRepeatDaySheetFeature.State?
-        @PresentationState var maxNumOfPeopleSheet: MyGameMaxNumOfPeopleSheetFeature.State?
-        @PresentationState var gameCategorySheet: MyGameCategorySheetFeature.State?
+        @PresentationState var maxNumOfPeopleSheet: CommonMaxNumOfPeopleFeature.State?
+        @PresentationState var gameCategorySheet: CommonCategoryFeature.State?
         
         // MARK: 비공개 설정
         @BindingState var isPrivateRoomSelected: Bool = false
@@ -93,8 +87,8 @@ public struct MyGameAddFeature {
         case maxNumOfPeopleButtonTapped
         case gameCategorySettingButtonTapped
         case repeatDaySheet(PresentationAction<MyGameRepeatDaySheetFeature.Action>)
-        case maxNumOfPeopleSheet(PresentationAction<MyGameMaxNumOfPeopleSheetFeature.Action>)
-        case gameCategorySheet(PresentationAction<MyGameCategorySheetFeature.Action>)
+        case maxNumOfPeopleSheet(PresentationAction<CommonMaxNumOfPeopleFeature.Action>)
+        case gameCategorySheet(PresentationAction<CommonCategoryFeature.Action>)
         case privateRoomToggleButtonTapped
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
@@ -260,10 +254,10 @@ public struct MyGameAddFeature {
             MyGameRepeatDaySheetFeature()
         }
         .ifLet(\.$maxNumOfPeopleSheet, action: \.maxNumOfPeopleSheet) {
-            MyGameMaxNumOfPeopleSheetFeature()
+            CommonMaxNumOfPeopleFeature()
         }
         .ifLet(\.$gameCategorySheet, action: \.gameCategorySheet) {
-            MyGameCategorySheetFeature()
+            CommonCategoryFeature()
         }
         Scope(state: \.alertState, action: \.alertAction) {
             AlertFeature()

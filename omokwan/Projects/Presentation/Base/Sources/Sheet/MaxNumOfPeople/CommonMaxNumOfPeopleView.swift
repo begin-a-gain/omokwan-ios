@@ -1,24 +1,24 @@
 //
-//  MyGameMaxNumOfPeopleSheetView.swift
-//  MyGameAdd
+//  CommonMaxNumOfPeopleView.swift
+//  Base
 //
-//  Created by 김동준 on 12/7/24
+//  Created by 김동준 on 9/22/25
 //
 
 import ComposableArchitecture
-import SwiftUI
 import DesignSystem
+import SwiftUI
 
-struct MyGameMaxNumOfPeopleSheetView: View {
-    let store: StoreOf<MyGameMaxNumOfPeopleSheetFeature>
-    @ObservedObject var viewStore: ViewStoreOf<MyGameMaxNumOfPeopleSheetFeature>
+public struct CommonMaxNumOfPeopleView: View {
+    private let store: StoreOf<CommonMaxNumOfPeopleFeature>
+    @ObservedObject private var viewStore: ViewStoreOf<CommonMaxNumOfPeopleFeature>
     
-    init(store: StoreOf<MyGameMaxNumOfPeopleSheetFeature>) {
+    public init(store: StoreOf<CommonMaxNumOfPeopleFeature>) {
         self.store = store
         self.viewStore = ViewStore(store, observe: { $0 })
     }
     
-    var body: some View {
+    public var body: some View {
         OSheetView(
             title: "최대 인원 수",
             sheetContent: sheetContent,

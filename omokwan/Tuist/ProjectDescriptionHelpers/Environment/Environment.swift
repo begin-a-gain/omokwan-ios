@@ -17,7 +17,7 @@ public struct EnvironmentSettings : Sendable{
     public static let `default` = EnvironmentSettings(
         name: "Omokwan",
         organizationName: "begin-a-gain",
-        deploymentTargets: .iOS("16.0"),
+        deploymentTargets: .iOS("17.0"),
         platform: .iOS,
         destinations: [.iPhone]
     )
