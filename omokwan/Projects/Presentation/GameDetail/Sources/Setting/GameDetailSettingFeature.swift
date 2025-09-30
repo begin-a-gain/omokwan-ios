@@ -43,7 +43,7 @@ public struct GameDetailSettingFeature {
         @BindingState var tensPlace: String = ""
         @BindingState var onesPlace: String = ""
 
-        let isHost: Bool = false
+        let isHost: Bool = true
         
         @PresentationState var maxNumOfPeopleSheet: CommonMaxNumOfPeopleFeature.State?
         @PresentationState var categorySheet: CommonCategoryFeature.State?

@@ -43,11 +43,14 @@ public struct MainFeature {
         case myGameAction(MyGameFeature.Action)
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
+        case onAppear
     }
     
     public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
+            case .onAppear:
+                return .none
             case .binding:
                 return .none
             case .selectTab(let item):

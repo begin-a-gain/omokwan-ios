@@ -11,12 +11,11 @@ import MyGameParticipate
 import ComposableArchitecture
 import GameDetail
 
-// MARK: MyGame Navigation
 extension MainCoordinatorFeature {
     func myGameNavigation(_ state: inout State, _ action: MyGameFeature.Action) -> Effect<Action> {
         switch action {
         case .navigateToMyGameAddCategory:
-            state.path.append(.myGameAddCategory(MyGameAddCategoryFeature.State()))
+            state.navigationPath.append(.myGameAddCategory(MyGameAddCategoryFeature.State()))
             return .none
         case .datePickerButtonTapped:
             return .none
@@ -26,15 +25,14 @@ extension MainCoordinatorFeature {
     }
 }
 
-// MARK: MyGameAddCategory Navigation
 extension MainCoordinatorFeature {
     func myGameAddCategoryNavigation(_ state: inout State, _ action: MyGameAddCategoryFeature.Action) -> Effect<Action> {
         switch action {
         case .navigateToBack:
-            _ = state.path.popLast()
+            _ = state.navigationPath.popLast()
             return .none
         case .skipButtonTapped(let categories):
-            state.path.append(
+            state.navigationPath.append(
                 .myGameAdd(
                     MyGameAddFeature.State(
                         categories: categories,
@@ -44,7 +42,7 @@ extension MainCoordinatorFeature {
             )
             return .none
         case let .nextButtonTapped(categories, selectedCategory):
-            state.path.append(
+            state.navigationPath.append(
                 .myGameAdd(
                     MyGameAddFeature.State(
                         categories: categories,
@@ -59,15 +57,14 @@ extension MainCoordinatorFeature {
     }
 }
 
-// MARK: MyGameAdd Navigation
 extension MainCoordinatorFeature {
     func myGameAddNavigation(_ state: inout State, _ action: MyGameAddFeature.Action) -> Effect<Action> {
         switch action {
         case .navigateToBack:
-            state.path.removeAll()
+            state.navigationPath.removeAll()
             return .none
         case .createRoomComplete(let title):
-            state.path.removeAll()
+            state.navigationPath.removeAll()
             return .none
 //            return .send(.myGameAction(.gameCreated(title)))
         default:
@@ -76,15 +73,14 @@ extension MainCoordinatorFeature {
     }
 }
 
-// MARK: MyGameParticipate Navigation
 extension MainCoordinatorFeature {
     func myGameParticipateNavigation(_ state: inout State, _ action: MyGameParticipateFeature.Action) -> Effect<Action> {
         switch action {
         case .navigateToBack:
-            _ = state.path.popLast()
+            _ = state.navigationPath.popLast()
             return .none
         case let .navigateToGameDetail(id, title):
-            state.path.append(
+            state.navigationPath.append(
                 .gameDetail(
                     GameDetailFeature.State(
                         gameID: id,
@@ -100,15 +96,14 @@ extension MainCoordinatorFeature {
 }
 
 
-// MARK: GameDetail Navigation
 extension MainCoordinatorFeature {
     func gameDetailNavigation(_ state: inout State, _ action: GameDetailFeature.Action) -> Effect<Action> {
         switch action {
         case .navigateToBack:
-            _ = state.path.popLast()
+            _ = state.navigationPath.popLast()
             return .none
         case .menuButtonTapped:
-            state.path.append(.gameDetailSetting(.init()))
+            state.navigationPath.append(.gameDetailSetting(.init()))
             return .none
         default:
             return .none
@@ -120,7 +115,22 @@ extension MainCoordinatorFeature {
     func gameDetailSettingNavigation(_ state: inout State, _ action: GameDetailSettingFeature.Action) -> Effect<Action> {
         switch action {
         case .navigateToBack:
-            _ = state.path.popLast()
+            _ = state.navigationPath.popLast()
+            return .none
+        case .hostChangeButtonTapped:
+            state.navigationPath.append(.hostChange(.init()))
+            return .none
+        default:
+            return .none
+        }
+    }
+}
+
+extension MainCoordinatorFeature {
+    func hostChangeNavigation(_ state: inout State, _ action: HostChangeFeature.Action) -> Effect<Action> {
+        switch action {
+        case .navigateToBack:
+            _ = state.navigationPath.popLast()
             return .none
         default:
             return .none
