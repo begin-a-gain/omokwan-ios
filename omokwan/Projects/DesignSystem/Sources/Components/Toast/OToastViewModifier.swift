@@ -50,7 +50,7 @@ struct OToastViewModifier: ViewModifier {
             }
             .opacity(isPresented ? 1 : 0)
             .animation(.easeInOut, value: isPresented)
-            .onChange(of: isPresented) { newValue in
+            .onChange(of: isPresented) { _, newValue in
                 if newValue {
                     DispatchQueue.main.asyncAfter(deadline: .now() + dismissDuration) {
                         withAnimation {
