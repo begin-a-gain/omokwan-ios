@@ -13,13 +13,16 @@ public struct HostChangeFeature {
     public init() {}
     
     public struct State: Equatable {
-        public init() {
-        }
+        public init() {}
+        
+        var tempUsers: [String] = ["빡빡이", "오목왕", "갹갹이", "오목왕갹갹이"]
+        var isBottomButtonEnable: Bool = false
     }
     
     public enum Action {
         case onAppear
         case navigateToBack
+        case changeButtonTapped
     }
     
     public var body: some ReducerOf<Self> {
@@ -28,6 +31,8 @@ public struct HostChangeFeature {
             case .onAppear:
                 return .none
             case .navigateToBack:
+                return .none
+            case .changeButtonTapped:
                 return .none
             }
         }
