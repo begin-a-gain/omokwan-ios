@@ -55,6 +55,7 @@ struct StickyScrollView: View {
                                 )
                                 .padding(.bottom, index == (dateUserStatusInfos.count - 1) ? 0 : 20)
                             }
+                            .id(key)
                             .background(
                                 RoundedRectangle(cornerRadius: 8)
                                     .fill(OColors.uiBackground.swiftUIColor)
@@ -63,11 +64,23 @@ struct StickyScrollView: View {
                     }
                 }
             }
-            .onAppear {
-//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-//                    let today = viewStore.now.seoulNow.formattedString(format: DateFormatConstants.scrollCalendarFormat)
-//                    scrollProxy.scrollTo(today, anchor: .top)
-//                }
+            .onChange(of: dateUserStatusInfos) { oldValue, newValue in
+                if oldValue.isEmpty && !newValue.isEmpty {
+                    scrollToTodayWithPreload(scrollProxy)
+                }
+            }
+        }
+    }
+    
+    private func scrollToTodayWithPreload(_ proxy: ScrollViewProxy) {
+        let sectionId = todayYearMonth
+        let todayId = todayYearMonth + todayOnlyDay
+        
+        proxy.scrollTo(sectionId, anchor: .top)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                proxy.scrollTo(todayId, anchor: .center)
             }
         }
     }
@@ -126,11 +139,7 @@ private extension StickyScrollView {
                         }
                     }
                 }
-//                .id(
-//                    date.formattedString(
-//                        format: DateFormatConstants.scrollCalendarFormat
-//                    )
-//                )
+                .id(headerString + element.date)
             }
         }
         .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
