@@ -66,12 +66,13 @@ private extension MainCoordinatorFeature {
         case .navigateToMyGameParticipate:
             state.navigationPath.append(.myGameParticipate(.init()))
             return .none
-        case let .navigateToGameDetail(id, title):
+        case let .navigateToGameDetail(id, title, selectedDateString):
             state.navigationPath.append(
                 .gameDetail(
                     GameDetailFeature.State(
                         gameID: id,
-                        gameTitle: title
+                        gameTitle: title,
+                        selectedDateString: selectedDateString
                     )
                 )
             )

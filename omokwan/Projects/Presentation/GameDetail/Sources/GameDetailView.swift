@@ -76,7 +76,8 @@ public struct GameDetailView: View {
                 dateUserStatusInfos: viewStore.dateUserStatusInfos,
                 availableWidth: availableWidth,
                 hPadding: hPadding,
-                todayString: viewStore.todayString
+                todayString: viewStore.todayString,
+                selectedDateString: viewStore.selectedDateString
             )
             .padding(.bottom, 8)
             

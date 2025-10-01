@@ -18,13 +18,18 @@ public struct GameDetailFeature {
     public init() {}
     
     public struct State: Equatable {
-        public init(gameID: Int, gameTitle: String) {
+        public init(
+            gameID: Int,
+            gameTitle: String,
+            selectedDateString: String
+        ) {
             self.gameID = gameID
             self.gameTitle = gameTitle
             self.now = Date()
             let weekday = Calendar.current.component(.weekday, from: now)
             let days = ["일", "월", "화", "수", "목", "금", "토"]
             self.todayString = days[weekday - 1]
+            self.selectedDateString = selectedDateString
         }
         
         public enum AlertCase: Equatable {
@@ -38,6 +43,7 @@ public struct GameDetailFeature {
         
         let gameID: Int
         let gameTitle: String
+        let selectedDateString: String
         var now: Date
         let todayString: String
         var gameUserInfos: [GameUserInfo?] = []
@@ -75,8 +81,7 @@ public struct GameDetailFeature {
                 let request = MyGameDetailPagingRequest(
                     gameID: state.gameID,
                     pageSize: 10,
-                    date: state.now
-                        .formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
+                    date: state.selectedDateString
                 )
                 return .send(.fetchInfoWithPaging(request))
             case .fetchInfoWithPaging(let request):

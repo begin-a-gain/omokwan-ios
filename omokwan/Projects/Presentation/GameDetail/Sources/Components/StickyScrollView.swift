@@ -21,17 +21,20 @@ struct StickyScrollView: View {
     private let itemSize: CGFloat
     private let todayYearMonth: String
     private let todayOnlyDay: String
+    private let selectedDateString: String
     
     init(
         dateUserStatusInfos: [String : [GameDetailDate]],
         availableWidth: CGFloat,
         hPadding: CGFloat,
-        todayString: String
+        todayString: String,
+        selectedDateString: String
     ) {
         self.dateUserStatusInfos = dateUserStatusInfos
         self.availableWidth = availableWidth
         self.hPadding = hPadding
         self.todayString = todayString
+        self.selectedDateString = selectedDateString
         self.textWidth = GameDetailConstants.calendarDayTextWidthRatio * availableWidth
         self.stoneRowWidth = GameDetailConstants.stoneRowWidthRatio * availableWidth
         self.itemSize = stoneRowWidth / 5
@@ -73,8 +76,8 @@ struct StickyScrollView: View {
     }
     
     private func scrollToTodayWithPreload(_ proxy: ScrollViewProxy) {
-        let sectionId = todayYearMonth
-        let todayId = todayYearMonth + todayOnlyDay
+        let sectionId = selectedDateString.prefix(7)
+        let todayId = "\(sectionId)-\(selectedDateString.suffix(2))"
         
         proxy.scrollTo(sectionId, anchor: .top)
         
@@ -139,7 +142,7 @@ private extension StickyScrollView {
                         }
                     }
                 }
-                .id(headerString + element.date)
+                .id("\(headerString)-\(element.date)")
             }
         }
         .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
