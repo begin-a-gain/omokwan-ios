@@ -47,6 +47,11 @@ public struct GameDetailFeature {
         var now: Date
         let todayString: String
         var gameUserInfos: [GameUserInfo?] = []
+        var pagingCursor: PagingCursor = .today
+        var previousDateCursor: String = ""
+        var nextDateCursor: String = ""
+        var needPreviousDatePaging: Bool = false
+        var needNextDatePaging: Bool = false
         
         var dateUserStatusInfos: [String: [GameDetailDate]] = [:]
         var isBottomButtonEnable: Bool = true
@@ -61,8 +66,8 @@ public struct GameDetailFeature {
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
         
-        case fetchInfoWithPaging(MyGameDetailPagingRequest)
-        case gameDetailInfoFetched(MyGameDetailInfo)
+        case fetchInfoWithPaging(PagingCursor)
+        case gameDetailInfoFetched(MyGameDetailInfo, PagingCursor)
         case avatarButtonTapped(Int?)
         case detailUserInfoFetched(DetailUserInfo)
         
@@ -78,22 +83,43 @@ public struct GameDetailFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                state.isLoading = true
+                
+                return .send(.fetchInfoWithPaging(.today))
+            case .fetchInfoWithPaging(let pagingCursor):
+                state.pagingCursor = pagingCursor
+                
+                let dateString = switch pagingCursor {
+                case .today: state.selectedDateString
+                case .previous: state.previousDateCursor
+                case .next: state.nextDateCursor
+                }
+
                 let request = MyGameDetailPagingRequest(
                     gameID: state.gameID,
-                    pageSize: 10,
-                    date: state.selectedDateString
+                    pageSize: pagingCursor == .today ? 6 : 10,
+                    date: dateString
                 )
-                return .send(.fetchInfoWithPaging(request))
-            case .fetchInfoWithPaging(let request):
-                state.isLoading = true
+                
+                print("## dateString : \(dateString) / pagingCursor : \(pagingCursor) 로 API 호출")
+                
                 return .run { send in
-                    await send(fetchDetailInfoWithPaging(request: request))
+                    await send(
+                        fetchDetailInfoWithPaging(
+                            request: request,
+                            pagingCursor: pagingCursor
+                        )
+                    )
                 }
-            case .gameDetailInfoFetched(let info):
+            case let .gameDetailInfoFetched(info, pagingCursor):
                 state.isLoading = false
                 
+                setPagingInfo(&state, info, pagingCursor)
                 setDateUserStatusInfos(&state, info.dates)
                 setGameUserInfo(&state, info.users)
+                
+                print("##paging Info:\n ##nextDateCursor:\(state.nextDateCursor)\n ##previousDateCursor:\(state.previousDateCursor)\n ##needPreviousDatePaging \(state.needPreviousDatePaging)\n ##needNextDatePaging \(state.needNextDatePaging)")
+                
                 return .none
             case .navigateToBack:
                 return .none
@@ -178,7 +204,10 @@ public struct GameDetailFeature {
 }
 
 private extension GameDetailFeature {
-    func fetchDetailInfoWithPaging(request: MyGameDetailPagingRequest) async -> Action {
+    func fetchDetailInfoWithPaging(
+        request: MyGameDetailPagingRequest,
+        pagingCursor: PagingCursor
+    ) async -> Action {
         let response = await gameUseCase.fetchDetailInfoWithPaging(
             request.gameID,
             request.date,
@@ -187,7 +216,7 @@ private extension GameDetailFeature {
         
         switch response {
         case .success(let myGameDetailInfo):
-            return .gameDetailInfoFetched(myGameDetailInfo)
+            return .gameDetailInfoFetched(myGameDetailInfo, pagingCursor)
         case .failure(let error):
             return .showAlert(.error(error))
         }
@@ -268,15 +297,35 @@ private extension GameDetailFeature {
             if state.dateUserStatusInfos[yearMonth] == nil {
                 state.dateUserStatusInfos[yearMonth] = newDates
             } else {
-                var combinedDates = (state.dateUserStatusInfos[yearMonth] ?? []) + newDates
+                let combinedDates = (state.dateUserStatusInfos[yearMonth] ?? []) + newDates
                 
                 var uniqueDates: [String: GameDetailDate] = [:]
                 for date in combinedDates {
                     uniqueDates[date.date] = date
                 }
                 
-                state.dateUserStatusInfos[yearMonth] = Array(uniqueDates.values).sorted { $0.date < $1.date }
+                state.dateUserStatusInfos[yearMonth] = Array(uniqueDates.values).sorted { $0.date > $1.date }
             }
+        }
+    }
+    
+    func setPagingInfo(
+        _ state: inout State,
+        _ info: MyGameDetailInfo,
+        _ pagingCursor: PagingCursor
+    ) {
+        switch pagingCursor {
+        case .today:
+            state.needPreviousDatePaging = info.needPreviousDatePaging
+            state.needNextDatePaging = info.needNextDatePaging
+            state.previousDateCursor = info.previousDateCursor
+            state.nextDateCursor = info.nextDateCursor
+        case .previous:
+            state.needPreviousDatePaging = info.needPreviousDatePaging
+            state.previousDateCursor = info.previousDateCursor
+        case .next:
+            state.needNextDatePaging = info.needNextDatePaging
+            state.nextDateCursor = info.nextDateCursor
         }
     }
 }

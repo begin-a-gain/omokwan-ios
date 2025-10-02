@@ -77,7 +77,16 @@ public struct GameDetailView: View {
                 availableWidth: availableWidth,
                 hPadding: hPadding,
                 todayString: viewStore.todayString,
-                selectedDateString: viewStore.selectedDateString
+                selectedDateString: viewStore.selectedDateString,
+                pagingCursor: viewStore.pagingCursor,
+                needPreviousDatePaging: viewStore.needPreviousDatePaging,
+                needNextDatePaging: viewStore.needNextDatePaging,
+                previousPagingAction: {
+                    viewStore.send(.fetchInfoWithPaging(.previous))
+                },
+                nextPagingAction: {
+                    viewStore.send(.fetchInfoWithPaging(.next))
+                }
             )
             .padding(.bottom, 8)
             

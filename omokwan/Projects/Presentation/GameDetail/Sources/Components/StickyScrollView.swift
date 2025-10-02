@@ -22,19 +22,39 @@ struct StickyScrollView: View {
     private let todayYearMonth: String
     private let todayOnlyDay: String
     private let selectedDateString: String
+    private let pagingCursor: PagingCursor
+    private let needNextDatePaging: Bool
+    private let needPreviousDatePaging: Bool
+    private let previousPagingAction: () -> Void
+    private let nextPagingAction: () -> Void
+
+    @State private var scrollID: String?
+    @State private var isInit: Bool = true
     
     init(
         dateUserStatusInfos: [String : [GameDetailDate]],
         availableWidth: CGFloat,
         hPadding: CGFloat,
         todayString: String,
-        selectedDateString: String
+        selectedDateString: String,
+        pagingCursor: PagingCursor,
+        needPreviousDatePaging: Bool,
+        needNextDatePaging: Bool,
+        previousPagingAction: @escaping () -> Void,
+        nextPagingAction: @escaping () -> Void
     ) {
         self.dateUserStatusInfos = dateUserStatusInfos
         self.availableWidth = availableWidth
         self.hPadding = hPadding
         self.todayString = todayString
         self.selectedDateString = selectedDateString
+        self.pagingCursor = pagingCursor
+        
+        self.needPreviousDatePaging = needPreviousDatePaging
+        self.needNextDatePaging = needNextDatePaging
+        self.previousPagingAction = previousPagingAction
+        self.nextPagingAction = nextPagingAction
+
         self.textWidth = GameDetailConstants.calendarDayTextWidthRatio * availableWidth
         self.stoneRowWidth = GameDetailConstants.stoneRowWidthRatio * availableWidth
         self.itemSize = stoneRowWidth / 5
@@ -44,47 +64,57 @@ struct StickyScrollView: View {
     }
     
     var body : some View {
-        ScrollViewReader { scrollProxy in
-            ScrollView {
-                LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
-                    let keys = dateUserStatusInfos.keys.sorted(by: >)
+        ScrollView {
+            LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
+                let keys = dateUserStatusInfos.keys.sorted(by: >)
 
-                    ForEach(Array(zip(keys.indices, keys)), id: \.1) { index, key in
-                        if let dateUserStatusInfo = dateUserStatusInfos[key] {
-                            Section(header: calendarHeaderView(key)) {
-                                calendarBodyView(
-                                    headerString: key,
-                                    dateUserStatusInfo: dateUserStatusInfo
-                                )
-                                .padding(.bottom, index == (dateUserStatusInfos.count - 1) ? 0 : 20)
-                            }
-                            .id(key)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(OColors.uiBackground.swiftUIColor)
+                ForEach(Array(zip(keys.indices, keys)), id: \.1) { index, key in
+                    if let dateUserStatusInfo = dateUserStatusInfos[key] {
+                        Section(header: calendarHeaderView(key)) {
+                            calendarBodyView(
+                                headerString: key,
+                                dateUserStatusInfo: dateUserStatusInfo
                             )
+                            .padding(.bottom, index == (dateUserStatusInfos.count - 1) ? 0 : 20)
                         }
+                        .id(key)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(OColors.uiBackground.swiftUIColor)
+                        )
                     }
                 }
-            }
-            .onChange(of: dateUserStatusInfos) { oldValue, newValue in
-                if oldValue.isEmpty && !newValue.isEmpty {
-                    scrollToTodayWithPreload(scrollProxy)
+                
+                if needPreviousDatePaging {
+                    ProgressView()
+                        .frame(height: 64)
+                        .onAppear {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                print("## 과거 페이징")
+                                previousPagingAction()
+                            }
+                        }
                 }
+            }
+            .scrollTargetLayout()
+        }
+        .scrollPosition(id: $scrollID, anchor: isInit ? .center : .top)
+        .onChange(of: dateUserStatusInfos) { oldValue, newValue in
+            if oldValue.isEmpty && !newValue.isEmpty {
+                scrollToTodayWithPreload()
+            } else {
+                isInit = false
             }
         }
     }
     
-    private func scrollToTodayWithPreload(_ proxy: ScrollViewProxy) {
-        let sectionId = selectedDateString.prefix(7)
+    private func scrollToTodayWithPreload() {
+        let sectionId = String(selectedDateString.prefix(7))
         let todayId = "\(sectionId)-\(selectedDateString.suffix(2))"
         
-        proxy.scrollTo(sectionId, anchor: .top)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            withAnimation(.easeInOut(duration: 0.3)) {
-                proxy.scrollTo(todayId, anchor: .center)
-            }
+        scrollID = sectionId
+        withAnimation(.easeInOut(duration: 0.3)) {
+            scrollID = todayId
         }
     }
 }
