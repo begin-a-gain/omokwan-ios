@@ -8,35 +8,47 @@
 public struct MyGameDetailInfo {
     public let users: [GameUserInfo]
     public let dates: [GameDetailDate]
-    public let previousDate: String
-    public let nextDate: String
+    public let previousDateCursor: String
+    public let nextDateCursor: String
+    public let needNextDatePaging: Bool
+    public let needPreviousDatePaging: Bool
     
     public init(
         users: [GameUserInfo],
         dates: [GameDetailDate],
-        previousDate: String,
-        nextDate: String
+        previousDateCursor: String,
+        nextDateCursor: String,
+        needNextDatePaging: Bool,
+        needPreviousDatePaging: Bool
     ) {
         self.users = users
         self.dates = dates
-        self.previousDate = previousDate
-        self.nextDate = nextDate
+        self.previousDateCursor = previousDateCursor
+        self.nextDateCursor = nextDateCursor
+        self.needNextDatePaging = needNextDatePaging
+        self.needPreviousDatePaging = needPreviousDatePaging
     }
 }
 
-public struct GameUserInfo {
+public struct GameUserInfo: Equatable {
     public let userID: Int
     public let nickname: String
+    public let isHost: Bool
     
-    public init(userID: Int, nickname: String) {
+    public init(
+        userID: Int,
+        nickname: String,
+        isHost: Bool
+    ) {
         self.userID = userID
         self.nickname = nickname
+        self.isHost = isHost
     }
 }
 
-public struct GameDetailDate {
-    public let date: String
-    public let userStatus: [GameDetailUserStatus]
+public struct GameDetailDate: Hashable {
+    public var date: String
+    public var userStatus: [GameDetailUserStatus?]
     
     public init(
         date: String,
@@ -47,21 +59,21 @@ public struct GameDetailDate {
     }
 }
 
-public struct GameDetailUserStatus {
+public struct GameDetailUserStatus: Hashable {
     public let userID: Int
-    public let status: String
-    public let comboLength: Int
+    public let isCompleted: Bool
+    public let streakCount: Int
     public let isCombo: Bool
     
     public init(
         userID: Int,
-        status: String,
-        comboLength: Int,
+        isCompleted: Bool,
+        streakCount: Int,
         isCombo: Bool
     ) {
         self.userID = userID
-        self.status = status
-        self.comboLength = comboLength
+        self.isCompleted = isCompleted
+        self.streakCount = streakCount
         self.isCombo = isCombo
     }
 }

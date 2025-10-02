@@ -18,9 +18,18 @@ public struct GameDetailFeature {
     public init() {}
     
     public struct State: Equatable {
-        public init(gameID: Int, gameTitle: String) {
+        public init(
+            gameID: Int,
+            gameTitle: String,
+            selectedDateString: String
+        ) {
             self.gameID = gameID
             self.gameTitle = gameTitle
+            self.now = Date()
+            let weekday = Calendar.current.component(.weekday, from: now)
+            let days = ["일", "월", "화", "수", "목", "금", "토"]
+            self.todayString = days[weekday - 1]
+            self.selectedDateString = selectedDateString
         }
         
         public enum AlertCase: Equatable {
@@ -34,31 +43,12 @@ public struct GameDetailFeature {
         
         let gameID: Int
         let gameTitle: String
-        var now: Date = Date()
+        let selectedDateString: String
+        var now: Date
+        let todayString: String
         var gameUserInfos: [GameUserInfo?] = []
         
-        // About Date
-        var previousScrollCount: Int = 1
-        var nextMonthScrollCount: Int = 1
-        
-        var calendarStartDate: Date {
-            now.seoulNow.dateForFirstDayOfMonth(nMonthsAgo: previousScrollCount)
-        }
-         
-        var calendarEndDate: Date {
-            now.seoulNow.dateForLastDayOfMonth(nMonthsAfter: nextMonthScrollCount)
-        }
-        
-        var dateTimeRange: [Date] {
-            Date.getRangeOfDates(from: calendarStartDate, to: calendarEndDate)
-        }
-        
-        var dateDictionary: [String: [Date]] {
-            Dictionary(grouping: dateTimeRange) { date in
-                date.formattedString(format: DateFormatConstants.scrollHeaderFormat)
-            }
-        }
-        
+        var dateUserStatusInfos: [String: [GameDetailDate]] = [:]
         var isBottomButtonEnable: Bool = true
         
         @PresentationState var userAvatarInfoSheet: UserAvatarInfoFeature.State?
@@ -91,8 +81,7 @@ public struct GameDetailFeature {
                 let request = MyGameDetailPagingRequest(
                     gameID: state.gameID,
                     pageSize: 10,
-                    date: state.now
-                        .formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
+                    date: state.selectedDateString
                 )
                 return .send(.fetchInfoWithPaging(request))
             case .fetchInfoWithPaging(let request):
@@ -103,6 +92,7 @@ public struct GameDetailFeature {
             case .gameDetailInfoFetched(let info):
                 state.isLoading = false
                 
+                setDateUserStatusInfos(&state, info.dates)
                 setGameUserInfo(&state, info.users)
                 return .none
             case .navigateToBack:
@@ -239,5 +229,54 @@ private extension GameDetailFeature {
         }
         
         state.gameUserInfos = newInfos
+    }
+    
+    func initializeDateUserStatusInfos(from dates: [GameDetailDate]) -> [String: [GameDetailDate]] {
+        var dateUserStatusInfos: [String: [GameDetailDate]] = [:]
+        
+        for gameDetailDate in dates {
+            let yearMonth = String(gameDetailDate.date.prefix(7))
+            let dayOnly = String(gameDetailDate.date.suffix(2))
+            
+            var updatedGameDetailDate = gameDetailDate
+            updatedGameDetailDate.date = dayOnly
+            
+            if updatedGameDetailDate.userStatus.count <= 5 {
+                let neededCount = 5 - updatedGameDetailDate.userStatus.count
+                updatedGameDetailDate.userStatus.append(contentsOf: Array(repeating: nil, count: neededCount))
+            }
+            
+            if dateUserStatusInfos[yearMonth] == nil {
+                dateUserStatusInfos[yearMonth] = []
+            }
+            
+            dateUserStatusInfos[yearMonth]?.append(updatedGameDetailDate)
+        }
+        
+        for yearMonth in dateUserStatusInfos.keys {
+            dateUserStatusInfos[yearMonth]?.sort { $0.date > $1.date }
+        }
+        
+        return dateUserStatusInfos
+    }
+    
+    func setDateUserStatusInfos(_ state: inout State, _ dates: [GameDetailDate]) {
+        let newDateUserStatusInfos = initializeDateUserStatusInfos(from: dates)
+        
+        // TODO: 아래 페이징 추가 로직은 이후 수정 예정
+        for (yearMonth, newDates) in newDateUserStatusInfos {
+            if state.dateUserStatusInfos[yearMonth] == nil {
+                state.dateUserStatusInfos[yearMonth] = newDates
+            } else {
+                var combinedDates = (state.dateUserStatusInfos[yearMonth] ?? []) + newDates
+                
+                var uniqueDates: [String: GameDetailDate] = [:]
+                for date in combinedDates {
+                    uniqueDates[date.date] = date
+                }
+                
+                state.dateUserStatusInfos[yearMonth] = Array(uniqueDates.values).sorted { $0.date < $1.date }
+            }
+        }
     }
 }

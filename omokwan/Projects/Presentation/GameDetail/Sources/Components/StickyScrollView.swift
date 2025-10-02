@@ -9,43 +9,56 @@ import SwiftUI
 import DesignSystem
 import Foundation
 import Util
+import Domain
 
 struct StickyScrollView: View {
-    private let dateDictionary: [String: [Date]]
+    private let dateUserStatusInfos: [String: [GameDetailDate]]
     private let hPadding: CGFloat
+    private let todayString: String
     private let availableWidth: CGFloat
     private let textWidth: CGFloat
     private let stoneRowWidth: CGFloat
     private let itemSize: CGFloat
+    private let todayYearMonth: String
+    private let todayOnlyDay: String
+    private let selectedDateString: String
     
     init(
-        dateDictionary: [String : [Date]],
+        dateUserStatusInfos: [String : [GameDetailDate]],
         availableWidth: CGFloat,
-        hPadding: CGFloat
+        hPadding: CGFloat,
+        todayString: String,
+        selectedDateString: String
     ) {
-        self.dateDictionary = dateDictionary
+        self.dateUserStatusInfos = dateUserStatusInfos
         self.availableWidth = availableWidth
         self.hPadding = hPadding
+        self.todayString = todayString
+        self.selectedDateString = selectedDateString
         self.textWidth = GameDetailConstants.calendarDayTextWidthRatio * availableWidth
         self.stoneRowWidth = GameDetailConstants.stoneRowWidthRatio * availableWidth
         self.itemSize = stoneRowWidth / 5
+        let nowDateString = Date().formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
+        self.todayYearMonth = String(nowDateString.prefix(7))
+        self.todayOnlyDay = String(nowDateString.suffix(2))
     }
     
     var body : some View {
         ScrollViewReader { scrollProxy in
             ScrollView {
                 LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
-                    let keys = dateDictionary.keys.sorted()
+                    let keys = dateUserStatusInfos.keys.sorted(by: >)
 
                     ForEach(Array(zip(keys.indices, keys)), id: \.1) { index, key in
-                        if let dates = dateDictionary[key] {
-                            Section(header: monthHeaderView(key)) {
-                                monthSectionBody(
+                        if let dateUserStatusInfo = dateUserStatusInfos[key] {
+                            Section(header: calendarHeaderView(key)) {
+                                calendarBodyView(
                                     headerString: key,
-                                    dates: dates
+                                    dateUserStatusInfo: dateUserStatusInfo
                                 )
-                                .padding(.bottom, index == (dateDictionary.count - 1) ? 0 : 20)
+                                .padding(.bottom, index == (dateUserStatusInfos.count - 1) ? 0 : 20)
                             }
+                            .id(key)
                             .background(
                                 RoundedRectangle(cornerRadius: 8)
                                     .fill(OColors.uiBackground.swiftUIColor)
@@ -54,21 +67,33 @@ struct StickyScrollView: View {
                     }
                 }
             }
-            .onAppear {
-//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-//                    let today = viewStore.now.seoulNow.formattedString(format: DateFormatConstants.scrollCalendarFormat)
-//                    scrollProxy.scrollTo(today, anchor: .top)
-//                }
+            .onChange(of: dateUserStatusInfos) { oldValue, newValue in
+                if oldValue.isEmpty && !newValue.isEmpty {
+                    scrollToTodayWithPreload(scrollProxy)
+                }
+            }
+        }
+    }
+    
+    private func scrollToTodayWithPreload(_ proxy: ScrollViewProxy) {
+        let sectionId = selectedDateString.prefix(7)
+        let todayId = "\(sectionId)-\(selectedDateString.suffix(2))"
+        
+        proxy.scrollTo(sectionId, anchor: .top)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                proxy.scrollTo(todayId, anchor: .center)
             }
         }
     }
 }
 
 private extension StickyScrollView {
-    func monthHeaderView(_ headerString: String) -> some View {
+    func calendarHeaderView(_ headerString: String) -> some View {
         ZStack(alignment: .bottom) {
             OText(
-                headerString,
+                formatYearMonth(headerString),
                 token: .title_02,
                 color: OColors.text01.swiftUIColor
             )
@@ -85,70 +110,56 @@ private extension StickyScrollView {
         .hPadding(20)
     }
     
-    func monthSectionBody(
+    func formatYearMonth(_ input: String) -> String {
+        let parts = input.split(separator: "-")
+        guard parts.count == 2,
+              let year = parts.first,
+              let month = parts.last else {
+            return input
+        }
+        return "\(year). \(month)월"
+    }
+    
+    func calendarBodyView(
         headerString: String,
-        dates: [Date]
+        dateUserStatusInfo: [GameDetailDate]
     ) -> some View {
-        VStack(spacing: 0) {
-            ForEach(dates, id: \.self) { date in
+        let isTodayYearMonth = headerString == todayYearMonth
+        
+        return VStack(spacing: 0) {
+            ForEach(dateUserStatusInfo, id: \.self) { element in
                 HStack(spacing: 0) {
-                    dateView(date)
+                    let isToday = element.date == todayOnlyDay && isTodayYearMonth
+                    dateView(element, isToday)
                     
                     HStack(spacing: 0) {
-                        ForEach(0..<5) { index in
-                            if index == 0 {
-                                ZStack {
-                                    OmokStone(
-                                        stoneSize: itemSize - 10,
-                                        stoneType: .primary
-                                    )
-                                    CrossLineView(
-                                        crossLineSize: itemSize,
-                                        circleSize: itemSize - 10,
-                                        strokeColor: OColors.strokePrimaryOpa40.swiftUIColor,
-                                        hasData: true
-                                    )
-                                }
-                                .frame(width: itemSize, height: itemSize)
-                                .background(OColors.oPrimary.swiftUIColor.opacity(0.1))
-                            } else {
-                                ZStack {
-                                    CrossLineView(
-                                        crossLineSize: itemSize,
-                                        strokeColor: OColors.stroke02.swiftUIColor,
-                                        hasData: false
-                                    )
-                                }
-                                .frame(width: itemSize, height: itemSize)
-                            }
-                            
+                        ForEach(0..<element.userStatus.count, id: \.self) { index in
+                            stoneView(
+                                element: element,
+                                index: index,
+                                isToday: isToday
+                            )
                         }
                     }
                 }
-                .id(
-                    date.formattedString(
-                        format: DateFormatConstants.scrollCalendarFormat
-                    )
-                )
+                .id("\(headerString)-\(element.date)")
             }
         }
         .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
         .hPadding(20)
     }
     
-    func dateView(_ date: Date) -> some View {
-        let str = date.formattedString(format: DateFormatConstants.detailGameSectionRowDateFormat)
-        
+    func dateView(_ gameDetailDate: GameDetailDate, _ isToday: Bool) -> some View {
         return Group {
-            if str == "10" {
+            if isToday {
                 VStack(spacing: 0) {
                     OText(
-                        "금",
+                        todayString,
                         token: .subtitle_03,
                         color: OColors.text01.swiftUIColor
                     )
                     OText(
-                        str,
+                        gameDetailDate.date,
                         token: .headline,
                         color: OColors.text01.swiftUIColor
                     )
@@ -162,7 +173,7 @@ private extension StickyScrollView {
                 .background(OColors.ui02.swiftUIColor)
             } else {
                 OText(
-                    str,
+                    gameDetailDate.date,
                     token: .subtitle_03,
                     color: OColors.text01.swiftUIColor
                 )
@@ -173,3 +184,34 @@ private extension StickyScrollView {
     }
 }
 
+private extension StickyScrollView {
+    @ViewBuilder
+    func stoneView(
+        element: GameDetailDate,
+        index: Int,
+        isToday: Bool
+    ) -> some View {
+        let me = index == 0
+        
+        ZStack {
+            UserStatusStoneView(
+                userStatus: element.userStatus[index],
+                me: me,
+                itemSize: itemSize,
+                isToday: isToday
+            )
+            UserStatusCrossLineView(
+                userStatus: element.userStatus[index],
+                me: me,
+                size: itemSize,
+                isToday: isToday
+            )
+        }
+        .frame(width: itemSize, height: itemSize)
+        .background(
+            me
+            ? OColors.oPrimary.swiftUIColor.opacity(0.1)
+            : .clear
+        )
+    }
+}

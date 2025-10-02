@@ -73,9 +73,11 @@ public struct GameDetailView: View {
             )
             
             StickyScrollView(
-                dateDictionary: viewStore.dateDictionary,
+                dateUserStatusInfos: viewStore.dateUserStatusInfos,
                 availableWidth: availableWidth,
-                hPadding: hPadding
+                hPadding: hPadding,
+                todayString: viewStore.todayString,
+                selectedDateString: viewStore.selectedDateString
             )
             .padding(.bottom, 8)
             

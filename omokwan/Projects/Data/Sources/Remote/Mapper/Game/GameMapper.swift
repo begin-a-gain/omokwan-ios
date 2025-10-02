@@ -64,8 +64,10 @@ struct GameMapper {
             dates: response.dates?.map {
                 $0.toDomain()
             } ?? [],
-            previousDate: response.previousDate ?? "",
-            nextDate: response.nextDate ?? ""
+            previousDateCursor: response.prevCursor ?? "",
+            nextDateCursor: response.nextCursor ?? "",
+            needNextDatePaging: response.hasNext ?? false,
+            needPreviousDatePaging: response.hasPrev ?? false
         )
     }
     
