@@ -13,6 +13,7 @@ import Base
 
 public struct GameDetailView: View {
     private let store: StoreOf<GameDetailFeature>
+    private let calendarStore: StoreOf<StickyCalendarFeature>
     @ObservedObject private var viewStore: ViewStoreOf<GameDetailFeature>
     private let availableWidth: CGFloat
     private let hPadding: CGFloat = 20
@@ -26,6 +27,7 @@ public struct GameDetailView: View {
         self.store = store
         self.viewStore = ViewStore(store, observe: { $0 })
         self.availableWidth = deviceWidth - (hPadding * 2)
+        self.calendarStore = store.scope(state: \.stickyCalendarState, action: \.stickyCalendarAction)
     }
     
     public var body: some View {
@@ -72,22 +74,18 @@ public struct GameDetailView: View {
                 }
             )
             
-            StickyScrollView(
-                dateUserStatusInfos: viewStore.dateUserStatusInfos,
-                availableWidth: availableWidth,
-                hPadding: hPadding,
-                todayString: viewStore.todayString,
-                selectedDateString: viewStore.selectedDateString,
-                pagingCursor: viewStore.pagingCursor,
-                needPreviousDatePaging: viewStore.needPreviousDatePaging,
-                needNextDatePaging: viewStore.needNextDatePaging,
-                previousPagingAction: {
-                    viewStore.send(.fetchInfoWithPaging(.previous))
-                },
-                nextPagingAction: {
-                    viewStore.send(.fetchInfoWithPaging(.next))
+            ZStack(alignment: .top) {
+                StickyScrollView(
+                    store: store.scope(state: \.stickyCalendarState, action: \.stickyCalendarAction),
+                    availableWidth: availableWidth,
+                    hPadding: hPadding
+                )
+
+                if calendarStore.isTopProgressVisible {
+                    ProgressView()
+                        .height(64, .top)
                 }
-            )
+            }
             .padding(.bottom, 8)
             
             DetailUserAvatarView(

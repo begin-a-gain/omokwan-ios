@@ -47,6 +47,7 @@ extension GameDetailPagingUserResponse {
 extension GameDetailPagingDateResponse {
     func toDomain() -> GameDetailDate {
         GameDetailDate(
+            originalDate: self.date ?? "",
             date: self.date ?? "",
             userStatus: self.userStatus?.map {
                 $0.toDomain()
