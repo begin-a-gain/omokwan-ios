@@ -55,7 +55,11 @@ private extension UserStatusStoneView {
                     .frame(width: stoneSize, height: stoneSize)
             }
             
-            OmokStone(stoneSize: stoneSize, stoneType: type)
+            OmokStone(
+                stoneSize: stoneSize,
+                stoneType: type,
+                shadowRadius: 4
+            )
         }
     }
     
