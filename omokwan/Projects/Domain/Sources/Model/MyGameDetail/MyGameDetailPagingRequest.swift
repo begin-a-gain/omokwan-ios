@@ -20,3 +20,9 @@ public struct MyGameDetailPagingRequest {
         self.date = date
     }
 }
+
+public enum PagingCursor {
+    case today
+    case previous
+    case next
+}

@@ -47,15 +47,22 @@ public struct GameUserInfo: Equatable {
 }
 
 public struct GameDetailDate: Hashable {
+    public var originalDate: String
     public var date: String
     public var userStatus: [GameDetailUserStatus?]
     
     public init(
+        originalDate: String,
         date: String,
         userStatus: [GameDetailUserStatus]
     ) {
+        self.originalDate = originalDate
         self.date = date
         self.userStatus = userStatus
+    }
+    
+    public static func == (lhs: GameDetailDate, rhs: GameDetailDate) -> Bool {
+        lhs.originalDate == rhs.originalDate
     }
 }
 

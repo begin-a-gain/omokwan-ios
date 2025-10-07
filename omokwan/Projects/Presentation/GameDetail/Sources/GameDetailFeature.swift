@@ -25,11 +25,10 @@ public struct GameDetailFeature {
         ) {
             self.gameID = gameID
             self.gameTitle = gameTitle
-            self.now = Date()
-            let weekday = Calendar.current.component(.weekday, from: now)
-            let days = ["일", "월", "화", "수", "목", "금", "토"]
-            self.todayString = days[weekday - 1]
-            self.selectedDateString = selectedDateString
+            self.stickyCalendarState = .init(
+                gameID: gameID,
+                selectedDateString: selectedDateString
+            )
         }
         
         public enum AlertCase: Equatable {
@@ -43,12 +42,8 @@ public struct GameDetailFeature {
         
         let gameID: Int
         let gameTitle: String
-        let selectedDateString: String
-        var now: Date
-        let todayString: String
         var gameUserInfos: [GameUserInfo?] = []
-        
-        var dateUserStatusInfos: [String: [GameDetailDate]] = [:]
+        var stickyCalendarState: StickyCalendarFeature.State
         var isBottomButtonEnable: Bool = true
         
         @PresentationState var userAvatarInfoSheet: UserAvatarInfoFeature.State?
@@ -61,8 +56,6 @@ public struct GameDetailFeature {
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
         
-        case fetchInfoWithPaging(MyGameDetailPagingRequest)
-        case gameDetailInfoFetched(MyGameDetailInfo)
         case avatarButtonTapped(Int?)
         case detailUserInfoFetched(DetailUserInfo)
         
@@ -72,29 +65,17 @@ public struct GameDetailFeature {
         case kickOutAlertButtonTapped(String)
         case updateTodayOmokStatus
         case omokStatusUpdated(OmokStoneStatus)
+        
+        case stickyCalendarAction(StickyCalendarFeature.Action)
     }
     
     public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                let request = MyGameDetailPagingRequest(
-                    gameID: state.gameID,
-                    pageSize: 10,
-                    date: state.selectedDateString
-                )
-                return .send(.fetchInfoWithPaging(request))
-            case .fetchInfoWithPaging(let request):
                 state.isLoading = true
-                return .run { send in
-                    await send(fetchDetailInfoWithPaging(request: request))
-                }
-            case .gameDetailInfoFetched(let info):
-                state.isLoading = false
                 
-                setDateUserStatusInfos(&state, info.dates)
-                setGameUserInfo(&state, info.users)
-                return .none
+                return .send(.stickyCalendarAction(.fetchInfoWithPaging(.today)))
             case .navigateToBack:
                 return .none
             case .menuButtonTapped:
@@ -165,6 +146,17 @@ public struct GameDetailFeature {
                 state.isBottomButtonEnable = status == .inCompleted
                 // TODO: 오늘의 오목돌 바꾸기
                 return .none
+            case .stickyCalendarAction(let stickyAction):
+                switch stickyAction {
+                case let .gameDetailInfoFetched(info, pagingCursor):
+                    state.isLoading = false
+                    setGameUserInfo(&state, info.users)
+                    return .none
+                case .showAlert(let error):
+                    return .send(.showAlert(.error(error)))
+                default:
+                    return .none
+                }
             }
         }
         .ifLet(\.$userAvatarInfoSheet, action: \.userAvatarInfoSheet) {
@@ -174,25 +166,14 @@ public struct GameDetailFeature {
         Scope(state: \.alertState, action: \.alertAction) {
             AlertFeature()
         }
+        
+        Scope(state: \.stickyCalendarState, action: \.stickyCalendarAction) {
+            StickyCalendarFeature()
+        }
     }
 }
 
 private extension GameDetailFeature {
-    func fetchDetailInfoWithPaging(request: MyGameDetailPagingRequest) async -> Action {
-        let response = await gameUseCase.fetchDetailInfoWithPaging(
-            request.gameID,
-            request.date,
-            request.pageSize
-        )
-        
-        switch response {
-        case .success(let myGameDetailInfo):
-            return .gameDetailInfoFetched(myGameDetailInfo)
-        case .failure(let error):
-            return .showAlert(.error(error))
-        }
-    }
-    
     func fetchDetailUserInfo(gameID: Int, userID: Int) async -> Action {
         let response = await gameUseCase.fetchDetailUserInfo(gameID, userID)
         
@@ -229,54 +210,5 @@ private extension GameDetailFeature {
         }
         
         state.gameUserInfos = newInfos
-    }
-    
-    func initializeDateUserStatusInfos(from dates: [GameDetailDate]) -> [String: [GameDetailDate]] {
-        var dateUserStatusInfos: [String: [GameDetailDate]] = [:]
-        
-        for gameDetailDate in dates {
-            let yearMonth = String(gameDetailDate.date.prefix(7))
-            let dayOnly = String(gameDetailDate.date.suffix(2))
-            
-            var updatedGameDetailDate = gameDetailDate
-            updatedGameDetailDate.date = dayOnly
-            
-            if updatedGameDetailDate.userStatus.count <= 5 {
-                let neededCount = 5 - updatedGameDetailDate.userStatus.count
-                updatedGameDetailDate.userStatus.append(contentsOf: Array(repeating: nil, count: neededCount))
-            }
-            
-            if dateUserStatusInfos[yearMonth] == nil {
-                dateUserStatusInfos[yearMonth] = []
-            }
-            
-            dateUserStatusInfos[yearMonth]?.append(updatedGameDetailDate)
-        }
-        
-        for yearMonth in dateUserStatusInfos.keys {
-            dateUserStatusInfos[yearMonth]?.sort { $0.date > $1.date }
-        }
-        
-        return dateUserStatusInfos
-    }
-    
-    func setDateUserStatusInfos(_ state: inout State, _ dates: [GameDetailDate]) {
-        let newDateUserStatusInfos = initializeDateUserStatusInfos(from: dates)
-        
-        // TODO: 아래 페이징 추가 로직은 이후 수정 예정
-        for (yearMonth, newDates) in newDateUserStatusInfos {
-            if state.dateUserStatusInfos[yearMonth] == nil {
-                state.dateUserStatusInfos[yearMonth] = newDates
-            } else {
-                var combinedDates = (state.dateUserStatusInfos[yearMonth] ?? []) + newDates
-                
-                var uniqueDates: [String: GameDetailDate] = [:]
-                for date in combinedDates {
-                    uniqueDates[date.date] = date
-                }
-                
-                state.dateUserStatusInfos[yearMonth] = Array(uniqueDates.values).sorted { $0.date < $1.date }
-            }
-        }
     }
 }
