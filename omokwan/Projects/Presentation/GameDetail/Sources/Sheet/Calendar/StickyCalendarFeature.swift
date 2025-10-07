@@ -56,6 +56,10 @@ public struct StickyCalendarFeature {
         var isLoadingBottom: Bool = false
         var isUpdatingSnapshot: Bool = false
         var isInitialLoad: Bool = true
+        
+        var sortedKeys: [Dictionary<String, [GameDetailDate]>.Keys.Element] {
+            dateUserStatusInfos.keys.sorted(by: >)
+        }
     }
     
     public enum Action {
