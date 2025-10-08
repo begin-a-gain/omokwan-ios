@@ -66,6 +66,11 @@ class StickyScrollViewController: UIViewController {
         observe { [weak self] in
             guard let self else { return }
             
+            if store.shouldReloadToday {
+                reloadTodayItem()
+                return
+            }
+            
             let needPrevious = self.store.needPreviousDatePaging
             let dateInfos = self.store.dateUserStatusInfos
             let cursor = self.store.pagingCursor
@@ -238,9 +243,11 @@ private extension StickyScrollViewController {
             
             let isTodayYearMonth = section == store.todayYearMonth
             let isToday = item.date == store.todayOnlyDay && isTodayYearMonth
-            
+
+            let latestItem = store.dateUserStatusInfos[section]?.first(where: { $0.originalDate == item.originalDate }) ?? item
+
             let rowView = CalendarRowSectionView(
-                gameDetailDate: item,
+                gameDetailDate: latestItem,
                 isToday: isToday,
                 todayString: store.todayString,
                 availableWidth: availableWidth,
@@ -446,6 +453,32 @@ extension StickyScrollViewController {
         guard let dates = updatedData[section] else { return }
         let sortedDates = dates.sorted { $0.date > $1.date }
         snapshot.appendItems(sortedDates, toSection: section)
+    }
+    
+    private func reloadTodayItem() {
+        let yearMonth = store.todayYearMonth
+        let day = store.todayOnlyDay
+        
+        guard let todayDates = store.dateUserStatusInfos[yearMonth],
+              let updatedItem = todayDates.first(where: { $0.date == day }) else {
+            store.send(.resetReloadFlag)
+            return
+        }
+
+        var snapshot = dataSource.snapshot()
+
+        guard let oldItem = snapshot.itemIdentifiers.first(where: {
+            $0.originalDate == updatedItem.originalDate
+        }) else {
+            store.send(.resetReloadFlag)
+            return
+        }
+
+        snapshot.reconfigureItems([oldItem])
+
+        dataSource.apply(snapshot, animatingDifferences: false)
+
+        store.send(.resetReloadFlag)
     }
 }
 

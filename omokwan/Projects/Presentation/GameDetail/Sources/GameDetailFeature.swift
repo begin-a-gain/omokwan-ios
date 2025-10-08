@@ -36,6 +36,12 @@ public struct GameDetailFeature {
             case kickOut(String)
         }
         
+        enum BottomButtonType {
+            case impossible
+            case possible
+            case alreadyDone
+        }
+        
         var alertCase: AlertCase?
         var alertState: AlertFeature.State = .init()
         var isLoading: Bool = false
@@ -44,7 +50,15 @@ public struct GameDetailFeature {
         let gameTitle: String
         var gameUserInfos: [GameUserInfo?] = []
         var stickyCalendarState: StickyCalendarFeature.State
-        var isBottomButtonEnable: Bool = true
+        var bottomButtonType: BottomButtonType {
+            if stickyCalendarState.hasTodayDateInCalendar {
+                stickyCalendarState.isTodayStoneCompleted
+                    ? .alreadyDone
+                    : .possible
+            } else {
+                .impossible
+            }
+        }
         
         @PresentationState var userAvatarInfoSheet: UserAvatarInfoFeature.State?
     }
@@ -143,12 +157,10 @@ public struct GameDetailFeature {
                 }
             case .omokStatusUpdated(let status):
                 state.isLoading = false
-                state.isBottomButtonEnable = status == .inCompleted
-                // TODO: 오늘의 오목돌 바꾸기
-                return .none
+                return .send(.stickyCalendarAction(.checkTodayOmokStatus(status)))
             case .stickyCalendarAction(let stickyAction):
                 switch stickyAction {
-                case let .gameDetailInfoFetched(info, pagingCursor):
+                case let .gameDetailInfoFetched(info, _):
                     state.isLoading = false
                     setGameUserInfo(&state, info.users)
                     return .none

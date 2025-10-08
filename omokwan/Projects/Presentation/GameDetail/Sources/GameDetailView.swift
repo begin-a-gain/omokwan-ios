@@ -105,15 +105,20 @@ public struct GameDetailView: View {
 
 private extension GameDetailView {
     var buttonTitle: String {
-        viewStore.isBottomButtonEnable
-        ? "오목두기"
-        : "오늘자 오목을 이미 두었어요."
+        switch viewStore.bottomButtonType {
+        case .possible:
+            "오목두기"
+        case .impossible:
+            "현재 오목을 둘 수 없는 상태예요."
+        case .alreadyDone:
+            "오늘자 오목을 이미 두었어요."
+        }
     }
     
     var bottomButtonView: some View {
         OButton(
             title: buttonTitle,
-            status: viewStore.isBottomButtonEnable ? .default : .disable,
+            status: viewStore.bottomButtonType == .possible ? .default : .disable,
             type: .default
         ) {
             viewStore.send(.updateTodayOmokStatus)
