@@ -36,6 +36,12 @@ public struct GameDetailFeature {
             case kickOut(String)
         }
         
+        enum BottomButtonType {
+            case impossible
+            case possible
+            case alreadyDone
+        }
+        
         var alertCase: AlertCase?
         var alertState: AlertFeature.State = .init()
         var isLoading: Bool = false
@@ -44,9 +50,18 @@ public struct GameDetailFeature {
         let gameTitle: String
         var gameUserInfos: [GameUserInfo?] = []
         var stickyCalendarState: StickyCalendarFeature.State
-        var isBottomButtonEnable: Bool = true
+        var bottomButtonType: BottomButtonType {
+            if stickyCalendarState.hasTodayDateInCalendar {
+                stickyCalendarState.isTodayStoneCompleted
+                    ? .alreadyDone
+                    : .possible
+            } else {
+                .impossible
+            }
+        }
         
         @PresentationState var userAvatarInfoSheet: UserAvatarInfoFeature.State?
+        @Shared(.userInfo) var userInfo = UserInfo()
     }
     
     public enum Action {
@@ -57,7 +72,7 @@ public struct GameDetailFeature {
         case showAlert(State.AlertCase)
         
         case avatarButtonTapped(Int?)
-        case detailUserInfoFetched(DetailUserInfo)
+        case detailUserInfoFetched(DetailUserInfo, Int)
         
         case userAvatarInfoSheet(PresentationAction<UserAvatarInfoFeature.Action>)
         case shootStoneSuccess(String)
@@ -98,13 +113,18 @@ public struct GameDetailFeature {
                 return .run { send in
                     await send(fetchDetailUserInfo(gameID: gameID, userID: userID))
                 }
-            case .detailUserInfoFetched(let detailUserInfo):
+            case let .detailUserInfoFetched(detailUserInfo, userID):
                 state.isLoading = false
-                let roles: [ParticipantRole] = [.me, .host, .other]
-                let index = Int.random(in: 0..<roles.count)
-                let role = roles[index]
+                let myID = state.userInfo.id
+                guard let myInfo = state.gameUserInfos.first(where: { $0?.userID == myID }) ?? nil else { return .none }
 
-                // TODO: 방장 확인한 뒤, role 정확히 보내기
+                let equalsID = myID == userID
+                var role: ParticipantRole {
+                    if equalsID { return .me }
+                    if myInfo.isHost { return .host }
+                    return .other
+                }
+                
                 state.userAvatarInfoSheet = .init(detailUserInfo: detailUserInfo, participantRole: role)
 
                 return .none
@@ -143,12 +163,10 @@ public struct GameDetailFeature {
                 }
             case .omokStatusUpdated(let status):
                 state.isLoading = false
-                state.isBottomButtonEnable = status == .inCompleted
-                // TODO: 오늘의 오목돌 바꾸기
-                return .none
+                return .send(.stickyCalendarAction(.checkTodayOmokStatus(status)))
             case .stickyCalendarAction(let stickyAction):
                 switch stickyAction {
-                case let .gameDetailInfoFetched(info, pagingCursor):
+                case let .gameDetailInfoFetched(info, _):
                     state.isLoading = false
                     setGameUserInfo(&state, info.users)
                     return .none
@@ -179,7 +197,7 @@ private extension GameDetailFeature {
         
         switch response {
         case .success(let detailUserInfo):
-            return .detailUserInfoFetched(detailUserInfo)
+            return .detailUserInfoFetched(detailUserInfo, userID)
         case .failure(let error):
             return .showAlert(.error(error))
         }

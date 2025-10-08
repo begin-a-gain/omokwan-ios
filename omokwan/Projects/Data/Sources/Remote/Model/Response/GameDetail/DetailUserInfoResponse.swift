@@ -10,4 +10,5 @@ struct DetailUserInfoResponse: Decodable {
     let combo: Int?
     let participantNumbers: Int?
     let participantDays: Int?
+    let isHost: Bool?
 }

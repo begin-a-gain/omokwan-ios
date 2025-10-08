@@ -60,10 +60,6 @@ public struct GameDetailDate: Hashable {
         self.date = date
         self.userStatus = userStatus
     }
-    
-    public static func == (lhs: GameDetailDate, rhs: GameDetailDate) -> Bool {
-        lhs.originalDate == rhs.originalDate
-    }
 }
 
 public struct GameDetailUserStatus: Hashable {

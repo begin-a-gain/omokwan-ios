@@ -10,16 +10,19 @@ public struct DetailUserInfo: Equatable {
     public let combo: Int
     public let stones: Int
     public let participantDays: Int
+    public let isHost: Bool
     
     public init(
         nickname: String,
         combo: Int,
         stones: Int,
-        participantDays: Int
+        participantDays: Int,
+        isHost: Bool
     ) {
         self.nickname = nickname
         self.combo = combo
         self.stones = stones
         self.participantDays = participantDays
+        self.isHost = isHost
     }
 }

@@ -27,6 +27,7 @@ public struct StickyCalendarFeature {
             self.todayString = days[weekday - 1]
             self.selectedDateString = selectedDateString
             let nowDateString = now.formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
+            self.nowDateString = nowDateString
             self.todayYearMonth = String(nowDateString.prefix(7))
             self.todayOnlyDay = String(nowDateString.suffix(2))
         }
@@ -41,6 +42,7 @@ public struct StickyCalendarFeature {
         let todayString: String
         let selectedDateString: String
         var now: Date
+        let nowDateString: String
         
         var previousDateCursor: String = ""
         var nextDateCursor: String = ""
@@ -60,6 +62,14 @@ public struct StickyCalendarFeature {
         var sortedKeys: [Dictionary<String, [GameDetailDate]>.Keys.Element] {
             dateUserStatusInfos.keys.sorted(by: >)
         }
+        
+        var isTodayStoneCompleted: Bool = false
+        var hasTodayDateInCalendar: Bool {
+            dateUserStatusInfos.values
+                .flatMap { $0 }
+                .contains { $0.originalDate == nowDateString }
+        }
+        var shouldReloadToday: Bool = false
     }
     
     public enum Action {
@@ -77,6 +87,8 @@ public struct StickyCalendarFeature {
         case setIsUpdatingSnapshot(Bool)
         case setPreviousDateUserStatusInfosForSaving([String: [GameDetailDate]])
         case setIsInitialLoad(Bool)
+        case checkTodayOmokStatus(OmokStoneStatus)
+        case resetReloadFlag
     }
     
     public var body: some ReducerOf<Self> {
@@ -149,6 +161,33 @@ public struct StickyCalendarFeature {
             case .setIsInitialLoad(let value):
                 state.isInitialLoad = value
                 return .none
+            case .checkTodayOmokStatus(let status):
+                guard var todayDates = state.dateUserStatusInfos[state.todayYearMonth],
+                      let index = todayDates.firstIndex(where: { $0.date == state.todayOnlyDay })
+                else {
+                    return .none
+                }
+
+                state.isTodayStoneCompleted = status == .completed
+
+                var todayDate = todayDates[index]
+                if let myUserStatus = todayDate.userStatus[0] {
+                    todayDate.userStatus[0] = GameDetailUserStatus(
+                        userID: myUserStatus.userID,
+                        isCompleted: status == .completed,
+                        streakCount: myUserStatus.streakCount,
+                        isCombo: myUserStatus.isCombo
+                    )
+                }
+                
+                todayDates[index] = todayDate
+                state.dateUserStatusInfos[state.todayYearMonth] = todayDates
+                
+                state.shouldReloadToday = true
+                return .none
+            case .resetReloadFlag:
+                state.shouldReloadToday = false
+                return .none
             }
         }
     }
@@ -194,7 +233,7 @@ private extension StickyCalendarFeature {
     }
     
     func setDateUserStatusInfos(_ state: inout State, _ dates: [GameDetailDate]) {
-        let newDateUserStatusInfos = initializeDateUserStatusInfos(from: dates)
+        let newDateUserStatusInfos = initializeDateUserStatusInfos(state: &state, from: dates)
         
         for (yearMonth, newDates) in newDateUserStatusInfos {
             if state.dateUserStatusInfos[yearMonth] == nil {
@@ -212,12 +251,16 @@ private extension StickyCalendarFeature {
         }
     }
 
-    func initializeDateUserStatusInfos(from dates: [GameDetailDate]) -> [String: [GameDetailDate]] {
+    func initializeDateUserStatusInfos(
+        state: inout State,
+        from dates: [GameDetailDate]
+    ) -> [String: [GameDetailDate]] {
         var dateUserStatusInfos: [String: [GameDetailDate]] = [:]
         
         for gameDetailDate in dates {
             let yearMonth = String(gameDetailDate.date.prefix(7))
             let dayOnly = String(gameDetailDate.date.suffix(2))
+            let todayString = "\(yearMonth)-\(dayOnly)"
             
             var updatedGameDetailDate = gameDetailDate
             updatedGameDetailDate.date = dayOnly
@@ -225,6 +268,12 @@ private extension StickyCalendarFeature {
             if updatedGameDetailDate.userStatus.count <= 5 {
                 let neededCount = 5 - updatedGameDetailDate.userStatus.count
                 updatedGameDetailDate.userStatus.append(contentsOf: Array(repeating: nil, count: neededCount))
+            }
+            
+            if state.nowDateString == todayString {
+                if let myUserStatus = updatedGameDetailDate.userStatus[0] {
+                    state.isTodayStoneCompleted = myUserStatus.isCompleted
+                }
             }
             
             if dateUserStatusInfos[yearMonth] == nil {
