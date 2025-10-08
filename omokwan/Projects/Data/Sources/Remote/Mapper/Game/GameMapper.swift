@@ -80,7 +80,8 @@ struct GameMapper {
             nickname: response.nickName ?? "",
             combo: response.combo ?? 0,
             stones: response.participantNumbers ?? 0,
-            participantDays: response.participantDays ?? 0
+            participantDays: response.participantDays ?? 0,
+            isHost: response.isHost ?? false
         )
     }
     
