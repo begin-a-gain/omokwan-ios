@@ -10,13 +10,16 @@ import SwiftUI
 public struct OmokStone: View {
     let stoneSize: CGFloat
     let stoneType: OmokStoneType
+    let shadowRadius: CGFloat
     
     public init(
         stoneSize: CGFloat,
-        stoneType: OmokStoneType
+        stoneType: OmokStoneType,
+        shadowRadius: CGFloat = 10
     ) {
         self.stoneSize = stoneSize
         self.stoneType = stoneType
+        self.shadowRadius = shadowRadius
     }
     
     public var body: some View {
@@ -32,7 +35,7 @@ public struct OmokStone: View {
             .frame(width: stoneSize, height: stoneSize)
             .shadow(
                 color: stoneType.shadowColor,
-                radius: 10,
+                radius: shadowRadius,
                 x: 0, y: 0
             )
             .modifier(OmokStoneModifier(stoneType: stoneType))

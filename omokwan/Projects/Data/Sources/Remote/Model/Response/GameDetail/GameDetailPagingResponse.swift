@@ -10,13 +10,16 @@ import Domain
 struct GameDetailPagingResponse: Decodable {
     let users: [GameDetailPagingUserResponse]?
     let dates: [GameDetailPagingDateResponse]?
-    let previousDate: String?
-    let nextDate: String?
+    let prevCursor: String?
+    let nextCursor: String?
+    let hasPrev: Bool?
+    let hasNext: Bool?
 }
 
 struct GameDetailPagingUserResponse: Decodable {
     let userId: Int?
     let nickname: String?
+    let isHost: Bool?
 }
 
 struct GameDetailPagingDateResponse: Decodable {
@@ -26,8 +29,8 @@ struct GameDetailPagingDateResponse: Decodable {
 
 struct GameDetailPagingUserStatus: Decodable {
     let userId: Int?
-    let status: String?
-    let comboLength: Int?
+    let isCompleted: Bool?
+    let streakCount: Int?
     let isCombo: Bool?
 }
 
@@ -35,7 +38,8 @@ extension GameDetailPagingUserResponse {
     func toDomain() -> GameUserInfo {
         GameUserInfo(
             userID: self.userId ?? 0,
-            nickname: self.nickname ?? ""
+            nickname: self.nickname ?? "",
+            isHost: self.isHost ?? false
         )
     }
 }
@@ -43,6 +47,7 @@ extension GameDetailPagingUserResponse {
 extension GameDetailPagingDateResponse {
     func toDomain() -> GameDetailDate {
         GameDetailDate(
+            originalDate: self.date ?? "",
             date: self.date ?? "",
             userStatus: self.userStatus?.map {
                 $0.toDomain()
@@ -55,8 +60,8 @@ extension GameDetailPagingUserStatus {
     func toDomain() -> GameDetailUserStatus {
         GameDetailUserStatus(
             userID: self.userId ?? 0,
-            status: self.status ?? "",
-            comboLength: self.comboLength ?? 0,
+            isCompleted: self.isCompleted ?? false,
+            streakCount: self.streakCount ?? 0,
             isCombo: self.isCombo ?? false
         )
     }

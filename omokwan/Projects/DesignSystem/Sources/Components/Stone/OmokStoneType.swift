@@ -17,7 +17,7 @@ public enum OmokStoneType {
         case .primary:
             [OColors.oWhite.swiftUIColor, OColors.uiPrimary.swiftUIColor, OColors.uiLinearGradientEndPoint.swiftUIColor]
         case .black:
-            [.red, .green, .blue]
+            [OColors.oWhite.swiftUIColor, OColors.oBlack.swiftUIColor, OColors.stoneBlackLinearLast.swiftUIColor]
         case .white:
             [OColors.oWhite.swiftUIColor, OColors.gray600.swiftUIColor, OColors.oWhite.swiftUIColor]
         }

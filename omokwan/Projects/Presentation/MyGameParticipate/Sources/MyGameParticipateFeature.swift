@@ -8,6 +8,8 @@
 import ComposableArchitecture
 import Domain
 import Base
+import Foundation
+import Util
 
 @Reducer
 public struct MyGameParticipateFeature {
@@ -74,7 +76,7 @@ public struct MyGameParticipateFeature {
         case showDoubleCheckAlert(GameRoomInformation)
         case alertAction(AlertFeature.Action)
         case alertParticipateButtonTapped(GameRoomInformation)
-        case navigateToGameDetail(Int, String)
+        case navigateToGameDetail(Int, String, String)
         
         case categoriesFetched([GameCategory])
         case passwordAlertCancelButtonTapped
@@ -191,10 +193,11 @@ public struct MyGameParticipateFeature {
                     state.alertCase = .password
                     return .none
                 } else {
+                    let selectedDateString = Date.now.formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
                     return .merge([
                         .send(.alertAction(.dismiss)),
                         // TODO: 나중에 API 나오고 roomInfo modeling 변경, 넘기는 파라미터 수정
-                        .send(.navigateToGameDetail(1, roomInfo.title))
+                        .send(.navigateToGameDetail(1, roomInfo.title, selectedDateString))
                     ])
                 }
             case .navigateToGameDetail:

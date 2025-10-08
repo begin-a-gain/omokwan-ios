@@ -18,9 +18,17 @@ public struct GameDetailFeature {
     public init() {}
     
     public struct State: Equatable {
-        public init(gameID: Int, gameTitle: String) {
+        public init(
+            gameID: Int,
+            gameTitle: String,
+            selectedDateString: String
+        ) {
             self.gameID = gameID
             self.gameTitle = gameTitle
+            self.stickyCalendarState = .init(
+                gameID: gameID,
+                selectedDateString: selectedDateString
+            )
         }
         
         public enum AlertCase: Equatable {
@@ -34,30 +42,8 @@ public struct GameDetailFeature {
         
         let gameID: Int
         let gameTitle: String
-        var now: Date = Date()
-        
-        // About Date
-        var previousScrollCount: Int = 1
-        var nextMonthScrollCount: Int = 1
-        
-        var calendarStartDate: Date {
-            now.seoulNow.dateForFirstDayOfMonth(nMonthsAgo: previousScrollCount)
-        }
-         
-        var calendarEndDate: Date {
-            now.seoulNow.dateForLastDayOfMonth(nMonthsAfter: nextMonthScrollCount)
-        }
-        
-        var dateTimeRange: [Date] {
-            Date.getRangeOfDates(from: calendarStartDate, to: calendarEndDate)
-        }
-        
-        var dateDictionary: [String: [Date]] {
-            Dictionary(grouping: dateTimeRange) { date in
-                date.formattedString(format: DateFormatConstants.scrollHeaderFormat)
-            }
-        }
-        
+        var gameUserInfos: [GameUserInfo?] = []
+        var stickyCalendarState: StickyCalendarFeature.State
         var isBottomButtonEnable: Bool = true
         
         @PresentationState var userAvatarInfoSheet: UserAvatarInfoFeature.State?
@@ -70,9 +56,7 @@ public struct GameDetailFeature {
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
         
-        case fetchInfoWithPaging(MyGameDetailPagingRequest)
-        case gameDetailInfoFetched(MyGameDetailInfo)
-        case avatarButtonTapped(Int)
+        case avatarButtonTapped(Int?)
         case detailUserInfoFetched(DetailUserInfo)
         
         case userAvatarInfoSheet(PresentationAction<UserAvatarInfoFeature.Action>)
@@ -81,31 +65,17 @@ public struct GameDetailFeature {
         case kickOutAlertButtonTapped(String)
         case updateTodayOmokStatus
         case omokStatusUpdated(OmokStoneStatus)
+        
+        case stickyCalendarAction(StickyCalendarFeature.Action)
     }
     
     public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                let request = MyGameDetailPagingRequest(
-                    gameID: state.gameID,
-                    pageSize: 10,
-                    date: state.now
-                        .formattedString(format: DateFormatConstants.yearMonthDayRequestFormat),
-                    previousDate: "",
-                    nextDate: "",
-                    needNextPaging: false
-                )
-                return .send(.fetchInfoWithPaging(request))
-            case .fetchInfoWithPaging(let request):
                 state.isLoading = true
-                return .run { send in
-                    await send(fetchDetailInfoWithPaging(request: request))
-                }
-            case .gameDetailInfoFetched(let info):
-                state.isLoading = false
                 
-                return .none
+                return .send(.stickyCalendarAction(.fetchInfoWithPaging(.today)))
             case .navigateToBack:
                 return .none
             case .menuButtonTapped:
@@ -117,6 +87,11 @@ public struct GameDetailFeature {
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
             case .avatarButtonTapped(let userID):
+                guard let userID else {
+                    // TODO: 초대 유도
+                    return .none
+                }
+                
                 state.isLoading = true
                 
                 let gameID = state.gameID
@@ -171,6 +146,17 @@ public struct GameDetailFeature {
                 state.isBottomButtonEnable = status == .inCompleted
                 // TODO: 오늘의 오목돌 바꾸기
                 return .none
+            case .stickyCalendarAction(let stickyAction):
+                switch stickyAction {
+                case let .gameDetailInfoFetched(info, pagingCursor):
+                    state.isLoading = false
+                    setGameUserInfo(&state, info.users)
+                    return .none
+                case .showAlert(let error):
+                    return .send(.showAlert(.error(error)))
+                default:
+                    return .none
+                }
             }
         }
         .ifLet(\.$userAvatarInfoSheet, action: \.userAvatarInfoSheet) {
@@ -180,35 +166,14 @@ public struct GameDetailFeature {
         Scope(state: \.alertState, action: \.alertAction) {
             AlertFeature()
         }
+        
+        Scope(state: \.stickyCalendarState, action: \.stickyCalendarAction) {
+            StickyCalendarFeature()
+        }
     }
 }
 
 private extension GameDetailFeature {
-    func fetchDetailInfoWithPaging(request: MyGameDetailPagingRequest) async -> Action {
-        var dateString: String {
-            if request.nextDate.isEmpty || request.previousDate.isEmpty {
-                return request.date
-            } else {
-                return request.needNextPaging
-                ? request.nextDate
-                : request.previousDate
-            }
-        }
-        
-        let response = await gameUseCase.fetchDetailInfoWithPaging(
-            request.gameID,
-            dateString,
-            request.pageSize
-        )
-        
-        switch response {
-        case .success(let myGameDetailInfo):
-            return .gameDetailInfoFetched(myGameDetailInfo)
-        case .failure(let error):
-            return .showAlert(.error(error))
-        }
-    }
-    
     func fetchDetailUserInfo(gameID: Int, userID: Int) async -> Action {
         let response = await gameUseCase.fetchDetailUserInfo(gameID, userID)
         
@@ -229,5 +194,21 @@ private extension GameDetailFeature {
         case .failure(let error):
             return .showAlert(.error(error))
         }
+    }
+}
+
+private extension GameDetailFeature {
+    func setGameUserInfo(_ state: inout State, _ infos: [GameUserInfo]) {
+        if infos.compactMap({ $0 }).count == state.gameUserInfos.count {
+            return
+        }
+        
+        var newInfos: [GameUserInfo?] = infos.map { $0 }
+        
+        if newInfos.count < 5 {
+            newInfos.append(nil)
+        }
+        
+        state.gameUserInfos = newInfos
     }
 }
