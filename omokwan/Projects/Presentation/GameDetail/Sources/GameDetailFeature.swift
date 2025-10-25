@@ -163,6 +163,7 @@ public struct GameDetailFeature {
                 }
             case .omokStatusUpdated(let status):
                 state.isLoading = false
+                // TODO: 이거 stauts가 실패한 케이스로 왔을 떈 어떻게 처리할지 논의.
                 return .send(.stickyCalendarAction(.checkTodayOmokStatus(status)))
             case .stickyCalendarAction(let stickyAction):
                 switch stickyAction {

@@ -67,7 +67,11 @@ class StickyScrollViewController: UIViewController {
             guard let self else { return }
             
             if store.shouldReloadToday {
-                reloadTodayItem()
+                if !store.comboUpdatedDates.isEmpty {
+                    reloadComboItems()
+                } else {
+                    reloadTodayItem()
+                }
                 return
             }
             
@@ -479,6 +483,27 @@ extension StickyScrollViewController {
         dataSource.apply(snapshot, animatingDifferences: false)
 
         store.send(.resetReloadFlag)
+    }
+    
+    private func reloadComboItems() {
+        let datesToReload = store.comboUpdatedDates
+        guard !datesToReload.isEmpty else {
+            store.send(.resetReloadFlag)
+            return
+        }
+        
+        var snapshot = dataSource.snapshot()
+        
+        for dateString in datesToReload {
+            if let oldItem = snapshot.itemIdentifiers.first(where: { $0.originalDate == dateString }) {
+                snapshot.reconfigureItems([oldItem])
+            }
+        }
+        
+        dataSource.apply(snapshot, animatingDifferences: false)
+        
+        store.send(.resetReloadFlag)
+        store.send(.clearComboUpdatedDates)
     }
 }
 
