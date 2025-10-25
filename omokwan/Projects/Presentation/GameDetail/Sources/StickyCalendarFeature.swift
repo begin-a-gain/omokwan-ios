@@ -70,6 +70,7 @@ public struct StickyCalendarFeature {
                 .contains { $0.originalDate == nowDateString }
         }
         var shouldReloadToday: Bool = false
+        var comboUpdatedDates: [String] = []
     }
     
     public enum Action {
@@ -89,6 +90,7 @@ public struct StickyCalendarFeature {
         case setIsInitialLoad(Bool)
         case checkTodayOmokStatus(OmokStoneStatus)
         case resetReloadFlag
+        case clearComboUpdatedDates
     }
     
     public var body: some ReducerOf<Self> {
@@ -162,31 +164,42 @@ public struct StickyCalendarFeature {
                 state.isInitialLoad = value
                 return .none
             case .checkTodayOmokStatus(let status):
-                guard var todayDates = state.dateUserStatusInfos[state.todayYearMonth],
-                      let index = todayDates.firstIndex(where: { $0.date == state.todayOnlyDay })
-                else {
+                state.isTodayStoneCompleted = status == .completed
+                
+                let flatMap = state.dateUserStatusInfos.flatMap { $0.value }
+                    .sorted{ $0.originalDate > $1.originalDate }
+                let todayDateString = state.todayYearMonth+"-"+state.todayOnlyDay
+                
+                guard let todayMatchedIndex = flatMap.firstIndex(where: { $0.originalDate == todayDateString }),
+                      let currentMonthGameDetailDates = state.dateUserStatusInfos[String(flatMap[todayMatchedIndex].originalDate.prefix(7))],
+                      let todaySameDateIndex = currentMonthGameDetailDates.firstIndex(where: { $0.date == String(flatMap[todayMatchedIndex].originalDate.suffix(2)) }) else {
                     return .none
                 }
-
-                state.isTodayStoneCompleted = status == .completed
-
-                var todayDate = todayDates[index]
-                if let myUserStatus = todayDate.userStatus[0] {
-                    todayDate.userStatus[0] = GameDetailUserStatus(
-                        userID: myUserStatus.userID,
-                        isCompleted: status == .completed,
-                        streakCount: myUserStatus.streakCount,
-                        isCombo: myUserStatus.isCombo
+                
+                if todayMatchedIndex + 1 < flatMap.count {
+                    markOmokStatusWithPreviousData(
+                        state: &state,
+                        todayGameDetailDate: currentMonthGameDetailDates[todaySameDateIndex],
+                        currentMonthGameDetailDates: currentMonthGameDetailDates,
+                        todaySameDateIndex: todaySameDateIndex,
+                        todayMatchedIndex: todayMatchedIndex,
+                        allGameDetailDates: flatMap
                     )
+                    return .none
+                } else {
+                    markOmokStatusWithoutPreviousData(
+                        state: &state,
+                        todayGameDetailDate: currentMonthGameDetailDates[todaySameDateIndex],
+                        currentMonthGameDetailDates: currentMonthGameDetailDates,
+                        todaySameDateIndex: todaySameDateIndex
+                    )
+                    return .none
                 }
-                
-                todayDates[index] = todayDate
-                state.dateUserStatusInfos[state.todayYearMonth] = todayDates
-                
-                state.shouldReloadToday = true
-                return .none
             case .resetReloadFlag:
                 state.shouldReloadToday = false
+                return .none
+            case .clearComboUpdatedDates:
+                state.comboUpdatedDates = []
                 return .none
             }
         }
@@ -288,5 +301,94 @@ private extension StickyCalendarFeature {
         }
         
         return dateUserStatusInfos
+    }
+    
+    func markOmokStatusWithoutPreviousData(
+        state: inout State,
+        todayGameDetailDate: GameDetailDate,
+        currentMonthGameDetailDates: [GameDetailDate],
+        todaySameDateIndex: Int
+    ) {
+        var todayGameDetailDate = todayGameDetailDate
+        var currentMonthGameDetailDates = currentMonthGameDetailDates
+        
+        if let myUserStatus = todayGameDetailDate.userStatus[0] {
+            todayGameDetailDate.userStatus[0] = GameDetailUserStatus(
+                userID: myUserStatus.userID,
+                isCompleted: true,
+                streakCount: myUserStatus.streakCount,
+                isCombo: false
+            )
+        }
+        
+        currentMonthGameDetailDates[todaySameDateIndex] = todayGameDetailDate
+        state.dateUserStatusInfos[state.todayYearMonth] = currentMonthGameDetailDates
+        
+        state.shouldReloadToday = true
+    }
+    
+    func markOmokStatusWithPreviousData(
+        state: inout State,
+        todayGameDetailDate: GameDetailDate,
+        currentMonthGameDetailDates: [GameDetailDate],
+        todaySameDateIndex: Int,
+        todayMatchedIndex: Int,
+        allGameDetailDates: [GameDetailDate]
+    ) {
+        let previousGameDetailDate = allGameDetailDates[todayMatchedIndex + 1]
+        var currentMonthGameDetailDates = currentMonthGameDetailDates
+        var todayDate = currentMonthGameDetailDates[todaySameDateIndex]
+        
+        if let myUserStatus = todayDate.userStatus[0] {
+            let isCombo = previousGameDetailDate.userStatus[0]?.isCombo ?? false
+            if isCombo {
+                todayDate.userStatus[0] = GameDetailUserStatus(
+                    userID: myUserStatus.userID,
+                    isCompleted: true,
+                    streakCount: myUserStatus.streakCount,
+                    isCombo: true
+                )
+                
+                currentMonthGameDetailDates[todaySameDateIndex] = todayDate
+                state.dateUserStatusInfos[state.todayYearMonth] = currentMonthGameDetailDates
+            } else {
+                let streakCount = previousGameDetailDate.userStatus[0]?.streakCount ?? 0
+                if streakCount >= 4 {
+                    let comboRange = todayMatchedIndex...min(todayMatchedIndex + 4, allGameDetailDates.count - 1)
+                    state.comboUpdatedDates = comboRange.map { allGameDetailDates[$0].originalDate }
+
+                    for i in comboRange {
+                        let gameDate = allGameDetailDates[i]
+                        let yearMonth = String(gameDate.originalDate.prefix(7))
+                        let day = String(gameDate.originalDate.suffix(2))
+                        
+                        guard var monthDates = state.dateUserStatusInfos[yearMonth],
+                              let dayIndex = monthDates.firstIndex(where: { $0.date == day }),
+                              let userStatus = monthDates[dayIndex].userStatus[0] else { continue }
+                        
+                        monthDates[dayIndex].userStatus[0] = GameDetailUserStatus(
+                            userID: userStatus.userID,
+                            isCompleted: true,
+                            streakCount: userStatus.streakCount,
+                            isCombo: true
+                        )
+                        
+                        state.dateUserStatusInfos[yearMonth] = monthDates
+                    }
+                } else {
+                    todayDate.userStatus[0] = GameDetailUserStatus(
+                        userID: myUserStatus.userID,
+                        isCompleted: true,
+                        streakCount: myUserStatus.streakCount,
+                        isCombo: false
+                    )
+                    
+                    currentMonthGameDetailDates[todaySameDateIndex] = todayDate
+                    state.dateUserStatusInfos[state.todayYearMonth] = currentMonthGameDetailDates
+                }
+            }
+        }
+                
+        state.shouldReloadToday = true
     }
 }
