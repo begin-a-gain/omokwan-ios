@@ -171,7 +171,7 @@ private extension MyGameParticipateView {
                             viewStore.send(.participateButtonTapped(roomInfo))
                         }
                     )
-                    .id(roomInfo.title) // TODO: API 응답 값 보고 id 값으로 변경 (아직 안나옴)
+                    .id(roomInfo.id)
                 }
             }.clipShape(RoundedRectangle(cornerRadius: 8))
             .padding(20)
@@ -199,7 +199,7 @@ private extension MyGameParticipateView {
         OAlert(
             type: .default,
             title: "대국에 참여하시겠습니까?",
-            content: "'\(roomInfo.title)' 대국을 시작해보세요.",
+            content: "'\(roomInfo.name)' 대국을 시작해보세요.",
             primaryButtonAction: {
                 viewStore.send(.alertAction(.dismiss))
             },

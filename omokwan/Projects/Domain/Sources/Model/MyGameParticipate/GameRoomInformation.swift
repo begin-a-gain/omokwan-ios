@@ -8,38 +8,41 @@
 import Foundation
 
 public struct GameRoomInformation: Hashable {
-    public let title: String
-    public let isPrivateRoom: Bool
-    public let currentNumOfPeople: Int
-    public let maxNumOfPeople: Int
+    public let id: Int
     public let category: GameCategory?
-    public let createRoomDate: Date
+    public let name: String
     public let hostName: String
-    public let roomStatus: RoomParticipationStatus
+    public let ongoingDays: Int
+    public let participants: Int
+    public let maxParticipants: Int
+    public let joinStatus: RoomJoinStatus
+    public let isPublic: Bool
     
     public init(
-        title: String,
-        isPrivateRoom: Bool,
-        currentNumOfPeople: Int,
-        maxNumOfPeople: Int,
+        id: Int,
         category: GameCategory?,
-        createRoomDate: Date,
+        name: String,
         hostName: String,
-        roomStatus: RoomParticipationStatus
+        ongoingDays: Int,
+        participants: Int,
+        maxParticipants: Int,
+        joinStatus: RoomJoinStatus,
+        isPublic: Bool
     ) {
-        self.title = title
-        self.isPrivateRoom = isPrivateRoom
-        self.currentNumOfPeople = currentNumOfPeople
-        self.maxNumOfPeople = maxNumOfPeople
+        self.id = id
         self.category = category
-        self.createRoomDate = createRoomDate
+        self.name = name
         self.hostName = hostName
-        self.roomStatus = roomStatus
+        self.ongoingDays = ongoingDays
+        self.participants = participants
+        self.maxParticipants = maxParticipants
+        self.joinStatus = joinStatus
+        self.isPublic = isPublic
     }
 }
 
-public enum RoomParticipationStatus {
-    case participating
-    case available
-    case unavailable
+public enum RoomJoinStatus {
+    case possible
+    case impossible
+    case inProgress
 }

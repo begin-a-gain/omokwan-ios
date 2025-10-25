@@ -97,48 +97,6 @@ public struct MyGameParticipateFeature {
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
             case .onAppear:
-                state.gameRoomInformationList = [
-                    .init(
-                        title: "30분 이상 아침 달리기 하기(잠금o)",
-                        isPrivateRoom: true,
-                        currentNumOfPeople: 3,
-                        maxNumOfPeople: 5,
-                        category: .init(code: "1", category: "다이어트", emoji: ""),
-                        createRoomDate: .now,
-                        hostName: "빡빡이",
-                        roomStatus: .available
-                    ),
-                    .init(
-                        title: "운동하기(잠금x)",
-                        isPrivateRoom: false,
-                        currentNumOfPeople: 3,
-                        maxNumOfPeople: 5,
-                        category: .init(code: "1", category: "다이어트", emoji: ""),
-                        createRoomDate: .now,
-                        hostName: "오목왕빡빡이",
-                        roomStatus: .available
-                    ),
-                    .init(
-                        title: "30분",
-                        isPrivateRoom: true,
-                        currentNumOfPeople: 3,
-                        maxNumOfPeople: 2,
-                        category: .init(code: "1", category: "다이어트", emoji: ""),
-                        createRoomDate: .now,
-                        hostName: "ㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇ",
-                        roomStatus: .participating
-                    ),
-                    .init(
-                        title: "30분 이상 아침 달리기 하기",
-                        isPrivateRoom: true,
-                        currentNumOfPeople: 3,
-                        maxNumOfPeople: 5,
-                        category: .init(code: "1", category: "다이어트", emoji: ""),
-                        createRoomDate: .now,
-                        hostName: "dddddddddddd",
-                        roomStatus: .unavailable
-                    )
-                ]
                 return .run { send in
                     await send(fetchCategories())
                 }
@@ -178,8 +136,8 @@ public struct MyGameParticipateFeature {
                     return .none
                 }
             case .participateButtonTapped(let roomInfo):
-                switch roomInfo.roomStatus {
-                case .available:
+                switch roomInfo.joinStatus {
+                case .possible:
                     return .send(.showDoubleCheckAlert(roomInfo))
                 default:
                     return .none
@@ -188,17 +146,17 @@ public struct MyGameParticipateFeature {
                 state.alertCase = .participateDoubleCheck(roomInfo)
                 return .send(.alertAction(.present))
             case .alertParticipateButtonTapped(let roomInfo):
-                if roomInfo.isPrivateRoom {
-                    // TODO: 비공개코드 alert 필요
-                    state.alertCase = .password
-                    return .none
-                } else {
+                if roomInfo.isPublic {
                     let selectedDateString = Date.now.formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
                     return .merge([
                         .send(.alertAction(.dismiss)),
                         // TODO: 나중에 API 나오고 roomInfo modeling 변경, 넘기는 파라미터 수정
-                        .send(.navigateToGameDetail(1, roomInfo.title, selectedDateString))
+                        .send(.navigateToGameDetail(1, roomInfo.name, selectedDateString))
                     ])
+                } else {
+                    // TODO: 비공개코드 alert 필요
+                    state.alertCase = .password
+                    return .none
                 }
             case .navigateToGameDetail:
                 return .none

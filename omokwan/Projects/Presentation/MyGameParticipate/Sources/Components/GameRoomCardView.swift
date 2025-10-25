@@ -45,12 +45,12 @@ private extension GameRoomCardView {
 private extension GameRoomCardView {
     var titleSection: some View {
         HStack(spacing: 8) {
-            getLockImage(roomInfo.isPrivateRoom)
+            getLockImage(roomInfo.isPublic)
                 .resizedToFit(16, 16)
                 .vPadding(2)
             
             OText(
-                roomInfo.title,
+                roomInfo.name,
                 token: .title_02,
                 color: OColors.text01.swiftUIColor
             ).greedyWidth(.leading)
@@ -82,7 +82,7 @@ private extension GameRoomCardView {
     
     var peopleCountView: some View  {
         OText(
-            "\(roomInfo.currentNumOfPeople)/\(roomInfo.maxNumOfPeople)명",
+            "\(roomInfo.participants)/\(roomInfo.maxParticipants)명",
             token: .caption,
             color: OColors.text01.swiftUIColor
         )
@@ -104,8 +104,7 @@ private extension GameRoomCardView {
     
     var matchDayView: some View {
         OText(
-            "대국+1일 째",
-//            "대국+\(roomInfo.createRoomDate.timeIntervalSinceNow)일 째",
+            "대국+\(roomInfo.ongoingDays)일 째",
             token: .caption,
             color: OColors.text01.swiftUIColor
         )
@@ -125,28 +124,28 @@ private extension GameRoomCardView {
 
 private extension GameRoomCardView {
     var buttonTitle: String {
-        switch roomInfo.roomStatus {
-        case .participating:
-            "참여중"
-        case .available, .unavailable:
+        switch roomInfo.joinStatus {
+        case .possible, .impossible:
             "참여하기"
+        case .inProgress:
+            "참여중"
         }
     }
     
     var buttonColor: Color {
-        switch roomInfo.roomStatus {
-        case .available:
+        switch roomInfo.joinStatus {
+        case .possible:
             OColors.uiPrimary.swiftUIColor
-        case .participating, .unavailable:
+        case .impossible, .inProgress:
             OColors.uiDisable01.swiftUIColor
         }
     }
     
     var textColor: Color {
-        switch roomInfo.roomStatus {
-        case .available:
+        switch roomInfo.joinStatus {
+        case .possible:
             OColors.ui01.swiftUIColor
-        case .unavailable, .participating:
+        case .impossible, .inProgress:
             OColors.textOnDisable.swiftUIColor
         }
     }
@@ -164,6 +163,6 @@ private extension GameRoomCardView {
             .hPadding(16)
             .background(buttonColor)
             .cornerRadius(8)
-        }.disabled(roomInfo.roomStatus != .available)
+        }.disabled(roomInfo.joinStatus != .possible)
     }
 }
