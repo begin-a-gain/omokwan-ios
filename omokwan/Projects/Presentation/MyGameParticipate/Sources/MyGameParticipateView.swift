@@ -167,6 +167,7 @@ private extension MyGameParticipateView {
                 ForEach(viewStore.gameRoomInformationList, id: \.self) { roomInfo in
                     GameRoomCardView(
                         roomInfo: roomInfo,
+                        categories: viewStore.categories,
                         buttonAction: {
                             viewStore.send(.participateButtonTapped(roomInfo))
                         }

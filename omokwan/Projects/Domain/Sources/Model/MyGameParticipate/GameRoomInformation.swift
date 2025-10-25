@@ -9,7 +9,7 @@ import Foundation
 
 public struct GameRoomInformation: Hashable {
     public let id: Int
-    public let category: GameCategory?
+    public let categoryId: Int?
     public let name: String
     public let hostName: String
     public let ongoingDays: Int
@@ -20,7 +20,7 @@ public struct GameRoomInformation: Hashable {
     
     public init(
         id: Int,
-        category: GameCategory?,
+        categoryId: Int?,
         name: String,
         hostName: String,
         ongoingDays: Int,
@@ -30,7 +30,7 @@ public struct GameRoomInformation: Hashable {
         isPublic: Bool
     ) {
         self.id = id
-        self.category = category
+        self.categoryId = categoryId
         self.name = name
         self.hostName = hostName
         self.ongoingDays = ongoingDays
@@ -41,8 +41,8 @@ public struct GameRoomInformation: Hashable {
     }
 }
 
-public enum RoomJoinStatus {
-    case possible
-    case impossible
-    case inProgress
+public enum RoomJoinStatus: String {
+    case possible = "JOINABLE"
+    case impossible = "NOT_JOINABLE"
+    case inProgress = "IN_PROGRESS"
 }

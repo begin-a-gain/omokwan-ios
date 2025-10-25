@@ -107,4 +107,23 @@ public struct GameRepository: GameRepositoryProtocol {
         }
     }
 
+    public func getAllGameInfoList(_ request: GameRoomInformationRequestModel) async -> Result<[GameRoomInformation], NetworkError> {
+        do {
+            let queryParameters = AllGameInfoListRequest(
+                joinable: request.joinable,
+                category: (request.category?.code).flatMap { Int($0) },
+                search: request.search,
+                pageNumber: request.pageNumber,
+                pageSize: request.pageSize
+            )
+            
+            let endPoint = EndPoint<RemoteResponseModel<[GameParticipateInfoResponse]>>.getAllGameInfoList(
+                queryParameters: queryParameters
+            )
+            let response = try await apiService.call(endPoint)
+            return .success(try GameMapper.toGameRoomInformation(response.data))
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }

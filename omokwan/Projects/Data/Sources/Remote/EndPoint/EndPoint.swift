@@ -97,4 +97,12 @@ extension EndPoint {
             queryParameters: queryParameters
         )
     }
+    
+    static func getAllGameInfoList(queryParameters: AllGameInfoListRequest) -> EndPoint<T> {
+        return EndPoint(
+            path: .getAllGameInfoList,
+            method: .GET,
+            queryParameters: queryParameters
+        )
+    }
 }

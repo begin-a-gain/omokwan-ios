@@ -10,14 +10,17 @@ import DesignSystem
 import Domain
 
 struct GameRoomCardView: View {
-    let roomInfo: GameRoomInformation
+    private let roomInfo: GameRoomInformation
+    private let categories: [GameCategory]
     let buttonAction: () -> Void
     
     init(
         roomInfo: GameRoomInformation,
+        categories: [GameCategory],
         buttonAction: @escaping () -> Void
     ) {
         self.roomInfo = roomInfo
+        self.categories = categories
         self.buttonAction = buttonAction
     }
     
@@ -70,7 +73,8 @@ private extension GameRoomCardView {
         HStack(spacing: 8) {
             peopleCountView
             
-            if let category = roomInfo.category {
+            if let categoryId = roomInfo.categoryId,
+               let category = categories.category(for: categoryId) {
                 verticalDividerView
                 categoryView(category)
             }
