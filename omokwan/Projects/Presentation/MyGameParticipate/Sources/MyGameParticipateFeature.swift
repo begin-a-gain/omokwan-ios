@@ -20,6 +20,10 @@ public struct MyGameParticipateFeature {
     public struct State: Equatable {
         public init() {}
         
+        enum CancellableID {
+            case initFetch
+        }
+        
         public enum AlertCase: Equatable {
             case error(NetworkError)
             case participateDoubleCheck(GameRoomInformation)
@@ -81,6 +85,10 @@ public struct MyGameParticipateFeature {
         case categoriesFetched([GameCategory])
         case passwordAlertCancelButtonTapped
         case passwordAlertConfirmButtonTapped
+        
+        case setLoading(Bool)
+        case initialDataFetchFailed(NetworkError)
+        case gameInfoListFetched([GameRoomInformation])
     }
     
     public var body: some ReducerOf<Self> {
@@ -96,10 +104,23 @@ public struct MyGameParticipateFeature {
                 state.isLoading = false
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
+            case .setLoading(let value):
+                state.isLoading = value
+                return .none
             case .onAppear:
-                return .run { send in
-                    await send(fetchCategories())
-                }
+                return .concatenate([
+                    .send(.setLoading(true)),
+                    .merge([
+                        .run { send in
+                            await send(fetchCategories())
+                        },
+                        .run { send in
+                            await send(fetchGameRoomInfo(pageNumber: 1))
+                        }
+                    ]),
+                    .send(.setLoading(false))
+                ])
+                .cancellable(id: State.CancellableID.initFetch)
             case .binding:
                 return .none
             case .navigateToBack:
@@ -179,6 +200,15 @@ public struct MyGameParticipateFeature {
                 // TODO: 참여 API 호출
                 
                 return .send(.alertAction(.dismiss))
+            case .initialDataFetchFailed(let error):
+                return .merge([
+                    .cancel(id: State.CancellableID.initFetch),
+                    .send(.showAlert(.error(error)))
+                ])
+            case .gameInfoListFetched(let infoList):
+                state.isLoading = false
+                state.gameRoomInformationList = infoList
+                return .none
             }
         }
         .ifLet(\.$categorySheet, action: \.categorySheet) {
@@ -195,6 +225,28 @@ private extension MyGameParticipateFeature {
             return .categoriesFetched(categories)
         case .failure(let error):
             return .showAlert(.error(error))
+        }
+    }
+    
+    func fetchGameRoomInfo(
+        joinable: Bool = false,
+        category: GameCategory? = nil,
+        search: String? = nil,
+        pageNumber: Int
+    ) async -> Action {
+        let request = GameRoomInformationRequestModel(
+            joinable: joinable,
+            category: category,
+            search: search,
+            pageNumber: pageNumber
+        )
+        
+        let response = await gameUseCase.fetchAllGameInfoList(request)
+        switch response {
+        case .success(let gameInfoList):
+            return .gameInfoListFetched(gameInfoList)
+        case .failure(let error):
+            return .initialDataFetchFailed(error)
         }
     }
 }

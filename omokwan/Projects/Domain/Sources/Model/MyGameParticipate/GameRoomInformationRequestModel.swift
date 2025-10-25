@@ -16,8 +16,8 @@ public struct GameRoomInformationRequestModel {
         joinable: Bool,
         category: GameCategory?,
         search: String?,
-        pageNumber: Int = 10,
-        pageSize: Int
+        pageNumber: Int,
+        pageSize: Int = 10
     ) {
         self.joinable = joinable
         self.category = category
