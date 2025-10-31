@@ -69,6 +69,7 @@ public struct MyGameParticipateFeature {
         case onAppear
         case binding(BindingAction<State>)
         case showAlert(State.AlertCase)
+        case handleInitDataError(State.AlertCase)
 
         case navigateToBack
         case resetFilterButtonTapped
@@ -104,20 +105,21 @@ public struct MyGameParticipateFeature {
                 state.isLoading = false
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
+            case .handleInitDataError(let alertCase):
+                state.alertCase = alertCase
+                return .merge([
+                    .cancel(id: State.CancellableID.initFetch),
+                    .send(.alertAction(.present))
+                ])
             case .setLoading(let value):
                 state.isLoading = value
                 return .none
             case .onAppear:
                 return .concatenate([
                     .send(.setLoading(true)),
-                    .merge([
-                        .run { send in
-                            await send(fetchCategories())
-                        },
-                        .run { send in
-                            await send(fetchGameRoomInfo(pageNumber: 1))
-                        }
-                    ]),
+                    .run { send in
+                        await fetchInitData(send: send)
+                    },
                     .send(.setLoading(false))
                 ])
                 .cancellable(id: State.CancellableID.initFetch)
@@ -218,13 +220,29 @@ public struct MyGameParticipateFeature {
 }
 
 private extension MyGameParticipateFeature {
-    func fetchCategories() async -> Action {
+    func fetchInitData(send: Send<Action>) async {
+        do {
+            async let categories = fetchCategories()
+            async let roomInformation = fetchGameRoomInfo(pageNumber: 1)
+
+            let (categoriesResult, roomInfoResult) = try await (categories, roomInformation)
+
+            await send(.categoriesFetched(categoriesResult))
+            await send(.gameInfoListFetched(roomInfoResult))
+        } catch let error as NetworkError {
+            await send(.handleInitDataError(.error(error)))
+        } catch {
+            await send(.handleInitDataError(.error(.unKnownError)))
+        }
+    }
+
+    func fetchCategories() async throws -> [GameCategory] {
         let response = await gameUseCase.fetchGameCategories()
         switch response {
         case .success(let categories):
-            return .categoriesFetched(categories)
+            return categories
         case .failure(let error):
-            return .showAlert(.error(error))
+            throw error
         }
     }
     
@@ -233,7 +251,7 @@ private extension MyGameParticipateFeature {
         category: GameCategory? = nil,
         search: String? = nil,
         pageNumber: Int
-    ) async -> Action {
+    ) async throws -> [GameRoomInformation] {
         let request = GameRoomInformationRequestModel(
             joinable: joinable,
             category: category,
@@ -244,9 +262,9 @@ private extension MyGameParticipateFeature {
         let response = await gameUseCase.fetchAllGameInfoList(request)
         switch response {
         case .success(let gameInfoList):
-            return .gameInfoListFetched(gameInfoList)
+            return gameInfoList
         case .failure(let error):
-            return .initialDataFetchFailed(error)
+            throw error
         }
     }
 }
