@@ -111,7 +111,7 @@ public struct GameRepository: GameRepositoryProtocol {
         do {
             let queryParameters = AllGameInfoListRequest(
                 joinable: request.joinable,
-                category: (request.category?.code).flatMap { Int($0) },
+                category: request.categoryList?.compactMap { Int($0.code) }, // 서버에서 List형식으로 아직 바꿔주지 않음.
                 search: request.search,
                 pageNumber: request.pageNumber,
                 pageSize: request.pageSize

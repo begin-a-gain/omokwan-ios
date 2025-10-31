@@ -14,6 +14,7 @@ import Util
 @Reducer
 public struct MyGameParticipateFeature {
     @Dependency(\.gameUseCase) private var gameUseCase
+    @Dependency(\.mainQueue) private var mainQueue
 
     public init() {}
     
@@ -22,6 +23,10 @@ public struct MyGameParticipateFeature {
         
         enum CancellableID {
             case initFetch
+        }
+        
+        enum SearchDebounceID {
+            case id
         }
         
         public enum AlertCase: Equatable {
@@ -47,15 +52,15 @@ public struct MyGameParticipateFeature {
         // About Filter
         var isAvailableParticipateRoomSelected: Bool = false
         var numOfCategory: Int {
-            selectedCategoryTitles.count
+            selectedCategoryList.count
         }
         var isCategoryFilterSelected: Bool {
-            return !selectedCategoryTitles.isEmpty
+            return !selectedCategoryList.isEmpty
         }
         
         @PresentationState var categorySheet: MyGameParticipateCategorySheetFeature.State?
         
-        var selectedCategoryTitles: [String] = []
+        var selectedCategoryList: [GameCategory] = []
         var gameRoomInformationList: [GameRoomInformation] = []
         var categories: [GameCategory] = []
         
@@ -90,10 +95,23 @@ public struct MyGameParticipateFeature {
         case setLoading(Bool)
         case initialDataFetchFailed(NetworkError)
         case gameInfoListFetched([GameRoomInformation])
+        case fetchInfoList
     }
     
     public var body: some ReducerOf<Self> {
         BindingReducer()
+            .onChange(of: \.searchText) { oldValue, newValue in
+                Reduce { state, action in
+                    if oldValue.isEmpty, newValue.isEmpty { return .none }
+                    return .send(.fetchInfoList)
+                        .debounce(
+                            id: State.SearchDebounceID.id,
+                            for: .milliseconds(500),
+                            scheduler: mainQueue
+                        )
+                }
+            }
+
         Scope(state: \.alertState, action: \.alertAction) {
             AlertFeature()
         }
@@ -109,16 +127,24 @@ public struct MyGameParticipateFeature {
                 state.alertCase = alertCase
                 return .merge([
                     .cancel(id: State.CancellableID.initFetch),
-                    .send(.alertAction(.present))
+                    .send(.showAlert(alertCase))
                 ])
             case .setLoading(let value):
                 state.isLoading = value
                 return .none
             case .onAppear:
+                let request = GameRoomInformationRequestModel(
+                    joinable: state.isAvailableParticipateRoomSelected,
+                    categoryList: state.selectedCategoryList.isEmpty ? nil : state.selectedCategoryList,
+                    search: state.searchText,
+                    pageNumber: 1,
+                    pageSize: 1000 // 임시로 넣음
+                )
+                
                 return .concatenate([
                     .send(.setLoading(true)),
                     .run { send in
-                        await fetchInitData(send: send)
+                        await fetchInitData(send: send, request: request)
                     },
                     .send(.setLoading(false))
                 ])
@@ -129,29 +155,29 @@ public struct MyGameParticipateFeature {
                 return .none
             case .resetFilterButtonTapped:
                 state.isAvailableParticipateRoomSelected = false
-                state.selectedCategoryTitles = []
-                return .none
+                state.selectedCategoryList = []
+                return .send(.fetchInfoList)
             case .availableParticipateRoomFilterTapped:
                 state.isAvailableParticipateRoomSelected.toggle()
-                return .none
+                return .send(.fetchInfoList)
             case .categoryFilterTapped:
                 state.categorySheet = .init(
                     categories: state.categories,
-                    selectedCategoryTitles: state.selectedCategoryTitles
+                    selectedCategoryList: state.selectedCategoryList
                 )
                 return .none
             case .searchBarClearButtonTapped:
                 state.searchText = ""
-                return .none
+                return .send(.fetchInfoList)
             case .categorySheet(let categorySheetAction):
                 switch categorySheetAction {
                 case .presented(let sheetAction):
                     switch sheetAction {
                     case .passSelectedCategories(let selectedCategories):
-                        state.selectedCategoryTitles = selectedCategories
+                        state.selectedCategoryList = selectedCategories
                         state.categorySheet = nil
                         
-                        return .none
+                        return .send(.fetchInfoList)
                     default:
                         return .none
                     }
@@ -208,9 +234,31 @@ public struct MyGameParticipateFeature {
                     .send(.showAlert(.error(error)))
                 ])
             case .gameInfoListFetched(let infoList):
-                state.isLoading = false
                 state.gameRoomInformationList = infoList
                 return .none
+            case .fetchInfoList:
+                let request = GameRoomInformationRequestModel(
+                    joinable: state.isAvailableParticipateRoomSelected,
+                    categoryList: state.selectedCategoryList.isEmpty ? nil : state.selectedCategoryList,
+                    search: state.searchText,
+                    pageNumber: 1,
+                    pageSize: 1000 // 임시로 넣음
+                )
+
+                return .concatenate([
+                    .send(.setLoading(true)),
+                    .run { send in
+                        do {
+                            let result = try await fetchGameRoomInfo(request: request)
+                            await send(.gameInfoListFetched(result))
+                        } catch let error as NetworkError {
+                            await send(.showAlert(.error(error)))
+                        } catch {
+                            await send(.showAlert(.error(.unKnownError)))
+                        }
+                    },
+                    .send(.setLoading(false))
+                ])
             }
         }
         .ifLet(\.$categorySheet, action: \.categorySheet) {
@@ -220,10 +268,13 @@ public struct MyGameParticipateFeature {
 }
 
 private extension MyGameParticipateFeature {
-    func fetchInitData(send: Send<Action>) async {
+    func fetchInitData(
+        send: Send<Action>,
+        request: GameRoomInformationRequestModel
+    ) async {
         do {
             async let categories = fetchCategories()
-            async let roomInformation = fetchGameRoomInfo(pageNumber: 1)
+            async let roomInformation = fetchGameRoomInfo(request: request)
 
             let (categoriesResult, roomInfoResult) = try await (categories, roomInformation)
 
@@ -246,19 +297,7 @@ private extension MyGameParticipateFeature {
         }
     }
     
-    func fetchGameRoomInfo(
-        joinable: Bool = false,
-        category: GameCategory? = nil,
-        search: String? = nil,
-        pageNumber: Int
-    ) async throws -> [GameRoomInformation] {
-        let request = GameRoomInformationRequestModel(
-            joinable: joinable,
-            category: category,
-            search: search,
-            pageNumber: pageNumber
-        )
-        
+    func fetchGameRoomInfo(request: GameRoomInformationRequestModel) async throws -> [GameRoomInformation] {
         let response = await gameUseCase.fetchAllGameInfoList(request)
         switch response {
         case .success(let gameInfoList):

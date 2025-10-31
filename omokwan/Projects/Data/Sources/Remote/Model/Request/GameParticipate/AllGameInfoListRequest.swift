@@ -7,14 +7,14 @@
 
 struct AllGameInfoListRequest: Encodable {
     let joinable: Bool
-    let category: Int?
+    let category: [Int]?
     let search: String?
     let pageNumber: Int
     let pageSize: Int
     
     init(
         joinable: Bool,
-        category: Int?,
+        category: [Int]?,
         search: String?,
         pageNumber: Int,
         pageSize: Int
