@@ -134,7 +134,7 @@ public struct MyGameParticipateFeature {
                 return .none
             case .onAppear:
                 let request = GameRoomInformationRequestModel(
-                    joinable: state.isAvailableParticipateRoomSelected,
+                    joinable: state.isAvailableParticipateRoomSelected ? true : nil,
                     categoryList: state.selectedCategoryList.isEmpty ? nil : state.selectedCategoryList,
                     search: state.searchText,
                     pageNumber: 1,
@@ -238,7 +238,7 @@ public struct MyGameParticipateFeature {
                 return .none
             case .fetchInfoList:
                 let request = GameRoomInformationRequestModel(
-                    joinable: state.isAvailableParticipateRoomSelected,
+                    joinable: state.isAvailableParticipateRoomSelected ? true : nil,
                     categoryList: state.selectedCategoryList.isEmpty ? nil : state.selectedCategoryList,
                     search: state.searchText,
                     pageNumber: 1,

@@ -6,14 +6,14 @@
 //
 
 public struct GameRoomInformationRequestModel {
-    public let joinable: Bool
+    public let joinable: Bool?
     public let categoryList: [GameCategory]?
     public let search: String?
     public let pageNumber: Int
     public let pageSize: Int
     
     public init(
-        joinable: Bool,
+        joinable: Bool?,
         categoryList: [GameCategory]?,
         search: String?,
         pageNumber: Int,
