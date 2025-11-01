@@ -127,17 +127,24 @@ public struct GameRepository: GameRepositoryProtocol {
         }
     }
     
-    public func postParticipateRoom(gameID: Int, password: String?) async -> Result<Void, NetworkError> {
+    public func postParticipateRoom(gameID: Int, password: String?) async -> Result<Bool, NetworkError> {
         do {
             let request = ParticipateRoomRequest(password: password)
             let endPoint = EndPoint<RemoteResponseModel<ParticipateRoomResponse>>.postParticipateRoom(
                 gameID: gameID,
                 request: request
             )
-            let response = try await apiService.call(endPoint)
-            return .success(())
+            let _ = try await apiService.call(endPoint)
+            return .success(true)
+        } catch let remoteError as RemoteNetworkError {
+            switch remoteError {
+            case .badRequest:
+                return .success(false)
+            default:
+                return .failure(ErrorMapper.mapRemoteResponseError(remoteError))
+            }
         } catch {
-            return .failure(ErrorMapper.toNetworkError(error))
+            return .failure(.unKnownError)
         }
     }
 }

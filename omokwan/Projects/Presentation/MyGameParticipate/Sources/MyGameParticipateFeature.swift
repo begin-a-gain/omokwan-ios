@@ -32,7 +32,8 @@ public struct MyGameParticipateFeature {
         public enum AlertCase: Equatable {
             case error(NetworkError)
             case participateDoubleCheck(GameRoomInformation)
-            case password
+            case password(GameRoomInformation)
+            case passwordError
         }
         var alertCase: AlertCase?
         var alertState: AlertFeature.State = .init()
@@ -90,12 +91,14 @@ public struct MyGameParticipateFeature {
         
         case categoriesFetched([GameCategory])
         case passwordAlertCancelButtonTapped
-        case passwordAlertConfirmButtonTapped
+        case passwordAlertConfirmButtonTapped(GameRoomInformation)
         
         case setLoading(Bool)
         case initialDataFetchFailed(NetworkError)
         case gameInfoListFetched([GameRoomInformation])
         case fetchInfoList
+        case participateRoom(GameRoomInformation, String?)
+        case participateCompleted(GameRoomInformation)
     }
     
     public var body: some ReducerOf<Self> {
@@ -196,15 +199,12 @@ public struct MyGameParticipateFeature {
                 return .send(.alertAction(.present))
             case .alertParticipateButtonTapped(let roomInfo):
                 if roomInfo.isPublic {
-                    let selectedDateString = Date.now.formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
                     return .merge([
                         .send(.alertAction(.dismiss)),
-                        // TODO: 나중에 API 나오고 roomInfo modeling 변경, 넘기는 파라미터 수정
-                        .send(.navigateToGameDetail(1, roomInfo.name, selectedDateString))
+                        .send(.participateRoom(roomInfo, nil))
                     ])
                 } else {
-                    // TODO: 비공개코드 alert 필요
-                    state.alertCase = .password
+                    state.alertCase = .password(roomInfo)
                     return .none
                 }
             case .navigateToGameDetail:
@@ -215,7 +215,7 @@ public struct MyGameParticipateFeature {
                 return .none
             case .passwordAlertCancelButtonTapped:
                 return .send(.alertAction(.dismiss))
-            case .passwordAlertConfirmButtonTapped:
+            case .passwordAlertConfirmButtonTapped(let roomInfo):
                 guard let thousands = Int(state.thousandsPlace),
                       let hundreds = Int(state.hundredsPlace),
                       let tens = Int(state.tensPlace),
@@ -224,10 +224,10 @@ public struct MyGameParticipateFeature {
                 
                 let password = (1000 * thousands) + (100 * hundreds) + (10 * tens) + ones
                 
-                print("password = \(password)")
-                // TODO: 참여 API 호출
-                
-                return .send(.alertAction(.dismiss))
+                return .merge([
+                    .send(.alertAction(.dismiss)),
+                    .send(.participateRoom(roomInfo, String(password)))
+                ])
             case .initialDataFetchFailed(let error):
                 return .merge([
                     .cancel(id: State.CancellableID.initFetch),
@@ -259,6 +259,19 @@ public struct MyGameParticipateFeature {
                     },
                     .send(.setLoading(false))
                 ])
+            case let .participateRoom(roomInfo, password):
+                state.isLoading = true
+                
+                return .run { send in
+                    await send(participateRoom(roomInfo: roomInfo, password: password))
+                }
+            case .participateCompleted(let roomInfo):
+                state.isLoading = false
+                let selectedDateString = Date.now.formattedString(
+                    format: DateFormatConstants.yearMonthDayRequestFormat
+                )
+
+                return .send(.navigateToGameDetail(roomInfo.id, roomInfo.name, selectedDateString))
             }
         }
         .ifLet(\.$categorySheet, action: \.categorySheet) {
@@ -304,6 +317,20 @@ private extension MyGameParticipateFeature {
             return gameInfoList
         case .failure(let error):
             throw error
+        }
+    }
+    
+    func participateRoom(roomInfo: GameRoomInformation, password: String? = nil) async -> Action {
+        let response = await gameUseCase.participateRoom(roomInfo.id, password)
+        switch response {
+        case .success(let isParticipateSuccess):
+            if isParticipateSuccess {
+                return .participateCompleted(roomInfo)
+            } else {
+                return .showAlert(.passwordError)
+            }
+        case .failure(let error):
+            return .showAlert(.error(error))
         }
     }
 }

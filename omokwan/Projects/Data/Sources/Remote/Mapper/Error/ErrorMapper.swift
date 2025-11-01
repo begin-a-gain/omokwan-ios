@@ -17,7 +17,7 @@ struct ErrorMapper {
     }
 }
 
-private extension ErrorMapper {
+extension ErrorMapper {
     static func mapRemoteResponseError(_ error: RemoteNetworkError) -> NetworkError {
         switch error {
         case .unAuthorizationError:
