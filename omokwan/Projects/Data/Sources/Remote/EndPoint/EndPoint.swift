@@ -105,4 +105,12 @@ extension EndPoint {
             queryParameters: queryParameters
         )
     }
+    
+    static func postParticipateRoom(gameID: Int, request: ParticipateRoomRequest) -> EndPoint<T> {
+        return EndPoint(
+            path: .postParticipateRoom(gameID),
+            method: .POST,
+            requestBody: request
+        )
+    }
 }
