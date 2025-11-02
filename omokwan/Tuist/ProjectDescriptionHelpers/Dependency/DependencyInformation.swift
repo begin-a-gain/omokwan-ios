@@ -15,13 +15,14 @@ let dependencyInfo: [DependencyInformation: [DependencyInformation]] = [
     .Splash: [.Base],
     .SignIn: [.Base, .SignUp],
     .SignUp: [.Base, .Util],
-    .Main: [.MyGame, .MyGameAdd, .MyGameParticipate, .GameDetail],
+    .Main: [.MyGame, .MyGameAdd, .MyGameParticipate, .GameDetail, .MyPage],
     .DI: [.Swinject],
     .Base: [.DesignSystem, .ComposableArchitecture, .Domain],
     .MyGame: [.Base, .Util],
     .MyGameAdd: [.Base, .Util],
     .MyGameParticipate: [.Base, .Util],
-    .GameDetail: [.Base, .Util]
+    .GameDetail: [.Base, .Util],
+    .MyPage: [.Base]
 ]
 
 public enum DependencyInformation: String, Sendable {
@@ -44,6 +45,7 @@ public enum DependencyInformation: String, Sendable {
     case MyGameParticipate = "MyGameParticipate"
     case GameDetail = "GameDetail"
     case Splash = "Splash"
+    case MyPage = "MyPage"
 }
 
 public enum PresentationDependencyInformation: String, CaseIterable {
@@ -57,6 +59,7 @@ public enum PresentationDependencyInformation: String, CaseIterable {
     case MyGameParticipate = "MyGameParticipate"
     case GameDetail = "GameDetail"
     case Splash = "Splash"
+    case MyPage = "MyPage"
 }
 
 public enum UtilsDependencyInformation: String, CaseIterable {
