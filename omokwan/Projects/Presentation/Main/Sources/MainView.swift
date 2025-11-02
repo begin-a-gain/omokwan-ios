@@ -9,6 +9,7 @@ import SwiftUI
 import DesignSystem
 import ComposableArchitecture
 import MyGame
+import MyPage
 import Base
 
 public struct MainView: View {
@@ -72,23 +73,10 @@ public struct MainView: View {
                         store: store.scope(state: \.myGameState, action: \.myGameAction)
                     ).padding(.bottom, MainUtil.getBottomTabBarHeight(hasBottomSafeArea))
                 case .myPage:
-                    ProfileView()
-                        .padding(.bottom, MainUtil.getBottomTabBarHeight(hasBottomSafeArea))
+                    MyPageView(
+                        store: store.scope(state: \.myPageState, action: \.myPageAction)
+                    ).padding(.bottom, MainUtil.getBottomTabBarHeight(hasBottomSafeArea))
                 }
-            }
-        }
-    }
-}
-
-// TODO: Remove This View
-public struct ProfileView: View {
-    public var body: some View {
-        VStack {
-            Text("Profile View")
-            Button {
-                
-            } label: {
-                Text("Logout")
             }
         }
     }

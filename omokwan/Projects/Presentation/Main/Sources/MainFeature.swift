@@ -8,6 +8,7 @@
 import ComposableArchitecture
 import MyGame
 import MyGameAdd
+import MyPage
 import Base
 import Domain
 
@@ -27,6 +28,7 @@ public struct MainFeature {
         var isMainLoading = false
         @BindingState var selectedTab: MainBottomTabItem = .myGame
         var myGameState: MyGameFeature.State = .init()
+        var myPageState: MyPageFeature.State = .init()
 
         @PresentationState var mainSheet: MainSheetFeature.State?
     }
@@ -41,12 +43,23 @@ public struct MainFeature {
         case navigateToMyGameParticipate
         case navigateToGameDetail(Int, String, String)
         case myGameAction(MyGameFeature.Action)
+        case myPageAction(MyPageFeature.Action)
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
         case onAppear
     }
     
     public var body: some ReducerOf<Self> {
+        Scope(state: \.myGameState, action: \.myGameAction) {
+            MyGameFeature()
+        }
+        Scope(state: \.myPageState, action: \.myPageAction) {
+            MyPageFeature()
+        }
+        Scope(state: \.alertState, action: \.alertAction) {
+            AlertFeature()
+        }
+        
         Reduce { state, action in
             switch action {
             case .onAppear:
@@ -105,6 +118,8 @@ public struct MainFeature {
                 default:
                     return .none
                 }
+            case .myPageAction(let myPageAction):
+                return .none
             case .alertAction:
                 return .none
             case .showAlert(let alertCase):
@@ -115,13 +130,6 @@ public struct MainFeature {
         }
         .ifLet(\.$mainSheet, action: \.mainSheet) {
             MainSheetFeature()
-        }
-        
-        Scope(state: \.myGameState, action: \.myGameAction) {
-            MyGameFeature()
-        }
-        Scope(state: \.alertState, action: \.alertAction) {
-            AlertFeature()
         }
     }
 }
