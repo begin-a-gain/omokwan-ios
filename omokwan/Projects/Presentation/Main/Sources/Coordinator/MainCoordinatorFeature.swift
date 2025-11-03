@@ -77,6 +77,9 @@ private extension MainCoordinatorFeature {
                 )
             )
             return .none
+        case .navigateToEditNickname:
+            state.navigationPath.append(.editNickname(.init()))
+            return .none
         default:
             return .none
         }
