@@ -22,7 +22,7 @@ let dependencyInfo: [DependencyInformation: [DependencyInformation]] = [
     .MyGameAdd: [.Base, .Util],
     .MyGameParticipate: [.Base, .Util],
     .GameDetail: [.Base, .Util],
-    .MyPage: [.Base]
+    .MyPage: [.Base, .Util]
 ]
 
 public enum DependencyInformation: String, Sendable {

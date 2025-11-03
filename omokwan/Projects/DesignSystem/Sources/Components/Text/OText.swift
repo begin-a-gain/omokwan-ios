@@ -48,7 +48,7 @@ public struct OText: View {
     
     private func getLineSpacing(_ token: Font.FontToken) -> Double {
         switch token {
-        case .display, .headline: return 8
+        case .display_02, .display, .headline: return 8
         case .title_02, .title_01, .subtitle_03, .subtitle_02, .subtitle_01: return 4
             
         case .body_02, .body_01: return 4

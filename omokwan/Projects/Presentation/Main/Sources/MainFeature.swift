@@ -21,6 +21,7 @@ public struct MainFeature {
         
         public enum AlertCase: Equatable {
             case error(NetworkError)
+            case logout
         }
         var alertCase: AlertCase?
         var alertState: AlertFeature.State = .init()
@@ -47,6 +48,7 @@ public struct MainFeature {
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
         case onAppear
+        case alertLogoutButtonTapped
     }
     
     public var body: some ReducerOf<Self> {
@@ -107,25 +109,17 @@ public struct MainFeature {
             case .noAction:
                 return .none
             case .myGameAction(let myGameAction):
-                switch myGameAction {
-                case .setLoading(let value):
-                    state.isMainLoading = value
-                    return .none
-                case .passError(let networkError):
-                    return .send(.showAlert(.error(networkError)))
-                case let .navigateToGameDetail(id, title, selectedDateString):
-                    return .send(.navigateToGameDetail(id, title, selectedDateString))
-                default:
-                    return .none
-                }
+                return handleMyGameAction(action: myGameAction, state: &state)
             case .myPageAction(let myPageAction):
-                return .none
+                return handleMyPageAction(action: myPageAction, state: &state)
             case .alertAction:
                 return .none
             case .showAlert(let alertCase):
                 state.isMainLoading = false
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
+            case .alertLogoutButtonTapped:
+                return .none
             }
         }
         .ifLet(\.$mainSheet, action: \.mainSheet) {
@@ -141,6 +135,39 @@ private extension MainFeature {
             return .noAction
         } catch {
             return .noAction
+        }
+    }
+}
+
+private extension MainFeature {
+    func handleMyGameAction(
+        action: MyGameFeature.Action,
+        state: inout State
+    ) -> Effect<Action> {
+        switch action {
+        case .setLoading(let value):
+            state.isMainLoading = value
+            return .none
+        case .passError(let networkError):
+            return .send(.showAlert(.error(networkError)))
+        case let .navigateToGameDetail(id, title, selectedDateString):
+            return .send(.navigateToGameDetail(id, title, selectedDateString))
+        default:
+            return .none
+        }
+    }
+}
+
+private extension MainFeature {
+    func handleMyPageAction(
+        action: MyPageFeature.Action,
+        state: inout State
+    ) -> Effect<Action> {
+        switch action {
+        case .logoutButtonTapped:
+            return .send(.showAlert(.logout))
+        default:
+            return .none
         }
     }
 }
