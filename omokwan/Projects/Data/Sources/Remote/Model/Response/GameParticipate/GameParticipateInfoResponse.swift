@@ -6,6 +6,11 @@
 //
 
 struct GameParticipateInfoResponse: Decodable {
+    let matchList: [ParticipateMatchList]?
+    let hasNext: Bool?
+}
+
+struct ParticipateMatchList: Decodable {
     let matchId: Int?
     let categoryId: Int?
     let name: String?

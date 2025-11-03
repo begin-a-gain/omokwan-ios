@@ -93,12 +93,13 @@ struct GameMapper {
         return (response.completed ?? false) ? .completed : .inCompleted
     }
     
-    static func toGameRoomInformation(_ response: [GameParticipateInfoResponse]?) throws -> [GameRoomInformation] {
-        guard let response = response else {
+    static func toGameRoomInformation(_ response: GameParticipateInfoResponse?) throws -> GameRoomInfo {
+        guard let response = response,
+              let matchList = response.matchList else {
             throw RemoteNetworkError.responseDataNilError
         }
         
-        return response.map {
+        let gameRoomInformation = matchList.map {
             GameRoomInformation(
                 id: $0.matchId ?? 0,
                 categoryId: $0.categoryId,
@@ -111,5 +112,10 @@ struct GameMapper {
                 isPublic: $0.public ?? false
             )
         }
+        
+        return GameRoomInfo(
+            gameRoomInformation: gameRoomInformation,
+            hasNext: response.hasNext ?? false
+        )
     }
 }

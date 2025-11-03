@@ -7,6 +7,19 @@
 
 import Foundation
 
+public struct GameRoomInfo: Hashable {
+    public let gameRoomInformation: [GameRoomInformation]
+    public let hasNext: Bool
+    
+    public init(
+        gameRoomInformation: [GameRoomInformation],
+        hasNext: Bool
+    ) {
+        self.gameRoomInformation = gameRoomInformation
+        self.hasNext = hasNext
+    }
+}
+
 public struct GameRoomInformation: Hashable {
     public let id: Int
     public let categoryId: Int?
