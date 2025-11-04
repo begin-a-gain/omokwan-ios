@@ -108,8 +108,6 @@ private extension GameDetailView {
         switch viewStore.bottomButtonType {
         case .possible:
             "오목두기"
-        case .impossible:
-            "현재 오목을 둘 수 없는 상태예요."
         case .alreadyDone:
             "오늘자 오목을 이미 두었어요."
         }
