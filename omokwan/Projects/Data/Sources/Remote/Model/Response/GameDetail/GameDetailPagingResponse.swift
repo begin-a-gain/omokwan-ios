@@ -14,6 +14,7 @@ struct GameDetailPagingResponse: Decodable {
     let nextCursor: String?
     let hasPrev: Bool?
     let hasNext: Bool?
+    let isTodayMatchCompleted: Bool?
 }
 
 struct GameDetailPagingUserResponse: Decodable {
