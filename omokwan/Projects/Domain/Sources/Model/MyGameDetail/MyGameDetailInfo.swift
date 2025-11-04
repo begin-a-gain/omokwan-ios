@@ -12,6 +12,7 @@ public struct MyGameDetailInfo {
     public let nextDateCursor: String
     public let needNextDatePaging: Bool
     public let needPreviousDatePaging: Bool
+    public let isTodayCompleted: Bool
     
     public init(
         users: [GameUserInfo],
@@ -19,7 +20,8 @@ public struct MyGameDetailInfo {
         previousDateCursor: String,
         nextDateCursor: String,
         needNextDatePaging: Bool,
-        needPreviousDatePaging: Bool
+        needPreviousDatePaging: Bool,
+        isTodayCompleted: Bool
     ) {
         self.users = users
         self.dates = dates
@@ -27,6 +29,7 @@ public struct MyGameDetailInfo {
         self.nextDateCursor = nextDateCursor
         self.needNextDatePaging = needNextDatePaging
         self.needPreviousDatePaging = needPreviousDatePaging
+        self.isTodayCompleted = isTodayCompleted
     }
 }
 

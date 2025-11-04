@@ -82,19 +82,24 @@ class StickyScrollViewController: UIViewController {
             let newCount = dateInfos.values.flatMap { $0 }.count
             let isCountChanged = self.cachedDateInfosCount != newCount
             
-            if isCountChanged && newCount > 0 {
-                self.handleDataChange(
-                    cursor: cursor
-                )
-                self.cachedDateInfosCount = newCount
-                
-                let isInitinalDataFetched = store.isInitialLoad && !store.dateUserStatusInfos.isEmpty
-                
-                if isInitinalDataFetched {
-                    scrollToSelectedDate()
+            if isCountChanged {
+                if newCount == 0 {
+                    self.cachedDateInfosCount = newCount
+                    applyEmptySnapshot()
+                } else {
+                    self.handleDataChange(
+                        cursor: cursor
+                    )
+                    self.cachedDateInfosCount = newCount
                     
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-                        self?.store.send(.setIsInitialLoad(false))
+                    let isInitinalDataFetched = store.isInitialLoad && !store.dateUserStatusInfos.isEmpty
+                    
+                    if isInitinalDataFetched {
+                        scrollToSelectedDate()
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                            self?.store.send(.setIsInitialLoad(false))
+                        }
                     }
                 }
             }
@@ -119,6 +124,13 @@ class StickyScrollViewController: UIViewController {
         case .next:
             nextUpdateData()
         }
+    }
+    
+    private func applyEmptySnapshot() {
+        store.send(.setIsUpdatingSnapshot(true))
+        let snapshot = NSDiffableDataSourceSnapshot<String, GameDetailDate>()
+        dataSource.apply(snapshot, animatingDifferences: false)
+        store.send(.setIsUpdatingSnapshot(false))
     }
     
     override func viewDidLayoutSubviews() {

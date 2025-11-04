@@ -37,7 +37,6 @@ public struct GameDetailFeature {
         }
         
         enum BottomButtonType {
-            case impossible
             case possible
             case alreadyDone
         }
@@ -51,13 +50,9 @@ public struct GameDetailFeature {
         var gameUserInfos: [GameUserInfo?] = []
         var stickyCalendarState: StickyCalendarFeature.State
         var bottomButtonType: BottomButtonType {
-            if stickyCalendarState.hasTodayDateInCalendar {
-                stickyCalendarState.isTodayStoneCompleted
-                    ? .alreadyDone
-                    : .possible
-            } else {
-                .impossible
-            }
+            stickyCalendarState.isTodayStoneCompleted
+                ? .alreadyDone
+                : .possible
         }
         
         @PresentationState var userAvatarInfoSheet: UserAvatarInfoFeature.State?
@@ -173,6 +168,8 @@ public struct GameDetailFeature {
                     return .none
                 case .showAlert(let error):
                     return .send(.showAlert(.error(error)))
+                case .needRefresh:
+                    return .send(.onAppear)
                 default:
                     return .none
                 }
