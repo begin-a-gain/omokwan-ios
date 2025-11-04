@@ -67,7 +67,8 @@ struct GameMapper {
             previousDateCursor: response.prevCursor ?? "",
             nextDateCursor: response.nextCursor ?? "",
             needNextDatePaging: response.hasNext ?? false,
-            needPreviousDatePaging: response.hasPrev ?? false
+            needPreviousDatePaging: response.hasPrev ?? false,
+            isTodayCompleted: response.isTodayMatchCompleted ?? false
         )
     }
     

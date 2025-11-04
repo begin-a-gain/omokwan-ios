@@ -40,7 +40,7 @@ public struct StickyCalendarFeature {
         var pagingCursor: PagingCursor = .today
         
         let todayString: String
-        let selectedDateString: String
+        var selectedDateString: String
         var now: Date
         let nowDateString: String
         
@@ -63,12 +63,7 @@ public struct StickyCalendarFeature {
             dateUserStatusInfos.keys.sorted(by: >)
         }
         
-        var isTodayStoneCompleted: Bool = false
-        var hasTodayDateInCalendar: Bool {
-            dateUserStatusInfos.values
-                .flatMap { $0 }
-                .contains { $0.originalDate == nowDateString }
-        }
+        var isTodayStoneCompleted: Bool = true
         var shouldReloadToday: Bool = false
         var comboUpdatedDates: [String] = []
     }
@@ -91,6 +86,7 @@ public struct StickyCalendarFeature {
         case checkTodayOmokStatus(OmokStoneStatus)
         case resetReloadFlag
         case clearComboUpdatedDates
+        case needRefresh
     }
     
     public var body: some ReducerOf<Self> {
@@ -170,8 +166,11 @@ public struct StickyCalendarFeature {
                     .sorted{ $0.originalDate > $1.originalDate }
                 let todayDateString = state.todayYearMonth+"-"+state.todayOnlyDay
                 
-                guard let todayMatchedIndex = flatMap.firstIndex(where: { $0.originalDate == todayDateString }),
-                      let currentMonthGameDetailDates = state.dateUserStatusInfos[String(flatMap[todayMatchedIndex].originalDate.prefix(7))],
+                guard let todayMatchedIndex = flatMap.firstIndex(where: { $0.originalDate == todayDateString }) else {
+                    return .send(.needRefresh)
+                }
+                
+                guard let currentMonthGameDetailDates = state.dateUserStatusInfos[String(flatMap[todayMatchedIndex].originalDate.prefix(7))],
                       let todaySameDateIndex = currentMonthGameDetailDates.firstIndex(where: { $0.date == String(flatMap[todayMatchedIndex].originalDate.suffix(2)) }) else {
                     return .none
                 }
@@ -200,6 +199,11 @@ public struct StickyCalendarFeature {
                 return .none
             case .clearComboUpdatedDates:
                 state.comboUpdatedDates = []
+                return .none
+            case .needRefresh:
+                state.isInitialLoad = true
+                state.selectedDateString = Date.now.formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
+                state.dateUserStatusInfos = [:]
                 return .none
             }
         }
@@ -243,6 +247,8 @@ private extension StickyCalendarFeature {
             state.needNextDatePaging = info.needNextDatePaging
             state.nextDateCursor = info.nextDateCursor
         }
+        
+        state.isTodayStoneCompleted = info.isTodayCompleted
     }
     
     func setDateUserStatusInfos(_ state: inout State, _ dates: [GameDetailDate]) {
@@ -273,7 +279,6 @@ private extension StickyCalendarFeature {
         for gameDetailDate in dates {
             let yearMonth = String(gameDetailDate.date.prefix(7))
             let dayOnly = String(gameDetailDate.date.suffix(2))
-            let todayString = "\(yearMonth)-\(dayOnly)"
             
             var updatedGameDetailDate = gameDetailDate
             updatedGameDetailDate.date = dayOnly
@@ -281,12 +286,6 @@ private extension StickyCalendarFeature {
             if updatedGameDetailDate.userStatus.count <= 5 {
                 let neededCount = 5 - updatedGameDetailDate.userStatus.count
                 updatedGameDetailDate.userStatus.append(contentsOf: Array(repeating: nil, count: neededCount))
-            }
-            
-            if state.nowDateString == todayString {
-                if let myUserStatus = updatedGameDetailDate.userStatus[0] {
-                    state.isTodayStoneCompleted = myUserStatus.isCompleted
-                }
             }
             
             if dateUserStatusInfos[yearMonth] == nil {
