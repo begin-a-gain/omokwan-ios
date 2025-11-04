@@ -70,6 +70,7 @@ public struct MyGameParticipateFeature {
         @BindingState var onesPlace: String = ""
         
         var hasNext: Bool = false
+        var currentPage: Int = 1
     }
     
     public enum Action: BindableAction {
@@ -97,7 +98,7 @@ public struct MyGameParticipateFeature {
         case setLoading(Bool)
         case initialDataFetchFailed(NetworkError)
         case gameInfoFetched(GameRoomInfo)
-        case fetchInfoList
+        case fetchInfoList(pageNumber: Int)
     }
     
     public var body: some ReducerOf<Self> {
@@ -105,7 +106,7 @@ public struct MyGameParticipateFeature {
             .onChange(of: \.searchText) { oldValue, newValue in
                 Reduce { state, action in
                     if oldValue.isEmpty, newValue.isEmpty { return .none }
-                    return .send(.fetchInfoList)
+                    return .send(.fetchInfoList(pageNumber: 1))
                         .debounce(
                             id: State.SearchDebounceID.id,
                             for: .milliseconds(500),
@@ -158,10 +159,10 @@ public struct MyGameParticipateFeature {
             case .resetFilterButtonTapped:
                 state.isAvailableParticipateRoomSelected = false
                 state.selectedCategoryList = []
-                return .send(.fetchInfoList)
+                return .send(.fetchInfoList(pageNumber: 1))
             case .availableParticipateRoomFilterTapped:
                 state.isAvailableParticipateRoomSelected.toggle()
-                return .send(.fetchInfoList)
+                 return .send(.fetchInfoList(pageNumber: 1))
             case .categoryFilterTapped:
                 state.categorySheet = .init(
                     categories: state.categories,
@@ -170,7 +171,7 @@ public struct MyGameParticipateFeature {
                 return .none
             case .searchBarClearButtonTapped:
                 state.searchText = ""
-                return .send(.fetchInfoList)
+                return .send(.fetchInfoList(pageNumber: 1))
             case .categorySheet(let categorySheetAction):
                 switch categorySheetAction {
                 case .presented(let sheetAction):
@@ -179,7 +180,7 @@ public struct MyGameParticipateFeature {
                         state.selectedCategoryList = selectedCategories
                         state.categorySheet = nil
                         
-                        return .send(.fetchInfoList)
+                        return .send(.fetchInfoList(pageNumber: 1))
                     default:
                         return .none
                     }
@@ -236,15 +237,20 @@ public struct MyGameParticipateFeature {
                     .send(.showAlert(.error(error)))
                 ])
             case .gameInfoFetched(let info):
-                state.gameRoomInformationList = info.gameRoomInformation
+                if state.currentPage == 1 {
+                    state.gameRoomInformationList = info.gameRoomInformation
+                } else {
+                    state.gameRoomInformationList.append(contentsOf: info.gameRoomInformation)
+                }
                 state.hasNext = info.hasNext
                 return .none
-            case .fetchInfoList:
+            case .fetchInfoList(let pageNumber):
+                state.currentPage = pageNumber
                 let request = GameRoomInformationRequestModel(
                     joinable: state.isAvailableParticipateRoomSelected ? true : nil,
                     categoryList: state.selectedCategoryList.isEmpty ? nil : state.selectedCategoryList,
                     search: state.searchText,
-                    pageNumber: 1,
+                    pageNumber: state.currentPage,
                     pageSize: 10
                 )
 
