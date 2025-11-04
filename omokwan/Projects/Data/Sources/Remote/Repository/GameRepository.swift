@@ -107,7 +107,7 @@ public struct GameRepository: GameRepositoryProtocol {
         }
     }
 
-    public func getAllGameInfoList(_ request: GameRoomInformationRequestModel) async -> Result<[GameRoomInformation], NetworkError> {
+    public func getAllGameInfoList(_ request: GameRoomInformationRequestModel) async -> Result<GameRoomInfo, NetworkError> {
         do {
             let queryParameters = AllGameInfoListRequest(
                 joinable: request.joinable,
@@ -117,7 +117,7 @@ public struct GameRepository: GameRepositoryProtocol {
                 pageSize: request.pageSize
             )
             
-            let endPoint = EndPoint<RemoteResponseModel<[GameParticipateInfoResponse]>>.getAllGameInfoList(
+            let endPoint = EndPoint<RemoteResponseModel<GameParticipateInfoResponse>>.getAllGameInfoList(
                 queryParameters: queryParameters
             )
             let response = try await apiService.call(endPoint)

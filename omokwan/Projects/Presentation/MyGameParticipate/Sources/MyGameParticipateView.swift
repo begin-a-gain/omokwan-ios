@@ -174,9 +174,24 @@ private extension MyGameParticipateView {
                     )
                     .id(roomInfo.id)
                 }
+                
+                if viewStore.hasNext {
+                    progressView
+                }
             }.clipShape(RoundedRectangle(cornerRadius: 8))
             .padding(20)
         }
+    }
+    
+    var progressView: some View {
+        ProgressView()
+            .controlSize(.large)
+            .tint(.blue)
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    viewStore.send(.fetchInfoList(pageNumber: viewStore.currentPage + 1))
+                }
+            }
     }
 }
 

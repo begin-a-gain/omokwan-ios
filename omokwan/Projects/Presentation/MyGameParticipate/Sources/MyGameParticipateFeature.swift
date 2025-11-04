@@ -69,6 +69,9 @@ public struct MyGameParticipateFeature {
         @BindingState var hundredsPlace: String = ""
         @BindingState var tensPlace: String = ""
         @BindingState var onesPlace: String = ""
+        
+        var hasNext: Bool = false
+        var currentPage: Int = 1
     }
     
     public enum Action: BindableAction {
@@ -95,10 +98,10 @@ public struct MyGameParticipateFeature {
         
         case setLoading(Bool)
         case initialDataFetchFailed(NetworkError)
-        case gameInfoListFetched([GameRoomInformation])
-        case fetchInfoList
         case participateRoom(GameRoomInformation, String?)
         case participateCompleted(GameRoomInformation)
+        case gameInfoFetched(GameRoomInfo)
+        case fetchInfoList(pageNumber: Int)
     }
     
     public var body: some ReducerOf<Self> {
@@ -106,7 +109,7 @@ public struct MyGameParticipateFeature {
             .onChange(of: \.searchText) { oldValue, newValue in
                 Reduce { state, action in
                     if oldValue.isEmpty, newValue.isEmpty { return .none }
-                    return .send(.fetchInfoList)
+                    return .send(.fetchInfoList(pageNumber: 1))
                         .debounce(
                             id: State.SearchDebounceID.id,
                             for: .milliseconds(500),
@@ -141,7 +144,7 @@ public struct MyGameParticipateFeature {
                     categoryList: state.selectedCategoryList.isEmpty ? nil : state.selectedCategoryList,
                     search: state.searchText,
                     pageNumber: 1,
-                    pageSize: 1000 // 임시로 넣음
+                    pageSize: 10
                 )
                 
                 return .concatenate([
@@ -159,10 +162,10 @@ public struct MyGameParticipateFeature {
             case .resetFilterButtonTapped:
                 state.isAvailableParticipateRoomSelected = false
                 state.selectedCategoryList = []
-                return .send(.fetchInfoList)
+                return .send(.fetchInfoList(pageNumber: 1))
             case .availableParticipateRoomFilterTapped:
                 state.isAvailableParticipateRoomSelected.toggle()
-                return .send(.fetchInfoList)
+                 return .send(.fetchInfoList(pageNumber: 1))
             case .categoryFilterTapped:
                 state.categorySheet = .init(
                     categories: state.categories,
@@ -171,7 +174,7 @@ public struct MyGameParticipateFeature {
                 return .none
             case .searchBarClearButtonTapped:
                 state.searchText = ""
-                return .send(.fetchInfoList)
+                return .send(.fetchInfoList(pageNumber: 1))
             case .categorySheet(let categorySheetAction):
                 switch categorySheetAction {
                 case .presented(let sheetAction):
@@ -180,7 +183,7 @@ public struct MyGameParticipateFeature {
                         state.selectedCategoryList = selectedCategories
                         state.categorySheet = nil
                         
-                        return .send(.fetchInfoList)
+                        return .send(.fetchInfoList(pageNumber: 1))
                     default:
                         return .none
                     }
@@ -233,16 +236,22 @@ public struct MyGameParticipateFeature {
                     .cancel(id: State.CancellableID.initFetch),
                     .send(.showAlert(.error(error)))
                 ])
-            case .gameInfoListFetched(let infoList):
-                state.gameRoomInformationList = infoList
+            case .gameInfoFetched(let info):
+                if state.currentPage == 1 {
+                    state.gameRoomInformationList = info.gameRoomInformation
+                } else {
+                    state.gameRoomInformationList.append(contentsOf: info.gameRoomInformation)
+                }
+                state.hasNext = info.hasNext
                 return .none
-            case .fetchInfoList:
+            case .fetchInfoList(let pageNumber):
+                state.currentPage = pageNumber
                 let request = GameRoomInformationRequestModel(
                     joinable: state.isAvailableParticipateRoomSelected ? true : nil,
                     categoryList: state.selectedCategoryList.isEmpty ? nil : state.selectedCategoryList,
                     search: state.searchText,
-                    pageNumber: 1,
-                    pageSize: 1000 // 임시로 넣음
+                    pageNumber: state.currentPage,
+                    pageSize: 10
                 )
 
                 return .concatenate([
@@ -250,7 +259,7 @@ public struct MyGameParticipateFeature {
                     .run { send in
                         do {
                             let result = try await fetchGameRoomInfo(request: request)
-                            await send(.gameInfoListFetched(result))
+                            await send(.gameInfoFetched(result))
                         } catch let error as NetworkError {
                             await send(.showAlert(.error(error)))
                         } catch {
@@ -292,7 +301,7 @@ private extension MyGameParticipateFeature {
             let (categoriesResult, roomInfoResult) = try await (categories, roomInformation)
 
             await send(.categoriesFetched(categoriesResult))
-            await send(.gameInfoListFetched(roomInfoResult))
+            await send(.gameInfoFetched(roomInfoResult))
         } catch let error as NetworkError {
             await send(.handleInitDataError(.error(error)))
         } catch {
@@ -310,11 +319,11 @@ private extension MyGameParticipateFeature {
         }
     }
     
-    func fetchGameRoomInfo(request: GameRoomInformationRequestModel) async throws -> [GameRoomInformation] {
+    func fetchGameRoomInfo(request: GameRoomInformationRequestModel) async throws -> GameRoomInfo {
         let response = await gameUseCase.fetchAllGameInfoList(request)
         switch response {
-        case .success(let gameInfoList):
-            return gameInfoList
+        case .success(let gameRoomInfo):
+            return gameRoomInfo
         case .failure(let error):
             throw error
         }
