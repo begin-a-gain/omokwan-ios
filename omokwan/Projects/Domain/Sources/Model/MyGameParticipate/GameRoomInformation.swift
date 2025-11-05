@@ -7,39 +7,55 @@
 
 import Foundation
 
-public struct GameRoomInformation: Hashable {
-    public let title: String
-    public let isPrivateRoom: Bool
-    public let currentNumOfPeople: Int
-    public let maxNumOfPeople: Int
-    public let category: GameCategory?
-    public let createRoomDate: Date
-    public let hostName: String
-    public let roomStatus: RoomParticipationStatus
+public struct GameRoomInfo: Hashable {
+    public let gameRoomInformation: [GameRoomInformation]
+    public let hasNext: Bool
     
     public init(
-        title: String,
-        isPrivateRoom: Bool,
-        currentNumOfPeople: Int,
-        maxNumOfPeople: Int,
-        category: GameCategory?,
-        createRoomDate: Date,
-        hostName: String,
-        roomStatus: RoomParticipationStatus
+        gameRoomInformation: [GameRoomInformation],
+        hasNext: Bool
     ) {
-        self.title = title
-        self.isPrivateRoom = isPrivateRoom
-        self.currentNumOfPeople = currentNumOfPeople
-        self.maxNumOfPeople = maxNumOfPeople
-        self.category = category
-        self.createRoomDate = createRoomDate
-        self.hostName = hostName
-        self.roomStatus = roomStatus
+        self.gameRoomInformation = gameRoomInformation
+        self.hasNext = hasNext
     }
 }
 
-public enum RoomParticipationStatus {
-    case participating
-    case available
-    case unavailable
+public struct GameRoomInformation: Hashable {
+    public let id: Int
+    public let categoryId: Int?
+    public let name: String
+    public let hostName: String
+    public let ongoingDays: Int
+    public let participants: Int
+    public let maxParticipants: Int
+    public let joinStatus: RoomJoinStatus
+    public let isPublic: Bool
+    
+    public init(
+        id: Int = -1,
+        categoryId: Int? = nil,
+        name: String = "-",
+        hostName: String = "-",
+        ongoingDays: Int = 0,
+        participants: Int = 0,
+        maxParticipants: Int = 0,
+        joinStatus: RoomJoinStatus = .impossible,
+        isPublic: Bool = false
+    ) {
+        self.id = id
+        self.categoryId = categoryId
+        self.name = name
+        self.hostName = hostName
+        self.ongoingDays = ongoingDays
+        self.participants = participants
+        self.maxParticipants = maxParticipants
+        self.joinStatus = joinStatus
+        self.isPublic = isPublic
+    }
+}
+
+public enum RoomJoinStatus: String {
+    case possible = "JOINABLE"
+    case impossible = "NOT_JOINABLE"
+    case inProgress = "IN_PROGRESS"
 }

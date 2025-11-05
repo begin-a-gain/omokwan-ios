@@ -30,7 +30,6 @@ public struct MyGameParticipateView: View {
             MyGameParticipateCategorySheetView(store: store)
                 .modifier(CommonSheetModifier(detent: [.medium]))
         }
-        .oLoading(isPresent: viewStore.isLoading)
         .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {
             alertView
         }
@@ -163,19 +162,60 @@ private extension MyGameParticipateView {
 private extension MyGameParticipateView {
     var roomScrollView: some View {
         ScrollView {
-            LazyVStack(spacing: 0) {
-                ForEach(viewStore.gameRoomInformationList, id: \.self) { roomInfo in
-                    GameRoomCardView(
-                        roomInfo: roomInfo,
-                        buttonAction: {
-                            viewStore.send(.participateButtonTapped(roomInfo))
-                        }
-                    )
-                    .id(roomInfo.title) // TODO: API 응답 값 보고 id 값으로 변경 (아직 안나옴)
-                }
-            }.clipShape(RoundedRectangle(cornerRadius: 8))
-            .padding(20)
+            if viewStore.isLoading {
+                shimmerView
+            } else {
+                gameRoomCards
+            }
         }
+    }
+    
+    var shimmerView: some View {
+        VStack(spacing: 0) {
+            ForEach(0..<10, id: \.self) { index in
+                GameRoomCardView(
+                    isLoading: viewStore.isLoading,
+                    roomInfo: .init(),
+                    categories: [],
+                    buttonAction: {}
+                )
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(20)
+    }
+    
+    var gameRoomCards: some View {
+        LazyVStack(spacing: 0) {
+            ForEach(viewStore.gameRoomInformationList, id: \.self) { roomInfo in
+                GameRoomCardView(
+                    isLoading: viewStore.isLoading,
+                    roomInfo: roomInfo,
+                    categories: viewStore.categories,
+                    buttonAction: {
+                        viewStore.send(.participateButtonTapped(roomInfo))
+                    }
+                )
+                .id(roomInfo.id)
+            }
+            
+            if viewStore.hasNext {
+                progressView
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(20)
+    }
+    
+    var progressView: some View {
+        ProgressView()
+            .controlSize(.large)
+            .tint(.blue)
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    viewStore.send(.fetchInfoList(pageNumber: viewStore.currentPage + 1))
+                }
+            }
     }
 }
 
@@ -199,7 +239,7 @@ private extension MyGameParticipateView {
         OAlert(
             type: .default,
             title: "대국에 참여하시겠습니까?",
-            content: "'\(roomInfo.title)' 대국을 시작해보세요.",
+            content: "'\(roomInfo.name)' 대국을 시작해보세요.",
             primaryButtonAction: {
                 viewStore.send(.alertAction(.dismiss))
             },

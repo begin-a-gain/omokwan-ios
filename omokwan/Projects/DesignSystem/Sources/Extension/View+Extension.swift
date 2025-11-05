@@ -76,3 +76,21 @@ public extension View {
         modifier(OLoadingModifier(isPresent: isPresent))
     }
 }
+
+public extension View {
+    func shimmer(
+        _ isLoading: Bool,
+        cornerRadius: CGFloat = 0,
+        baseColor: Color = OColors.ui03.swiftUIColor,
+        highlightColor: Color = OColors.ui01.swiftUIColor
+    ) -> some View {
+        modifier(
+            ShimmerModifier(
+                isLoading: isLoading,
+                cornerRadius: cornerRadius,
+                baseColor: baseColor,
+                highlightColor: highlightColor
+            )
+        )
+    }
+}
