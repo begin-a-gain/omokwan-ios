@@ -30,7 +30,6 @@ public struct MyGameParticipateView: View {
             MyGameParticipateCategorySheetView(store: store)
                 .modifier(CommonSheetModifier(detent: [.medium]))
         }
-        .oLoading(isPresent: viewStore.isLoading)
         .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {
             alertView
         }
@@ -163,24 +162,49 @@ private extension MyGameParticipateView {
 private extension MyGameParticipateView {
     var roomScrollView: some View {
         ScrollView {
-            LazyVStack(spacing: 0) {
-                ForEach(viewStore.gameRoomInformationList, id: \.self) { roomInfo in
-                    GameRoomCardView(
-                        roomInfo: roomInfo,
-                        categories: viewStore.categories,
-                        buttonAction: {
-                            viewStore.send(.participateButtonTapped(roomInfo))
-                        }
-                    )
-                    .id(roomInfo.id)
-                }
-                
-                if viewStore.hasNext {
-                    progressView
-                }
-            }.clipShape(RoundedRectangle(cornerRadius: 8))
-            .padding(20)
+            if viewStore.isLoading {
+                shimmerView
+            } else {
+                gameRoomCards
+            }
         }
+    }
+    
+    var shimmerView: some View {
+        VStack(spacing: 0) {
+            ForEach(0..<10, id: \.self) { index in
+                GameRoomCardView(
+                    isLoading: viewStore.isLoading,
+                    roomInfo: .init(),
+                    categories: [],
+                    buttonAction: {}
+                )
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(20)
+    }
+    
+    var gameRoomCards: some View {
+        LazyVStack(spacing: 0) {
+            ForEach(viewStore.gameRoomInformationList, id: \.self) { roomInfo in
+                GameRoomCardView(
+                    isLoading: viewStore.isLoading,
+                    roomInfo: roomInfo,
+                    categories: viewStore.categories,
+                    buttonAction: {
+                        viewStore.send(.participateButtonTapped(roomInfo))
+                    }
+                )
+                .id(roomInfo.id)
+            }
+            
+            if viewStore.hasNext {
+                progressView
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(20)
     }
     
     var progressView: some View {

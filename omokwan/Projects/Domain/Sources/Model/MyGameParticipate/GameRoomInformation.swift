@@ -32,15 +32,15 @@ public struct GameRoomInformation: Hashable {
     public let isPublic: Bool
     
     public init(
-        id: Int,
-        categoryId: Int?,
-        name: String,
-        hostName: String,
-        ongoingDays: Int,
-        participants: Int,
-        maxParticipants: Int,
-        joinStatus: RoomJoinStatus,
-        isPublic: Bool
+        id: Int = -1,
+        categoryId: Int? = nil,
+        name: String = "-",
+        hostName: String = "-",
+        ongoingDays: Int = 0,
+        participants: Int = 0,
+        maxParticipants: Int = 0,
+        joinStatus: RoomJoinStatus = .impossible,
+        isPublic: Bool = false
     ) {
         self.id = id
         self.categoryId = categoryId

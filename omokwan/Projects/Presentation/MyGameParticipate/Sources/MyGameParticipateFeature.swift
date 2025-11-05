@@ -253,9 +253,14 @@ public struct MyGameParticipateFeature {
                     pageNumber: state.currentPage,
                     pageSize: 10
                 )
-
-                return .concatenate([
-                    .send(.setLoading(true)),
+                
+                var effects: [Effect<Action>] = []
+                
+                if state.currentPage == 1 {
+                    effects.append(.send(.setLoading(true)))
+                }
+                
+                effects.append(
                     .run { send in
                         do {
                             let result = try await fetchGameRoomInfo(request: request)
@@ -265,9 +270,14 @@ public struct MyGameParticipateFeature {
                         } catch {
                             await send(.showAlert(.error(.unKnownError)))
                         }
-                    },
-                    .send(.setLoading(false))
-                ])
+                    }
+                )
+                
+                if state.currentPage == 1 {
+                    effects.append(.send(.setLoading(false)))
+                }
+                
+                return .concatenate(effects)
             }
         }
         .ifLet(\.$categorySheet, action: \.categorySheet) {
