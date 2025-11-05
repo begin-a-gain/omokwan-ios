@@ -152,7 +152,13 @@ private extension ApiService {
         var queryList: [URLQueryItem] = []
         
         queryDictionary.forEach { key, value in
-            queryList.append(URLQueryItem(name: key, value: "\(value)"))
+            if let array = value as? [Any] {
+                array.forEach { element in
+                    queryList.append(URLQueryItem(name: key, value: "\(element)"))
+                }
+            } else {
+                queryList.append(URLQueryItem(name: key, value: "\(value)"))
+            }
         }
         
         return queryList

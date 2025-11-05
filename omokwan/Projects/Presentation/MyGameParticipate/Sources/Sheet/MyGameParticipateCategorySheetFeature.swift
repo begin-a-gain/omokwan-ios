@@ -14,10 +14,10 @@ public struct MyGameParticipateCategorySheetFeature: Reducer {
     public struct State: Equatable {
         public init(
             categories: [GameCategory],
-            selectedCategoryTitles: [String]
+            selectedCategoryList: [GameCategory]
         ) {
             self.categories = categories
-            self.selectedCategoryTitles = Set(selectedCategoryTitles)
+            self.selectedCategoryTitles = Set(selectedCategoryList.map { $0.category })
         }
         
         var categories: [GameCategory]
@@ -28,7 +28,7 @@ public struct MyGameParticipateCategorySheetFeature: Reducer {
         case binding(BindingAction<State>)
         case categoryTapped(String)
         case sheetConfirmButtonTapped
-        case passSelectedCategories([String])
+        case passSelectedCategories([GameCategory])
     }
     
     public var body: some ReducerOf<Self> {
@@ -45,7 +45,9 @@ public struct MyGameParticipateCategorySheetFeature: Reducer {
                 }
                 return .none
             case .sheetConfirmButtonTapped:
-                let toPassValues: [String] = Array(state.selectedCategoryTitles)
+                let toPassValues: [GameCategory] = state.selectedCategoryTitles.compactMap { title in
+                    state.categories.first(where: { $0.category == title })
+                }
                 return .send(.passSelectedCategories(toPassValues))
             case .passSelectedCategories:
                 return .none
