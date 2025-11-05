@@ -93,4 +93,30 @@ struct GameMapper {
         
         return (response.completed ?? false) ? .completed : .inCompleted
     }
+    
+    static func toGameRoomInformation(_ response: GameParticipateInfoResponse?) throws -> GameRoomInfo {
+        guard let response = response,
+              let matchList = response.matchList else {
+            throw RemoteNetworkError.responseDataNilError
+        }
+        
+        let gameRoomInformation = matchList.map {
+            GameRoomInformation(
+                id: $0.matchId ?? 0,
+                categoryId: $0.categoryId,
+                name: $0.name ?? "",
+                hostName: $0.hostName ?? "",
+                ongoingDays: $0.ongoingDays ?? 0,
+                participants: $0.participants ?? 0,
+                maxParticipants: $0.maxParticipants ?? 0,
+                joinStatus: RoomJoinStatus(rawValue: $0.joinable ?? "") ?? .impossible,
+                isPublic: $0.public ?? false
+            )
+        }
+        
+        return GameRoomInfo(
+            gameRoomInformation: gameRoomInformation,
+            hasNext: response.hasNext ?? false
+        )
+    }
 }

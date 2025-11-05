@@ -14,11 +14,20 @@ import Util
 @Reducer
 public struct MyGameParticipateFeature {
     @Dependency(\.gameUseCase) private var gameUseCase
+    @Dependency(\.mainQueue) private var mainQueue
 
     public init() {}
     
     public struct State: Equatable {
         public init() {}
+        
+        enum CancellableID {
+            case initFetch
+        }
+        
+        enum SearchDebounceID {
+            case id
+        }
         
         public enum AlertCase: Equatable {
             case error(NetworkError)
@@ -43,15 +52,15 @@ public struct MyGameParticipateFeature {
         // About Filter
         var isAvailableParticipateRoomSelected: Bool = false
         var numOfCategory: Int {
-            selectedCategoryTitles.count
+            selectedCategoryList.count
         }
         var isCategoryFilterSelected: Bool {
-            return !selectedCategoryTitles.isEmpty
+            return !selectedCategoryList.isEmpty
         }
         
         @PresentationState var categorySheet: MyGameParticipateCategorySheetFeature.State?
         
-        var selectedCategoryTitles: [String] = []
+        var selectedCategoryList: [GameCategory] = []
         var gameRoomInformationList: [GameRoomInformation] = []
         var categories: [GameCategory] = []
         
@@ -59,12 +68,16 @@ public struct MyGameParticipateFeature {
         @BindingState var hundredsPlace: String = ""
         @BindingState var tensPlace: String = ""
         @BindingState var onesPlace: String = ""
+        
+        var hasNext: Bool = false
+        var currentPage: Int = 1
     }
     
     public enum Action: BindableAction {
         case onAppear
         case binding(BindingAction<State>)
         case showAlert(State.AlertCase)
+        case handleInitDataError(State.AlertCase)
 
         case navigateToBack
         case resetFilterButtonTapped
@@ -81,10 +94,27 @@ public struct MyGameParticipateFeature {
         case categoriesFetched([GameCategory])
         case passwordAlertCancelButtonTapped
         case passwordAlertConfirmButtonTapped
+        
+        case setLoading(Bool)
+        case initialDataFetchFailed(NetworkError)
+        case gameInfoFetched(GameRoomInfo)
+        case fetchInfoList(pageNumber: Int)
     }
     
     public var body: some ReducerOf<Self> {
         BindingReducer()
+            .onChange(of: \.searchText) { oldValue, newValue in
+                Reduce { state, action in
+                    if oldValue.isEmpty, newValue.isEmpty { return .none }
+                    return .send(.fetchInfoList(pageNumber: 1))
+                        .debounce(
+                            id: State.SearchDebounceID.id,
+                            for: .milliseconds(500),
+                            scheduler: mainQueue
+                        )
+                }
+            }
+
         Scope(state: \.alertState, action: \.alertAction) {
             AlertFeature()
         }
@@ -96,81 +126,61 @@ public struct MyGameParticipateFeature {
                 state.isLoading = false
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
+            case .handleInitDataError(let alertCase):
+                state.alertCase = alertCase
+                return .merge([
+                    .cancel(id: State.CancellableID.initFetch),
+                    .send(.showAlert(alertCase))
+                ])
+            case .setLoading(let value):
+                state.isLoading = value
+                return .none
             case .onAppear:
-                state.gameRoomInformationList = [
-                    .init(
-                        title: "30분 이상 아침 달리기 하기(잠금o)",
-                        isPrivateRoom: true,
-                        currentNumOfPeople: 3,
-                        maxNumOfPeople: 5,
-                        category: .init(code: "1", category: "다이어트", emoji: ""),
-                        createRoomDate: .now,
-                        hostName: "빡빡이",
-                        roomStatus: .available
-                    ),
-                    .init(
-                        title: "운동하기(잠금x)",
-                        isPrivateRoom: false,
-                        currentNumOfPeople: 3,
-                        maxNumOfPeople: 5,
-                        category: .init(code: "1", category: "다이어트", emoji: ""),
-                        createRoomDate: .now,
-                        hostName: "오목왕빡빡이",
-                        roomStatus: .available
-                    ),
-                    .init(
-                        title: "30분",
-                        isPrivateRoom: true,
-                        currentNumOfPeople: 3,
-                        maxNumOfPeople: 2,
-                        category: .init(code: "1", category: "다이어트", emoji: ""),
-                        createRoomDate: .now,
-                        hostName: "ㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇ",
-                        roomStatus: .participating
-                    ),
-                    .init(
-                        title: "30분 이상 아침 달리기 하기",
-                        isPrivateRoom: true,
-                        currentNumOfPeople: 3,
-                        maxNumOfPeople: 5,
-                        category: .init(code: "1", category: "다이어트", emoji: ""),
-                        createRoomDate: .now,
-                        hostName: "dddddddddddd",
-                        roomStatus: .unavailable
-                    )
-                ]
-                return .run { send in
-                    await send(fetchCategories())
-                }
+                let request = GameRoomInformationRequestModel(
+                    joinable: state.isAvailableParticipateRoomSelected ? true : nil,
+                    categoryList: state.selectedCategoryList.isEmpty ? nil : state.selectedCategoryList,
+                    search: state.searchText,
+                    pageNumber: 1,
+                    pageSize: 10
+                )
+                
+                return .concatenate([
+                    .send(.setLoading(true)),
+                    .run { send in
+                        await fetchInitData(send: send, request: request)
+                    },
+                    .send(.setLoading(false))
+                ])
+                .cancellable(id: State.CancellableID.initFetch)
             case .binding:
                 return .none
             case .navigateToBack:
                 return .none
             case .resetFilterButtonTapped:
                 state.isAvailableParticipateRoomSelected = false
-                state.selectedCategoryTitles = []
-                return .none
+                state.selectedCategoryList = []
+                return .send(.fetchInfoList(pageNumber: 1))
             case .availableParticipateRoomFilterTapped:
                 state.isAvailableParticipateRoomSelected.toggle()
-                return .none
+                 return .send(.fetchInfoList(pageNumber: 1))
             case .categoryFilterTapped:
                 state.categorySheet = .init(
                     categories: state.categories,
-                    selectedCategoryTitles: state.selectedCategoryTitles
+                    selectedCategoryList: state.selectedCategoryList
                 )
                 return .none
             case .searchBarClearButtonTapped:
                 state.searchText = ""
-                return .none
+                return .send(.fetchInfoList(pageNumber: 1))
             case .categorySheet(let categorySheetAction):
                 switch categorySheetAction {
                 case .presented(let sheetAction):
                     switch sheetAction {
                     case .passSelectedCategories(let selectedCategories):
-                        state.selectedCategoryTitles = selectedCategories
+                        state.selectedCategoryList = selectedCategories
                         state.categorySheet = nil
                         
-                        return .none
+                        return .send(.fetchInfoList(pageNumber: 1))
                     default:
                         return .none
                     }
@@ -178,8 +188,8 @@ public struct MyGameParticipateFeature {
                     return .none
                 }
             case .participateButtonTapped(let roomInfo):
-                switch roomInfo.roomStatus {
-                case .available:
+                switch roomInfo.joinStatus {
+                case .possible:
                     return .send(.showDoubleCheckAlert(roomInfo))
                 default:
                     return .none
@@ -188,17 +198,17 @@ public struct MyGameParticipateFeature {
                 state.alertCase = .participateDoubleCheck(roomInfo)
                 return .send(.alertAction(.present))
             case .alertParticipateButtonTapped(let roomInfo):
-                if roomInfo.isPrivateRoom {
-                    // TODO: 비공개코드 alert 필요
-                    state.alertCase = .password
-                    return .none
-                } else {
+                if roomInfo.isPublic {
                     let selectedDateString = Date.now.formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
                     return .merge([
                         .send(.alertAction(.dismiss)),
                         // TODO: 나중에 API 나오고 roomInfo modeling 변경, 넘기는 파라미터 수정
-                        .send(.navigateToGameDetail(1, roomInfo.title, selectedDateString))
+                        .send(.navigateToGameDetail(1, roomInfo.name, selectedDateString))
                     ])
+                } else {
+                    // TODO: 비공개코드 alert 필요
+                    state.alertCase = .password
+                    return .none
                 }
             case .navigateToGameDetail:
                 return .none
@@ -221,6 +231,53 @@ public struct MyGameParticipateFeature {
                 // TODO: 참여 API 호출
                 
                 return .send(.alertAction(.dismiss))
+            case .initialDataFetchFailed(let error):
+                return .merge([
+                    .cancel(id: State.CancellableID.initFetch),
+                    .send(.showAlert(.error(error)))
+                ])
+            case .gameInfoFetched(let info):
+                if state.currentPage == 1 {
+                    state.gameRoomInformationList = info.gameRoomInformation
+                } else {
+                    state.gameRoomInformationList.append(contentsOf: info.gameRoomInformation)
+                }
+                state.hasNext = info.hasNext
+                return .none
+            case .fetchInfoList(let pageNumber):
+                state.currentPage = pageNumber
+                let request = GameRoomInformationRequestModel(
+                    joinable: state.isAvailableParticipateRoomSelected ? true : nil,
+                    categoryList: state.selectedCategoryList.isEmpty ? nil : state.selectedCategoryList,
+                    search: state.searchText,
+                    pageNumber: state.currentPage,
+                    pageSize: 10
+                )
+                
+                var effects: [Effect<Action>] = []
+                
+                if state.currentPage == 1 {
+                    effects.append(.send(.setLoading(true)))
+                }
+                
+                effects.append(
+                    .run { send in
+                        do {
+                            let result = try await fetchGameRoomInfo(request: request)
+                            await send(.gameInfoFetched(result))
+                        } catch let error as NetworkError {
+                            await send(.showAlert(.error(error)))
+                        } catch {
+                            await send(.showAlert(.error(.unKnownError)))
+                        }
+                    }
+                )
+                
+                if state.currentPage == 1 {
+                    effects.append(.send(.setLoading(false)))
+                }
+                
+                return .concatenate(effects)
             }
         }
         .ifLet(\.$categorySheet, action: \.categorySheet) {
@@ -230,13 +287,42 @@ public struct MyGameParticipateFeature {
 }
 
 private extension MyGameParticipateFeature {
-    func fetchCategories() async -> Action {
+    func fetchInitData(
+        send: Send<Action>,
+        request: GameRoomInformationRequestModel
+    ) async {
+        do {
+            async let categories = fetchCategories()
+            async let roomInformation = fetchGameRoomInfo(request: request)
+
+            let (categoriesResult, roomInfoResult) = try await (categories, roomInformation)
+
+            await send(.categoriesFetched(categoriesResult))
+            await send(.gameInfoFetched(roomInfoResult))
+        } catch let error as NetworkError {
+            await send(.handleInitDataError(.error(error)))
+        } catch {
+            await send(.handleInitDataError(.error(.unKnownError)))
+        }
+    }
+
+    func fetchCategories() async throws -> [GameCategory] {
         let response = await gameUseCase.fetchGameCategories()
         switch response {
         case .success(let categories):
-            return .categoriesFetched(categories)
+            return categories
         case .failure(let error):
-            return .showAlert(.error(error))
+            throw error
+        }
+    }
+    
+    func fetchGameRoomInfo(request: GameRoomInformationRequestModel) async throws -> GameRoomInfo {
+        let response = await gameUseCase.fetchAllGameInfoList(request)
+        switch response {
+        case .success(let gameRoomInfo):
+            return gameRoomInfo
+        case .failure(let error):
+            throw error
         }
     }
 }
