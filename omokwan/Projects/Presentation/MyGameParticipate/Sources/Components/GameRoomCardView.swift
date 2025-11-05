@@ -10,15 +10,18 @@ import DesignSystem
 import Domain
 
 struct GameRoomCardView: View {
+    private let isLoading: Bool
     private let roomInfo: GameRoomInformation
     private let categories: [GameCategory]
     let buttonAction: () -> Void
     
     init(
+        isLoading: Bool,
         roomInfo: GameRoomInformation,
         categories: [GameCategory],
         buttonAction: @escaping () -> Void
     ) {
+        self.isLoading = isLoading
         self.roomInfo = roomInfo
         self.categories = categories
         self.buttonAction = buttonAction
@@ -58,6 +61,7 @@ private extension GameRoomCardView {
                 color: OColors.text01.swiftUIColor
             ).greedyWidth(.leading)
         }
+        .shimmer(isLoading, cornerRadius: 4)
     }
     
     func getLockImage(_ isPublic: Bool) -> Image {
@@ -81,7 +85,9 @@ private extension GameRoomCardView {
             
             verticalDividerView
             matchDayView
-        }.greedyWidth(.leading)
+        }
+        .shimmer(isLoading, cornerRadius: 4)
+        .greedyWidth(.leading)
     }
     
     var peopleCountView: some View  {
@@ -122,7 +128,9 @@ private extension GameRoomCardView {
             "\(roomInfo.hostName)님의 대국",
             token: .caption,
             color: OColors.text01.swiftUIColor
-        ).greedyWidth(.leading)
+        )
+        .shimmer(isLoading, cornerRadius: 4)
+        .greedyWidth(.leading)
     }
 }
 
@@ -167,6 +175,7 @@ private extension GameRoomCardView {
             .hPadding(16)
             .background(buttonColor)
             .cornerRadius(8)
+            .shimmer(isLoading, cornerRadius: 8)
         }.disabled(roomInfo.joinStatus != .possible)
     }
 }
