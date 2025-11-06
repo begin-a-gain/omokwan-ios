@@ -23,6 +23,7 @@ public struct MyPageFeature {
         case onAppear
         case nicknameTapped
         case logoutButtonTapped
+        case navigateToEditNickname
     }
 
     public var body: some ReducerOf<Self> {
@@ -31,9 +32,10 @@ public struct MyPageFeature {
             case .onAppear:
                 return .none
             case .nicknameTapped:
-                // TODO: 닉네임 편집
-                return .none
+                return .send(.navigateToEditNickname)
             case .logoutButtonTapped:
+                return .none
+            case .navigateToEditNickname:
                 return .none
             }
         }

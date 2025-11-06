@@ -47,6 +47,8 @@ public struct MainCoordinatorFeature {
                 return gameDetailSettingNavigation(&state, gameDetailSettingAction)
             case .navigationPath(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.hostChange(let hostChangeAction))):
                 return hostChangeNavigation(&state, hostChangeAction)
+            case .navigationPath(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.editNickname(let editNicknameAction))):
+                return editNicknameNavigation(&state, editNicknameAction)
             case .navigationPath:
                 return .none
             case .mainAction(let mainAction):
@@ -76,6 +78,9 @@ private extension MainCoordinatorFeature {
                     )
                 )
             )
+            return .none
+        case .navigateToEditNickname:
+            state.navigationPath.append(.editNickname(.init()))
             return .none
         default:
             return .none

@@ -49,6 +49,7 @@ public struct MainFeature {
         case showAlert(State.AlertCase)
         case onAppear
         case alertLogoutButtonTapped
+        case navigateToEditNickname
     }
     
     public var body: some ReducerOf<Self> {
@@ -120,6 +121,8 @@ public struct MainFeature {
                 return .send(.alertAction(.present))
             case .alertLogoutButtonTapped:
                 return .none
+            case .navigateToEditNickname:
+                return .none
             }
         }
         .ifLet(\.$mainSheet, action: \.mainSheet) {
@@ -166,6 +169,8 @@ private extension MainFeature {
         switch action {
         case .logoutButtonTapped:
             return .send(.showAlert(.logout))
+        case .navigateToEditNickname:
+            return .send(.navigateToEditNickname)
         default:
             return .none
         }
