@@ -8,6 +8,7 @@
 import ComposableArchitecture
 import SwiftUI
 import DesignSystem
+import Base
 
 public struct EditNicknameView: View {
     private let store: StoreOf<EditNicknameFeature>
@@ -27,6 +28,10 @@ public struct EditNicknameView: View {
     public var body: some View {
         editNicknameBody
             .onAppear { viewStore.send(.onAppear) }
+            .oLoading(isPresent: viewStore.isLoading)
+            .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {
+                alertView
+            }
     }
     
     private var editNicknameBody: some View {
@@ -111,9 +116,24 @@ private extension EditNicknameView {
             status: viewStore.isButtonEnabled ? .default : .disable,
             type: .default
         ) {
-            
+            viewStore.send(.nicknameUpdateButtonTapped)
         }
         .vPadding(16)
         .hPadding(20)
+    }
+}
+
+private extension EditNicknameView {
+    var alertView: some View {
+        Group {
+            if let alertCase = viewStore.alertCase {
+                switch alertCase {
+                case .error(let networkError):
+                    CommonErrorAlertView(networkError) {
+                        viewStore.send(.alertAction(.dismiss))
+                    }
+                }
+            }
+        }
     }
 }

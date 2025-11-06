@@ -50,6 +50,7 @@ public struct MainFeature {
         case onAppear
         case alertLogoutButtonTapped
         case navigateToEditNickname
+        case nicknameUpdateCompleted
     }
     
     public var body: some ReducerOf<Self> {
@@ -122,6 +123,8 @@ public struct MainFeature {
             case .alertLogoutButtonTapped:
                 return .none
             case .navigateToEditNickname:
+                return .none
+            case .nicknameUpdateCompleted:
                 return .none
             }
         }

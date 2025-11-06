@@ -27,12 +27,12 @@ public struct AccountRepository: AccountRepositoryProtocol {
         }
     }
     
-    public func postNicknameDuplicated(nickname: String) async -> Result<Void, NetworkError> {
+    public func postNicknameDuplicated(nickname: String) async -> Result<NicknameDuplicateValidation, NetworkError> {
         do {
             let requestBody: NicknameValidationRequest = .init(nickname: nickname)
-            let endPoint = EndPoint<RemoteResponseModel<Bool>>.postNicknameDuplicated(requestBody: requestBody)
-            let _ = try await apiService.call(endPoint)
-            return .success(())
+            let endPoint = EndPoint<RemoteResponseModel<NicknameDuplicateResponse>>.postNicknameDuplicated(requestBody: requestBody)
+            let response = try await apiService.call(endPoint)
+            return .success(try UserMapper.toNicknameDuplicateValidation(response.data))
         } catch {
             return .failure(ErrorMapper.toNetworkError(error))
         }

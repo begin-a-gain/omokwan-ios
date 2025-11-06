@@ -146,6 +146,9 @@ extension MainCoordinatorFeature {
         case .navigateToBack:
             _ = state.navigationPath.popLast()
             return .none
+        case .nicknameUpdateCompleted:
+            _ = state.navigationPath.popLast()
+            return .send(.mainAction(.nicknameUpdateCompleted))
         default:
             return .none
         }
