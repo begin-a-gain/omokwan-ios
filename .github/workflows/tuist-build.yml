@@ -2,11 +2,6 @@ name: Project Build (Tuist)
 
 on:
   workflow_dispatch:
-    inputs:
-      tag_name:
-        description: "Tag name for build"
-        required: true
-        type: string
 
 env:
   XCODE_VERSION: "16.3"
@@ -17,8 +12,6 @@ env:
 jobs:
   build:
     runs-on: macos-latest
-    env:
-      TAG_NAME: ${{ inputs.tag_name }}
 
     steps:
       - name: Checkout repository
@@ -46,7 +39,7 @@ jobs:
 
       - name: Build Xcode project
         run: |
-          echo "🏗️ Starting Xcode build for tag: $TAG_NAME"
+          echo "🏗️ Starting Xcode build 
           set -o pipefail
           xcodebuild \
             -project YourApp.xcodeproj \
@@ -56,9 +49,9 @@ jobs:
             build | xcpretty
 
           if [ $? -eq 0 ]; then
-            echo "✅ Xcode build completed successfully for tag: $TAG_NAME"
+            echo "✅ Xcode build completed successfully
           else
-            echo "❌ Xcode build failed for tag: $TAG_NAME"
+            echo "❌ Xcode build failed 
             exit 1
           fi
 
