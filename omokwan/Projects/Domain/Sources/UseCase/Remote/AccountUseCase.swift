@@ -10,7 +10,7 @@ import Dependencies
 
 public struct AccountUseCase {
     public let signIn: (_ provider: SocialSignProvider, _ accessToken: String) async -> Result<SignInResult, NetworkError>
-    public let checkNicknameDuplicated: (_ nickname: String) async -> Result<Void, NetworkError>
+    public let checkNicknameDuplicated: (_ nickname: String) async -> Result<NicknameDuplicateValidation, NetworkError>
     public let updateNickname: (_ nickname: String) async -> Result<Void, NetworkError>
     public let fetchUserInfo: () async -> Result<UserInfo, NetworkError>
 }

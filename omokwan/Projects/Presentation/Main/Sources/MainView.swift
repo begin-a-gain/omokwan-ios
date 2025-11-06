@@ -9,6 +9,7 @@ import SwiftUI
 import DesignSystem
 import ComposableArchitecture
 import MyGame
+import MyPage
 import Base
 
 public struct MainView: View {
@@ -72,23 +73,10 @@ public struct MainView: View {
                         store: store.scope(state: \.myGameState, action: \.myGameAction)
                     ).padding(.bottom, MainUtil.getBottomTabBarHeight(hasBottomSafeArea))
                 case .myPage:
-                    ProfileView()
-                        .padding(.bottom, MainUtil.getBottomTabBarHeight(hasBottomSafeArea))
+                    MyPageView(
+                        store: store.scope(state: \.myPageState, action: \.myPageAction)
+                    ).padding(.bottom, MainUtil.getBottomTabBarHeight(hasBottomSafeArea))
                 }
-            }
-        }
-    }
-}
-
-// TODO: Remove This View
-public struct ProfileView: View {
-    public var body: some View {
-        VStack {
-            Text("Profile View")
-            Button {
-                
-            } label: {
-                Text("Logout")
             }
         }
     }
@@ -131,8 +119,26 @@ private extension MainView {
                     CommonErrorAlertView(networkError) {
                         viewStore.send(.alertAction(.dismiss))
                     }
+                case .logout:
+                    logoutAlertView
                 }
             }
         }
+    }
+    
+    var logoutAlertView: some View {
+        OAlert(
+            type: .default,
+            title: "로그아웃할까요?",
+            content: "다시 로그인하려면 계정 정보가 필요해요.",
+            primaryButtonAction: {
+                viewStore.send(.alertAction(.dismiss))
+            },
+            secondaryButtonTitle: "로그아웃",
+            secondaryButtonAction: {
+                viewStore.send(.alertAction(.dismiss))
+                viewStore.send(.alertLogoutButtonTapped)
+            }
+        )
     }
 }
