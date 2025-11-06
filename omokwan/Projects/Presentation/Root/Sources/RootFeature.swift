@@ -100,6 +100,10 @@ private extension RootFeature {
             clearUserInfo(&state)
             state.root = .signIn(.init())
             return .none
+        case .nicknameUpdateCompleted:
+            state.toastMessage = "닉네임이 변경 되었어요."
+            state.isToastPresented = true
+            return .none
         default:
             return .none
         }

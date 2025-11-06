@@ -19,4 +19,15 @@ struct UserMapper {
             nickname: response.nickname ?? "-"
         )
     }
+    
+    static func toNicknameDuplicateValidation(_ response: NicknameDuplicateResponse?) throws -> NicknameDuplicateValidation {
+        guard let response = response else {
+            throw RemoteNetworkError.responseDataNilError
+        }
+
+        return NicknameDuplicateValidation(
+            isValid: response.isValid ?? false,
+            isDuplicated: response.isDuplicated ?? false
+        )
+    }
 }
