@@ -5,6 +5,9 @@ on:
     tags:
       - "dev-*"
 
+permissions:
+  contents: write
+
 jobs:
   validate_and_run:
     runs-on: ubuntu-latest
