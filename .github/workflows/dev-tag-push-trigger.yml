@@ -1,0 +1,28 @@
+name: Dev Tag Push Trigger
+
+on:
+  push:
+    tags:
+      - "dev-*"
+
+jobs:
+  validate_and_run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract tag name
+        id: extract
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+
+      - name: Validate tag format
+        id: validate
+        run: |
+          TAG_NAME=${{ steps.extract.outputs.tag_name }}
+          if [[ "$TAG_NAME" =~ ^dev-[0-9]{10}$ ]]; then
+            echo "✅ Valid tag format: $TAG_NAME"
+          else
+            echo "❌ Invalid tag format: $TAG_NAME"
+            exit 1
+          fi
