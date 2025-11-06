@@ -5,6 +5,11 @@ on:
     tags:
       - "dev-*"
 
+permissions:
+  contents: read
+  actions: write
+  workflows: write
+
 jobs:
   validate_and_run:
     runs-on: ubuntu-latest
