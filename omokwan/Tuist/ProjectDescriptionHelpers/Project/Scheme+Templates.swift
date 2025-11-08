@@ -30,20 +30,10 @@ extension Scheme {
         configurationName: ConfigurationName,
         isAppTarget: Bool = false
     ) -> Scheme {
-        var testAction: TestAction?
-        if !isAppTarget {
-            testAction = .targets(
-                ["\(targetName)Tests"],
-                configuration: configurationName,
-                options: .options(coverage: true, codeCoverageTargets: ["\(targetName)"])
-            )
-        }
-        
         let isRelease = configurationName == .release
         return Scheme.scheme(
             name: schemeName,
             buildAction: .buildAction(targets: ["\(targetName)"]),
-            testAction: testAction,
             runAction: .runAction(configuration: configurationName),
             archiveAction: .archiveAction(configuration: isRelease ? .release : configurationName),
             profileAction: .profileAction(configuration: isRelease ? .release : configurationName),
