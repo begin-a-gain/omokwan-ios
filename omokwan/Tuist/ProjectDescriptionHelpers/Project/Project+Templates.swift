@@ -43,13 +43,7 @@ public extension Project {
             options: options,
             settings: .settings(configurations: Configuration.defaultSettings, defaultSettings: defaultSettings),
             targets: .targets(name: name),
-            schemes: [
-                .scheme(
-                    schemeName: name,
-                    targetName: name,
-                    configurationName: .debug
-                )
-            ]
+            schemes: []
         )
     }
 }
@@ -78,13 +72,7 @@ public extension Project {
             targets: [
                 implements
             ],
-            schemes: [
-                .scheme(
-                    schemeName: name,
-                    targetName: name,
-                    configurationName: .debug
-                )
-            ],
+            schemes: [],
             resourceSynthesizers: [
                 .assets(),
                 .fonts()
