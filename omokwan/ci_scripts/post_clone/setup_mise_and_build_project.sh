@@ -53,3 +53,23 @@ END_TIME=$(date "+%Y-%m-%d %H:%M:%S")
 echo "================================================"
 echo "✅ Tuist installation completed! (완료: $END_TIME)"
 echo ""
+
+echo "🧹 Running make clean..."
+mise exec -- make clean || {
+    echo "❌ make clean 실패!"
+    echo "   Makefile이 있는지, clean 타겟이 정의되어 있는지 확인해주세요."
+    exit 1
+}
+
+echo "✅ Clean completed!"
+echo ""
+
+echo "🔨 Running make generate..."
+mise exec -- make generate || {
+    echo "❌ make generate 실패!"
+    echo "   의존성 설치 또는 프로젝트 생성 중 문제가 발생했습니다."
+    echo "   로컬에서 'make generate' 명령어를 실행해서 문제를 확인해주세요."
+    exit 1
+}
+
+echo "✅ Generate completed!"

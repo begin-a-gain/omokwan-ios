@@ -44,19 +44,7 @@ else
     exit 1
 fi
 
-# === 2. mise & Tuist 설치 ===
-if [ -f "ci_scripts/post_clone/setup_mise_and_tuist.sh" ]; then
-    chmod +x ci_scripts/post_clone/setup_mise_and_tuist.sh
-    ./ci_scripts/post_clone/setup_mise_and_tuist.sh || {
-        echo "❌ mise & Tuist setup failed!"
-        exit 1
-    }
-else
-    echo "❌ setup_mise_and_tuist.sh not found!"
-    exit 1
-fi
-
-# === 3. XCConfig 생성 ===
+# === 2. XCConfig 생성 ===
 echo "🎬 Running XCConfig creation script..."
 
 if [ -f "ci_scripts/post_clone/create_xcconfig.sh" ]; then
@@ -76,23 +64,14 @@ else
     exit 1
 fi
 
-# === 4. xcode 프로젝트 파일 생성 === 
-echo "🧹 Running make clean..."
-mise exec -- make clean || {
-    echo "❌ make clean 실패!"
-    echo "   Makefile이 있는지, clean 타겟이 정의되어 있는지 확인해주세요."
+# === 3. mise & Tuist 설치 ===
+if [ -f "ci_scripts/post_clone/setup_mise_and_build_project.sh" ]; then
+    chmod +x ci_scripts/post_clone/setup_mise_and_build_project.sh
+    ./ci_scripts/post_clone/setup_mise_and_build_project.sh || {
+        echo "❌ mise & Tuist setup failed!"
+        exit 1
+    }
+else
+    echo "❌ setup_mise_and_build_project.sh not found!"
     exit 1
-}
-
-echo "✅ Clean completed!"
-echo ""
-
-echo "🔨 Running make generate..."
-mise exec -- make generate || {
-    echo "❌ make generate 실패!"
-    echo "   의존성 설치 또는 프로젝트 생성 중 문제가 발생했습니다."
-    echo "   로컬에서 'make generate' 명령어를 실행해서 문제를 확인해주세요."
-    exit 1
-}
-
-echo "✅ Generate completed!"
+fi
