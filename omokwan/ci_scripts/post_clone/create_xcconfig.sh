@@ -48,7 +48,7 @@ fi
 cat > XCConfig/Dev.xcconfig << EOF
 #include "./Shared.xcconfig"
 
-BUNDLE_IDENTIFIER = com.begin-a-gain.omokwang
+BUNDLE_IDENTIFIER = com.begin-a-gain.omokwang.dev
 BUNDLE_NAME = 오목완 DEV
 ENV = Dev
 SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEV
