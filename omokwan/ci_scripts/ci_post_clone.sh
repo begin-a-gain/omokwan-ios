@@ -78,7 +78,7 @@ fi
 
 # === 4. xcode 프로젝트 파일 생성 === 
 echo "🧹 Running make clean..."
-make clean || {
+mise exec -- make clean || {
     echo "❌ make clean 실패!"
     echo "   Makefile이 있는지, clean 타겟이 정의되어 있는지 확인해주세요."
     exit 1
