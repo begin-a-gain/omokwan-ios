@@ -22,3 +22,19 @@ public struct EnvironmentSettings : Sendable{
         destinations: [.iPhone]
     )
 }
+
+public enum Environment: CaseIterable {
+    case dev
+    case prod
+    
+    public var name: String {
+        switch self {
+        case .dev: "Dev"
+        case .prod: "Prod"
+        }
+    }
+}
+
+public extension [Environment] {
+    static var all: Self { Environment.allCases }
+}

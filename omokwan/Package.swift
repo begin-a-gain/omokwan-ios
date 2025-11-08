@@ -3,15 +3,11 @@
 
 #if TUIST
 @preconcurrency import ProjectDescription
+@preconcurrency import ProjectDescriptionHelpers
 
     let packageSettings = PackageSettings(
         productTypes: [:],
-        baseSettings: .settings(
-            configurations: [
-                .debug(name: .debug),
-                .release(name: .release)
-            ]
-        )
+        baseSettings: .settings(configurations: .default)
     )
 #endif
 

@@ -27,9 +27,6 @@ public extension Target {
     private static let organizationName = environmentSettings.organizationName
     private static let destinations = environmentSettings.destinations
     private static let deploymentTargets = environmentSettings.deploymentTargets
-    private static let defaultSettings = DefaultSettings.recommended(excluding: [
-        "SWIFT_ACTIVE_COMPILATION_CONDITIONS"
-    ])
     
     static func app(
         name: String,
@@ -46,7 +43,7 @@ public extension Target {
             resources: ["Resources/**"],
             entitlements: "App.entitlements",
             dependencies: dependencies,
-            settings: .settings(configurations: Configuration.defaultSettings, defaultSettings: defaultSettings)
+            settings: .settings(configurations: .default)
         )
     }
     
@@ -67,7 +64,7 @@ public extension Target {
             sources: ["Sources/**"],
             resources: resources,
             dependencies: dependencies,
-            settings: .settings(configurations: Configuration.defaultSettings, defaultSettings: defaultSettings)
+            settings: .settings(configurations: .default)
         )
     }
 }
