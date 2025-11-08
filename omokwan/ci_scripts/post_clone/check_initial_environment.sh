@@ -5,15 +5,6 @@ set -e
 echo "🏗️  Check inital environment..."
 echo "================================================"
 
-echo "📂 Current directory: $(pwd)"
-
-cd .. || {
-    echo "❌ Failed to move to parent directory"
-    exit 1
-}
-
-echo "📂 Moved to project root: $(pwd)"
-
 ## 필수 파일 체크
 echo "🔍 Checking required files..."
 

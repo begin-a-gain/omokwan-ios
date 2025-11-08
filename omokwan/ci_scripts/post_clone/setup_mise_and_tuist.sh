@@ -6,9 +6,6 @@ export TZ=Asia/Seoul
 START_TIME=$(date "+%Y-%m-%d %H:%M:%S")
 
 echo "📥 Installing mise... (Time: $START_TIME)"
-echo "📂 Current directory: $(pwd)"
-cd ..
-echo "📂 Current directory: $(pwd)"
 echo "================================================"
 curl https://mise.jdx.dev/install.sh | sh || {
     echo "❌ mise 설치 실패!"
