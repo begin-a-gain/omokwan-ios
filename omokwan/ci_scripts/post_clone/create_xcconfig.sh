@@ -3,6 +3,9 @@
 set -e
 
 echo "🔧 Creating XCConfig files..."
+echo "📂 Current directory: $(pwd)"
+cd ..
+echo "📂 Current directory: $(pwd)"
 echo "================================================"
 
 # XCConfig 디렉토리 생성

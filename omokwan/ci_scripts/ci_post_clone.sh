@@ -22,8 +22,10 @@ error_handler() {
 trap 'error_handler $LINENO' ERR
 
 echo "🎬 Starting CI Post Clone Script"
+echo "📂 Current directory: $(pwd)"
+cd ..
+echo "📂 Current directory: $(pwd)"
 echo "================================================"
-
 
 # === 1. 초기 환경 체크 ===
 if [ -f "ci_scripts/post_clone/check_initial_environment.sh" ]; then
@@ -40,7 +42,7 @@ fi
 # === 2. mise & Tuist 설치 ===
 if [ -f "ci_scripts/post_clone/setup_mise_and_tuist.sh" ]; then
     chmod +x ci_scripts/post_clone/setup_mise_and_tuist.sh
-    ./ci_scripts/setup_mise_and_tuist.sh || {
+    ./ci_scripts/post_clone/setup_mise_and_tuist.sh || {
         echo "❌ mise & Tuist setup failed!"
         exit 1
     }
@@ -71,7 +73,7 @@ fi
 
 # === 4. xcode 프로젝트 파일 생성 === 
 echo "🧹 Running make clean..."
-mise exec -- make clean || {
+make clean || {
     echo "❌ make clean 실패!"
     echo "   Makefile이 있는지, clean 타겟이 정의되어 있는지 확인해주세요."
     exit 1
