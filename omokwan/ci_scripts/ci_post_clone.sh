@@ -20,6 +20,16 @@ error_handler() {
 
 trap 'error_handler $LINENO' ERR
 
+# === 작업 디렉토리 확인 및 이동 ===
+echo "📂 Current directory: $(pwd)"
+
+if [ -n "$CI_WORKSPACE" ]; then
+    echo "📂 Moving to CI_WORKSPACE: $CI_WORKSPACE"
+    cd "$CI_WORKSPACE"
+else
+    echo "⚠️  CI_WORKSPACE not set, staying in current directory"
+fi
+
 START_TIME=$(date "+%Y-%m-%d %H:%M:%S")
 echo "🚀 Installing Tuist... (Time: $START_TIME)"
 echo "================================================"
@@ -30,7 +40,14 @@ curl -fsSL https://mise.jdx.dev/install.sh | sh || {
     exit 1
 }
 
+# === PATH 설정 ===
 export PATH="$HOME/.local/bin:$PATH"
+
+# === mise activate ===
+echo "🔧 Activating mise..."
+eval "$(mise activate sh)" || {
+    echo "⚠️  mise activate 실패! (계속 진행합니다)"
+}
 
 echo "🔍 Checking mise version..."
 MISE_VERSION=$(mise --version) || {
@@ -38,6 +55,12 @@ MISE_VERSION=$(mise --version) || {
     exit 1
 }
 echo "✓ mise 버전: $MISE_VERSION"
+
+echo "🔍 Running mise doctor..."
+mise doctor || {
+    echo "⚠️  mise doctor에서 경고가 있지만 계속 진행합니다."
+}
+
 echo "------------------------------------------------"
 
 echo "📥 Installing Tuist from .mise.toml..."
@@ -46,6 +69,8 @@ mise install tuist || {
     echo "   .mise.toml 파일이 있는지 확인해주세요."
     exit 1
 }
+
+mise doctor
 
 echo "🔍 Checking Tuist version..."
 TUIST_VERSION=$(mise exec -- tuist version) || {
@@ -58,6 +83,18 @@ END_TIME=$(date "+%Y-%m-%d %H:%M:%S")
 echo "================================================"
 echo "✅ Tuist installation completed! (완료: $END_TIME)"
 echo ""
+
+# Makefile 존재 확인
+echo "🔍 Checking for Makefile..."
+if [ ! -f "Makefile" ]; then
+    # [ ! -f "Makefile" ]: Makefile 파일이 존재하지 않으면
+    echo "❌ Makefile not found in $(pwd)"
+    echo "📂 Directory contents:"
+    ls -la
+    # ls -la: 현재 디렉토리의 모든 파일과 폴더를 자세히 보여줘요
+    exit 1
+fi
+echo "✓ Makefile found in $(pwd)"
 
 echo "🧹 Running make clean..."
 mise exec -- make clean || {
