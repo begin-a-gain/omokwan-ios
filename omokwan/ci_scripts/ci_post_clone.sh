@@ -22,6 +22,8 @@ trap 'error_handler $LINENO' ERR
 
 # === 작업 디렉토리 확인 및 이동 ===
 echo "📂 Current directory: $(pwd)"
+cd ..
+echo "📂 Moved to project root: $(pwd)"
 
 if [ -n "$CI_WORKSPACE" ]; then
     echo "📂 Moving to CI_WORKSPACE: $CI_WORKSPACE"
@@ -31,37 +33,16 @@ else
 fi
 
 START_TIME=$(date "+%Y-%m-%d %H:%M:%S")
-echo "🚀 Installing Tuist... (Time: $START_TIME)"
-echo "================================================"
 
-echo "📥 Installing mise..."
-curl -fsSL https://mise.jdx.dev/install.sh | sh || {
+echo "📥 Installing mise... (Time: $START_TIME)"
+echo "================================================"
+curl https://mise.jdx.dev/install.sh | sh || {
     echo "❌ mise 설치 실패!"
     exit 1
 }
 
 # === PATH 설정 ===
 export PATH="$HOME/.local/bin:$PATH"
-
-# === mise activate ===
-echo "🔧 Activating mise..."
-eval "$(mise activate sh)" || {
-    echo "⚠️  mise activate 실패! (계속 진행합니다)"
-}
-
-echo "🔍 Checking mise version..."
-MISE_VERSION=$(mise --version) || {
-    echo "❌ mise 버전 확인 실패! mise가 제대로 설치되지 않았을 수 있습니다."
-    exit 1
-}
-echo "✓ mise 버전: $MISE_VERSION"
-
-echo "🔍 Running mise doctor..."
-mise doctor || {
-    echo "⚠️  mise doctor에서 경고가 있지만 계속 진행합니다."
-}
-
-echo "------------------------------------------------"
 
 echo "📥 Installing Tuist from .mise.toml..."
 mise install tuist || {
@@ -70,7 +51,25 @@ mise install tuist || {
     exit 1
 }
 
-mise doctor
+# === mise activate ===
+echo "🔧 Activating mise..."
+eval 
+eval "$(mise activate bash --shims)" || {
+    echo "⚠️  mise activate 실패! (계속 진행합니다)"
+}
+
+echo "🔍 Running mise doctor..."
+mise doctor || {
+    echo "⚠️  mise doctor에서 경고가 있지만 계속 진행합니다."
+}
+
+echo "🔍 Checking mise version..."
+MISE_VERSION=$(mise --version) || {
+    echo "❌ mise 버전 확인 실패! mise가 제대로 설치되지 않았을 수 있습니다."
+    exit 1
+}
+echo "✓ mise 버전: $MISE_VERSION"
+echo "------------------------------------------------"
 
 echo "🔍 Checking Tuist version..."
 TUIST_VERSION=$(mise exec -- tuist version) || {
