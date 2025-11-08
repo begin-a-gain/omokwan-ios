@@ -40,8 +40,17 @@ public extension Target {
             deploymentTargets: deploymentTargets,
             infoPlist: .file(path: "Support/Info.plist"),
             sources: ["Sources/**"],
-            resources: ["Resources/**"],
+            resources: [
+                .glob(pattern: "Resources/**", excluding: ["Resources/Firebase/GoogleService-Info*.plist"])
+            ],
             entitlements: "App.entitlements",
+            scripts: [
+                .pre(
+                    script: "Scripts/select_google_service_info.sh",
+                    name: "Select GoogleService-Info.plist",
+                    basedOnDependencyAnalysis: false
+                )
+            ],
             dependencies: dependencies,
             settings: .settings(configurations: .default)
         )
