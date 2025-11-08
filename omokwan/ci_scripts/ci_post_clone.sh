@@ -25,13 +25,6 @@ echo "📂 Current directory: $(pwd)"
 cd ..
 echo "📂 Moved to project root: $(pwd)"
 
-if [ -n "$CI_WORKSPACE" ]; then
-    echo "📂 Moving to CI_WORKSPACE: $CI_WORKSPACE"
-    cd "$CI_WORKSPACE"
-else
-    echo "⚠️  CI_WORKSPACE not set, staying in current directory"
-fi
-
 START_TIME=$(date "+%Y-%m-%d %H:%M:%S")
 
 echo "📥 Installing mise... (Time: $START_TIME)"
@@ -86,11 +79,9 @@ echo ""
 # Makefile 존재 확인
 echo "🔍 Checking for Makefile..."
 if [ ! -f "Makefile" ]; then
-    # [ ! -f "Makefile" ]: Makefile 파일이 존재하지 않으면
     echo "❌ Makefile not found in $(pwd)"
     echo "📂 Directory contents:"
     ls -la
-    # ls -la: 현재 디렉토리의 모든 파일과 폴더를 자세히 보여줘요
     exit 1
 fi
 echo "✓ Makefile found in $(pwd)"
@@ -104,6 +95,25 @@ mise exec -- make clean || {
 
 echo "✅ Clean completed!"
 echo ""
+
+echo "🎬 Running XCConfig creation script..."
+
+if [ -f "ci_scripts/create_xcconfig.sh" ]; then
+    chmod +x ci_scripts/create_xcconfig.sh
+    
+    ./ci_scripts/create_xcconfig.sh || {
+        echo "❌ XCConfig creation script failed!"
+        echo "   Please check your environment variables in Xcode Cloud:"
+        echo "   - KAKAO_NATIVE_APP_KEY_DEV"
+        echo "   - API_BASE_URL_DEV"
+        echo "   - KAKAO_NATIVE_APP_KEY_PROD"
+        echo "   - API_BASE_URL_PROD"
+        exit 1
+    }
+else
+    echo "❌ create_xcconfig.sh not found in ci_scripts/"
+    exit 1
+fi
 
 echo "🔨 Running make generate..."
 mise exec -- make generate || {
