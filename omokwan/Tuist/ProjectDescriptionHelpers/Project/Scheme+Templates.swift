@@ -10,14 +10,13 @@ import ProjectDescription
 extension Array where Element == Scheme {
     static var app: [Scheme] {
         let name = EnvironmentSettings.default.name
-        let deployTargets: [ConfigurationName] = [.debug, .release]
+        let deployTargets: [Environment] = .all
         
         return deployTargets.map {
             return .scheme(
-                schemeName: "\(name)-\($0.rawValue)",
+                schemeName: "\(name)-\($0.name.uppercased())",
                 targetName: name,
-                configurationName: .configuration($0.rawValue),
-                isAppTarget: true
+                configurationName: .init(stringLiteral: $0.name)
             )
         }
     }
@@ -27,16 +26,15 @@ extension Scheme {
     static func scheme(
         schemeName: String,
         targetName: String,
-        configurationName: ConfigurationName,
-        isAppTarget: Bool = false
+        configurationName: ConfigurationName
     ) -> Scheme {
-        let isRelease = configurationName == .release
+        let isProd = configurationName == .prod
         return Scheme.scheme(
             name: schemeName,
             buildAction: .buildAction(targets: ["\(targetName)"]),
             runAction: .runAction(configuration: configurationName),
-            archiveAction: .archiveAction(configuration: isRelease ? .release : configurationName),
-            profileAction: .profileAction(configuration: isRelease ? .release : configurationName),
+            archiveAction: .archiveAction(configuration: isProd ? .release : configurationName),
+            profileAction: .profileAction(configuration: isProd ? .release : configurationName),
             analyzeAction: .analyzeAction(configuration: configurationName)
         )
     }
