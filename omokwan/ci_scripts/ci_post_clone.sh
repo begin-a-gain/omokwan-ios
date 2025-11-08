@@ -23,8 +23,13 @@ trap 'error_handler $LINENO' ERR
 
 echo "🎬 Starting CI Post Clone Script"
 echo "📂 Current directory: $(pwd)"
-cd ..
-echo "📂 Current directory: $(pwd)"
+
+cd .. || {
+    echo "❌ Failed to move to parent directory"
+    exit 1
+}
+
+echo "📂 Moved to project root: $(pwd)"
 echo "================================================"
 
 # === 1. 초기 환경 체크 ===
