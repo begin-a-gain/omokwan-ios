@@ -11,5 +11,6 @@ let externalDependency: [DependencyInformation] = [
     .Swinject,
     .KakaoSDKUser,
     .ComposableArchitecture,
-    .FirebaseAnalytics
+    .FirebaseAnalytics,
+    .FirebaseCrashlytics
 ]
