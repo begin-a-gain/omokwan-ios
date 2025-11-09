@@ -64,7 +64,21 @@ else
     exit 1
 fi
 
-# === 3. mise & Tuist 설치 ===
+# === 3. Firebase 설정 파일 생성 ===
+if [ -f "ci_scripts/post_clone/create_google_service_info.sh" ]; then
+    chmod +x ci_scripts/post_clone/create_google_service_info.sh
+    ./ci_scripts/post_clone/create_google_service_info.sh || {
+        echo "❌ Firebase config creation failed!"
+        exit 1
+    }
+else
+    echo "❌ create_firebase_config.sh not found!"
+    exit 1
+fi
+
+echo ""
+
+# === 4. mise & Tuist 설치 ===
 if [ -f "ci_scripts/post_clone/setup_mise_and_build_project.sh" ]; then
     chmod +x ci_scripts/post_clone/setup_mise_and_build_project.sh
     ./ci_scripts/post_clone/setup_mise_and_build_project.sh || {
