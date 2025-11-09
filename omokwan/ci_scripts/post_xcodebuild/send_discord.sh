@@ -19,6 +19,7 @@ WORKFLOW="${CI_WORKFLOW:-Unknown}"
 BUILD_NUMBER="${CI_BUILD_NUMBER:-Unknown}"
 BUILD_ID="${CI_BUILD_ID:-Unknown}"
 TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S %Z")
+COMMIT="${CI_COMMIT:-Unknown}"
 COMMIT_SHORT="${COMMIT:0:7}"
 
 PAYLOAD=$(cat <<EOF
