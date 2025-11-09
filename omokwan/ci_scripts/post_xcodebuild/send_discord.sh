@@ -6,7 +6,8 @@ export TZ=Asia/Seoul
 # === 파라미터 받기 ===
 TITLE=$1 # (예: "✅ 빌드 성공!")
 MESSAGE=$2 # 메시지 내용
-COLOR=$3 # 색상 (10진수, 예: 3066993=초록, 15158332=빨강)
+VERSION_NAME=$3
+COLOR=$4 # 색상 (10진수, 예: 3066993=초록, 15158332=빨강)
 
 if [ -z "$DISCORD_WEBHOOK_URL" ]; then
     echo "⚠️  DISCORD_WEBHOOK_URL이 설정되지 않았습니다."
@@ -17,10 +18,6 @@ fi
 WORKFLOW="${CI_WORKFLOW:-Unknown}"
 BUILD_NUMBER="${CI_BUILD_NUMBER:-Unknown}"
 BUILD_ID="${CI_BUILD_ID:-Unknown}"
-BRANCH="${CI_BRANCH:-Unknown}"
-COMMIT="${CI_COMMIT:-Unknown}"
-SCHEME="${CI_XCODEBUILD_SCHEME:-Unknown}"
-CONFIGURATION="${CI_XCODEBUILD_CONFIGURATION:-Unknown}"
 TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S %Z")
 COMMIT_SHORT="${COMMIT:0:7}"
 
@@ -38,23 +35,8 @@ PAYLOAD=$(cat <<EOF
           "inline": true
         },
         {
-          "name": "🔢 Build #",
-          "value": "$BUILD_NUMBER",
-          "inline": true
-        },
-        {
-          "name": "🌿 Branch",
-          "value": "\`$BRANCH\`",
-          "inline": true
-        },
-        {
-          "name": "📦 Scheme",
-          "value": "$SCHEME",
-          "inline": true
-        },
-        {
-          "name": "⚙️  Configuration",
-          "value": "$CONFIGURATION",
+          "name": "🔢 Version Info",
+          "value": "$VERSION_NAME ($BUILD_NUMBER)",
           "inline": true
         },
         {

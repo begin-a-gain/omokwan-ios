@@ -22,14 +22,13 @@ fi
 echo ""
 
 # === 빌드 결과 정보 ===
-echo "📊 Build Result Information:"
-echo "   Workflow: ${CI_WORKFLOW:-Not Available}"
-echo "   Build Number: ${CI_BUILD_NUMBER:-Not Available}"
-
 INFOPLIST_FILE="../Projects/Omokwan/Support/Info.plist"
 VERSION_NAME=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$INFOPLIST_FILE")
 
-echo ""
+echo "📊 Build Result Information:"
+echo "   Workflow: ${CI_WORKFLOW:-Unknown}"
+echo "   Build Version: ${VERSION_NAME}
+echo "   Build Number: ${CI_BUILD_NUMBER:-Unknown}"
 
 # === Discord 알림 전송 ===
 if [ -f "post_xcodebuild/send_discord.sh" ]; then
