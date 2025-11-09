@@ -27,7 +27,7 @@ VERSION_NAME=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$I
 
 echo "📊 Build Result Information:"
 echo "   Workflow: ${CI_WORKFLOW:-Unknown}"
-echo "   Build Version: ${VERSION_NAME}
+echo "   Build Version: ${VERSION_NAME}"
 echo "   Build Number: ${CI_BUILD_NUMBER:-Unknown}"
 
 # === Discord 알림 전송 ===
