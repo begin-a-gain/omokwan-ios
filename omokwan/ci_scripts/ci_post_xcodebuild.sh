@@ -38,11 +38,13 @@ if [ -f "post_xcodebuild/send_discord.sh" ]; then
         ./post_xcodebuild/send_discord.sh \
             "✅ 빌드 성공!" \
             "Xcode Cloud 빌드가 성공적으로 완료되었습니다.\n곧 TestFlight에 업로드됩니다." \
+            "${VERSION_NAME}" \
             3066993
     else
         ./post_xcodebuild/send_discord.sh \
             "❌ 빌드 실패" \
             "Xcode Cloud 빌드가 실패했습니다.\n로그를 확인해주세요." \
+            "${VERSION_NAME}" \
             15158332
     fi
 else
