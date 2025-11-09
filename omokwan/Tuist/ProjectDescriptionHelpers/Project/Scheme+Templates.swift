@@ -29,10 +29,19 @@ extension Scheme {
         configurationName: ConfigurationName
     ) -> Scheme {
         let isProd = configurationName == .prod
+        let isDev = configurationName == .dev
+
         return Scheme.scheme(
             name: schemeName,
             buildAction: .buildAction(targets: ["\(targetName)"]),
-            runAction: .runAction(configuration: configurationName),
+            runAction: .runAction(
+                configuration: configurationName,
+                arguments: .arguments(
+                    launchArguments: isDev
+                        ? [.launchArgument(name: "-FIRDebugEnabled", isEnabled: true)]
+                        : []
+                )
+            ),
             archiveAction: .archiveAction(configuration: isProd ? .release : configurationName),
             profileAction: .profileAction(configuration: isProd ? .release : configurationName),
             analyzeAction: .analyzeAction(configuration: configurationName)

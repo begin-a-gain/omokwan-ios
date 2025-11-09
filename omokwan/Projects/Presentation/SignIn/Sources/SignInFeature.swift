@@ -8,6 +8,7 @@
 import Domain
 import Base
 import ComposableArchitecture
+import Util
 
 @Reducer
 public struct SignInFeature {
@@ -85,6 +86,7 @@ public struct SignInFeature {
             case .userInfoFetched(let userInfo):
                 state.isLoading = false
                 setUserInfo(&state, userInfo)
+                AnalyticsManager.shared.setUserId(userInfo.nickname)
                 return .send(.navigateToMain)
             case .navigateToMain:
                 return .none

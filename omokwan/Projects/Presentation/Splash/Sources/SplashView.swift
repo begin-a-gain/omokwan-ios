@@ -9,6 +9,7 @@ import SwiftUI
 import DesignSystem
 import ComposableArchitecture
 import Base
+import Util
 
 public struct SplashView: View {
     private let store: StoreOf<SplashFeature>
@@ -28,6 +29,13 @@ public struct SplashView: View {
             }
             .onAppear {
                 viewStore.send(.onAppear)
+                AnalyticsManager.shared.logEvent(
+                    "splash_view",
+                    parameters: [
+                        "screen_name": "splash_view",
+                        "description": "임시 테스트"
+                    ]
+                )
             }
     }
     
