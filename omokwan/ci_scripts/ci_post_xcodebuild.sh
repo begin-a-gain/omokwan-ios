@@ -4,6 +4,7 @@ set -e
 export TZ=Asia/Seoul
 
 echo "📦 Starting CI Post Xcodebuild Script"
+echo "📂 Current directory: $(pwd)"
 echo "================================================"
 echo ""
 
@@ -24,24 +25,23 @@ echo ""
 echo "📊 Build Result Information:"
 echo "   Workflow: ${CI_WORKFLOW:-Not Available}"
 echo "   Build Number: ${CI_BUILD_NUMBER:-Not Available}"
-echo "   Scheme: ${CI_XCODEBUILD_SCHEME:-Not Available}"
-echo "   Configuration: ${CI_XCODEBUILD_CONFIGURATION:-Not Available}"
-echo "   Result Bundle: ${CI_RESULT_BUNDLE_PATH:-Not Available}"
-echo "   Archive Path: ${CI_ARCHIVE_PATH:-Not Available}"
-echo "   Product Path: ${CI_PRODUCT_PATH:-Not Available}"
+
+INFOPLIST_FILE="../Projects/Omokwan/Support/Info.plist"
+VERSION_NAME=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$INFOPLIST_FILE")
+
 echo ""
 
 # === Discord 알림 전송 ===
-if [ -f "ci_scripts/post_xcodebuild/send_discord.sh" ]; then
-    chmod +x ci_scripts/post_xcodebuild/send_discord.sh
+if [ -f "post_xcodebuild/send_discord.sh" ]; then
+    chmod +x post_xcodebuild/send_discord.sh
     
     if [ "$BUILD_STATUS" = "success" ]; then
-        ./ci_scripts/post_xcodebuild/send_discord.sh \
+        ./post_xcodebuild/send_discord.sh \
             "✅ 빌드 성공!" \
             "Xcode Cloud 빌드가 성공적으로 완료되었습니다.\n곧 TestFlight에 업로드됩니다." \
             3066993
     else
-        ./ci_scripts/post_xcodebuild/send_discord.sh \
+        ./post_xcodebuild/send_discord.sh \
             "❌ 빌드 실패" \
             "Xcode Cloud 빌드가 실패했습니다.\n로그를 확인해주세요." \
             15158332
