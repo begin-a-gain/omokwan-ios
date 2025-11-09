@@ -49,10 +49,33 @@ public extension Target {
                     script: "Scripts/select_google_service_info.sh",
                     name: "Select GoogleService-Info.plist",
                     basedOnDependencyAnalysis: false
+                ),
+                .post(
+                    script: """
+                    CRASHLYTICS_SCRIPT="${SRCROOT}/../../.build/checkouts/firebase-ios-sdk/Crashlytics/run"
+                    if [ ! -f "$CRASHLYTICS_SCRIPT" ]; then
+                        echo "❌ [Crashlytics] Script not found at: $CRASHLYTICS_SCRIPT"
+                        echo "Please run 'tuist install' to download dependencies"
+                        exit 1
+                    fi
+                    echo "📤 [Crashlytics] Uploading dSYM..."
+                    "$CRASHLYTICS_SCRIPT"
+                    echo "✅ [Crashlytics] Upload complete"
+                    """,
+                    name: "Upload dSYM to Crashlytics",
+                    inputPaths: [
+                        "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
+                        "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
+                        "$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)"
+                    ],
+                    basedOnDependencyAnalysis: false
                 )
             ],
             dependencies: dependencies,
-            settings: .settings(configurations: .default)
+            settings: .settings(
+                base: ["DEBUG_INFORMATION_FORMAT": "dwarf-with-dsym"],
+                configurations: .default
+            ),
         )
     }
     
@@ -73,7 +96,10 @@ public extension Target {
             sources: ["Sources/**"],
             resources: resources,
             dependencies: dependencies,
-            settings: .settings(configurations: .default)
+            settings: .settings(
+                base: ["DEBUG_INFORMATION_FORMAT": "dwarf-with-dsym"],
+                configurations: .default
+            ),
         )
     }
 }

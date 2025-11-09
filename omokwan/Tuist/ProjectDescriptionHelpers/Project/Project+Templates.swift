@@ -23,7 +23,10 @@ public extension Project {
             name: appName,
             organizationName: organizationName,
             options: customOptions,
-            settings: .settings(configurations: .default),
+            settings: .settings(
+                base: ["DEBUG_INFORMATION_FORMAT": "dwarf-with-dsym"],
+                configurations: .default
+            ),
             targets: .app,
             schemes: .app,
             additionalFiles: ["../../XCConfig/Shared.xcconfig"]
@@ -38,7 +41,10 @@ public extension Project {
             name: name,
             organizationName: organizationName,
             options: options,
-            settings: .settings(configurations: .default),
+            settings: .settings(
+                base: ["DEBUG_INFORMATION_FORMAT": "dwarf-with-dsym"],
+                configurations: .default
+            ),
             targets: .targets(name: name),
             schemes: []
         )

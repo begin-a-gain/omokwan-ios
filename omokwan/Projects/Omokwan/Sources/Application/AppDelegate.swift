@@ -9,6 +9,7 @@ import UIKit
 import DI
 import DesignSystem
 import FirebaseCore
+import FirebaseCrashlytics
 
 class AppDelegate: UIResponder, UIApplicationDelegate {
 

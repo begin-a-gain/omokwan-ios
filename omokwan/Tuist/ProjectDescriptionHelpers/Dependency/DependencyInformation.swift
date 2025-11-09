@@ -8,7 +8,7 @@
 import Foundation
 
 let dependencyInfo: [DependencyInformation: [DependencyInformation]] = [
-    .Omokwan: [.Root, .DI, .Data, .KakaoSDKUser, .FirebaseAnalytics],
+    .Omokwan: [.Root, .DI, .Data, .KakaoSDKUser, .FirebaseAnalytics, .FirebaseCrashlytics],
     .Domain: [.DI, .ComposableArchitecture],
     .Data: [.Domain, .KakaoSDKUser, .Util],
     .Root: [.SignIn, .SignUp, .Main, .Splash],
@@ -48,6 +48,7 @@ public enum DependencyInformation: String, Sendable {
     case Splash = "Splash"
     case MyPage = "MyPage"
     case FirebaseAnalytics = "FirebaseAnalytics"
+    case FirebaseCrashlytics = "FirebaseCrashlytics"
 }
 
 public enum PresentationDependencyInformation: String, CaseIterable {
