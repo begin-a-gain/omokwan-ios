@@ -11,6 +11,7 @@ import MyGame
 import MyGameAdd
 import MyGameParticipate
 import GameDetail
+import MyPage
 
 public struct MainCoordinatorRootView: View {
     @Bindable private var store: StoreOf<MainCoordinatorFeature>
@@ -38,6 +39,8 @@ public struct MainCoordinatorRootView: View {
                 GameDetailSettingView(store: store)
             case .hostChange(let store):
                 HostChangeView(store: store)
+            case .editNickname(let store):
+                EditNicknameView(store: store)
             }
         }
     }

@@ -11,9 +11,6 @@ public extension Project {
     private static let environmentSettings = EnvironmentSettings.default
     private static let appName = environmentSettings.name
     private static let organizationName = environmentSettings.organizationName
-    private static let defaultSettings = DefaultSettings.recommended(excluding: [
-        "SWIFT_ACTIVE_COMPILATION_CONDITIONS"
-    ])
     
     static let customOptions: Options = .options(
         automaticSchemesOptions: .disabled,
@@ -26,7 +23,10 @@ public extension Project {
             name: appName,
             organizationName: organizationName,
             options: customOptions,
-            settings: .settings(configurations: Configuration.defaultSettings, defaultSettings: defaultSettings),
+            settings: .settings(
+                base: ["DEBUG_INFORMATION_FORMAT": "dwarf-with-dsym"],
+                configurations: .default
+            ),
             targets: .app,
             schemes: .app,
             additionalFiles: ["../../XCConfig/Shared.xcconfig"]
@@ -41,15 +41,12 @@ public extension Project {
             name: name,
             organizationName: organizationName,
             options: options,
-            settings: .settings(configurations: Configuration.defaultSettings, defaultSettings: defaultSettings),
+            settings: .settings(
+                base: ["DEBUG_INFORMATION_FORMAT": "dwarf-with-dsym"],
+                configurations: .default
+            ),
             targets: .targets(name: name),
-            schemes: [
-                .scheme(
-                    schemeName: name,
-                    targetName: name,
-                    configurationName: .debug
-                )
-            ]
+            schemes: []
         )
     }
 }
@@ -74,17 +71,11 @@ public extension Project {
             options: .options(
                 automaticSchemesOptions: .disabled
             ),
-            settings: .settings(configurations: Configuration.defaultSettings),
+            settings: .settings(configurations: .default),
             targets: [
                 implements
             ],
-            schemes: [
-                .scheme(
-                    schemeName: name,
-                    targetName: name,
-                    configurationName: .debug
-                )
-            ],
+            schemes: [],
             resourceSynthesizers: [
                 .assets(),
                 .fonts()

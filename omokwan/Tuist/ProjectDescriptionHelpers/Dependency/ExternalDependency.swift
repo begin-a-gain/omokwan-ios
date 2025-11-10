@@ -10,5 +10,7 @@ import Foundation
 let externalDependency: [DependencyInformation] = [
     .Swinject,
     .KakaoSDKUser,
-    .ComposableArchitecture
+    .ComposableArchitecture,
+    .FirebaseAnalytics,
+    .FirebaseCrashlytics
 ]

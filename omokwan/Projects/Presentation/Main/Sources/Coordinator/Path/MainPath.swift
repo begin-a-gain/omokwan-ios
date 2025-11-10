@@ -10,6 +10,7 @@ import MyGame
 import MyGameAdd
 import MyGameParticipate
 import GameDetail
+import MyPage
 
 extension MainCoordinatorFeature {
     @Reducer
@@ -21,5 +22,6 @@ extension MainCoordinatorFeature {
         case gameDetail(GameDetailFeature)
         case gameDetailSetting(GameDetailSettingFeature)
         case hostChange(HostChangeFeature)
+        case editNickname(EditNicknameFeature)
     }
 }

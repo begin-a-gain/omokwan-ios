@@ -8,20 +8,22 @@
 import Foundation
 
 let dependencyInfo: [DependencyInformation: [DependencyInformation]] = [
-    .Omokwan: [.Root, .DI, .Data, .KakaoSDKUser],
+    .Omokwan: [.Root, .DI, .Data, .KakaoSDKUser, .FirebaseAnalytics, .FirebaseCrashlytics],
     .Domain: [.DI, .ComposableArchitecture],
     .Data: [.Domain, .KakaoSDKUser, .Util],
     .Root: [.SignIn, .SignUp, .Main, .Splash],
     .Splash: [.Base],
     .SignIn: [.Base, .SignUp],
-    .SignUp: [.Base, .Util],
-    .Main: [.MyGame, .MyGameAdd, .MyGameParticipate, .GameDetail],
+    .SignUp: [.Base],
+    .Main: [.MyGame, .MyGameAdd, .MyGameParticipate, .GameDetail, .MyPage],
     .DI: [.Swinject],
-    .Base: [.DesignSystem, .ComposableArchitecture, .Domain],
-    .MyGame: [.Base, .Util],
-    .MyGameAdd: [.Base, .Util],
-    .MyGameParticipate: [.Base, .Util],
-    .GameDetail: [.Base, .Util]
+    .Base: [.DesignSystem, .ComposableArchitecture, .Domain, .Util],
+    .MyGame: [.Base],
+    .MyGameAdd: [.Base],
+    .MyGameParticipate: [.Base],
+    .GameDetail: [.Base],
+    .MyPage: [.Base],
+    .Util: [.FirebaseAnalytics]
 ]
 
 public enum DependencyInformation: String, Sendable {
@@ -44,6 +46,9 @@ public enum DependencyInformation: String, Sendable {
     case MyGameParticipate = "MyGameParticipate"
     case GameDetail = "GameDetail"
     case Splash = "Splash"
+    case MyPage = "MyPage"
+    case FirebaseAnalytics = "FirebaseAnalytics"
+    case FirebaseCrashlytics = "FirebaseCrashlytics"
 }
 
 public enum PresentationDependencyInformation: String, CaseIterable {
@@ -57,6 +62,7 @@ public enum PresentationDependencyInformation: String, CaseIterable {
     case MyGameParticipate = "MyGameParticipate"
     case GameDetail = "GameDetail"
     case Splash = "Splash"
+    case MyPage = "MyPage"
 }
 
 public enum UtilsDependencyInformation: String, CaseIterable {

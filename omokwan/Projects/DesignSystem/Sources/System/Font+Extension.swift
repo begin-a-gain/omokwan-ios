@@ -9,6 +9,7 @@ import SwiftUI
 
 public extension Font {
     enum FontToken {
+        case display_02
         case display
         case headline
         case title_02
@@ -28,6 +29,8 @@ public extension Font {
     
     static func suit(token: FontToken) -> Font {
         switch token {
+        case .display_02:
+            .custom(DesignSystemFontFamily.Suit.bold.name, size: 32)
         case .display:
             .custom(DesignSystemFontFamily.Suit.bold.name, size: 24)
         case .headline:

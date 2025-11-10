@@ -28,14 +28,6 @@ private let template = Template(
         .string(
             path: "\(path)/Sources/DefaultSourceCode.swift",
             contents: "// default source code"
-        ),
-        .string(
-            path: "\(path)/Tests/Sources/TestCode.swift",
-            contents: "// Test Source Code Here"
-        ),
-        .file(
-            path: "\(path)/Tests/Support/Info.plist",
-            templatePath: "../InfoPlist.stencil"
-        ),
+        )
     ]
 )

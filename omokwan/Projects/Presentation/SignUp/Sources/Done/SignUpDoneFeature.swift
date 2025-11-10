@@ -8,6 +8,7 @@
 import ComposableArchitecture
 import Domain
 import Base
+import Util
 
 @Reducer
 public struct SignUpDoneFeature {
@@ -49,6 +50,14 @@ public struct SignUpDoneFeature {
             case .userInfoFetched(let userInfo):
                 state.isLoading = false
                 setUserInfo(&state, userInfo)
+                AnalyticsManager.shared.setUserId(userInfo.nickname)
+                AnalyticsManager.shared.logEvent(
+                    "sign_up_done",
+                    parameters: [
+                        "screen_name": "회원가입완료",
+                        "description": "회원가입 유저명: \(userInfo.nickname)"
+                    ]
+                )
                 return .send(.navigateToMain)
             case .signInAgain(let networkError):
                 state.isLoading = false

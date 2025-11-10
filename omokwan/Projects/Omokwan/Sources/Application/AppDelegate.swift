@@ -8,6 +8,8 @@
 import UIKit
 import DI
 import DesignSystem
+import FirebaseCore
+import FirebaseCrashlytics
 
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
@@ -17,6 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     ) -> Bool {
         DIContainer.shared.register()
         DesignSystemFontFamily.registerAllCustomFonts()
+        FirebaseApp.configure()
         return true
     }
 

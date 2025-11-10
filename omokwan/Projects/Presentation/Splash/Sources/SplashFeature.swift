@@ -8,12 +8,14 @@
 import ComposableArchitecture
 import Domain
 import Base
+import Util
 
 @Reducer
 public struct SplashFeature {
     @Dependency(\.accountUseCase) private var accountUseCase
     @Dependency(\.serverUseCase) private var serverUseCase
     @Dependency(\.localUseCase) private var localUseCase
+    @Dependency(\.firebaseUseCase) private var firebaseUseCase
 
     public init() {}
     
@@ -40,12 +42,31 @@ public struct SplashFeature {
         case showAlert(State.AlertCase)
         case userInfoFetchFailed
         case checkSignUpDone
+        case checkAppTrackingPermission
+        case setTrackingValueForAnalytics(Bool)
+        case healthCheck
     }
     
     public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                return .send(.checkAppTrackingPermission)
+            case .checkAppTrackingPermission:
+                let needTrackingAuthorization = firebaseUseCase.needTrackingAuthorization
+                if needTrackingAuthorization {
+                    return .run { send in
+                        let isAuthorized = await firebaseUseCase.requestTrackingAuthorizationAndCheckAuthorized()
+                        await send(.setTrackingValueForAnalytics(isAuthorized))
+                    }
+                } else {
+                    let isAuthorized = firebaseUseCase.isTrackingAuthorized
+                    return .send(.setTrackingValueForAnalytics(isAuthorized))
+                }
+            case .setTrackingValueForAnalytics(let isAuthorized):
+                AnalyticsManager.shared.setAnalyticsEnabled(isAuthorized)
+                return .send(.healthCheck)
+            case .healthCheck:
                 state.isLoading = true
                 return .run { send in
                     await send(checkServerHealth())
@@ -66,6 +87,7 @@ public struct SplashFeature {
             case .userInfoFetched(let userInfo):
                 state.isLoading = false
                 setUserInfo(&state, userInfo)
+                AnalyticsManager.shared.setUserId(userInfo.nickname)
                 return .send(.navigateToMain)
             case .navigateToMain:
                 return .none
