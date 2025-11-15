@@ -13,7 +13,6 @@ if [ "$CURRENT_BUILD_NUMBER" != "$XCLOUD_BUILD_NUMBER" ]; then
     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $XCLOUD_BUILD_NUMBER" "$INFO_PLIST_PATH"
     echo "Info.plist updated to $XCLOUD_BUILD_NUMBER"
 
-    # git commit & push
     git config --global user.name "Jumy"
     git config --global user.email "kdjun97@gmail.com"
 
@@ -30,7 +29,7 @@ if [ "$CURRENT_BUILD_NUMBER" != "$XCLOUD_BUILD_NUMBER" ]; then
             REPO_URL=$(echo "$REPO_URL" | sed -E 's/git@(.*):(.*)\.git/https:\/\/\1\/\2.git/')
         fi
 
-        git push "https://$GIT_TOKEN@${REPO_URL#https://}" HEAD --ff-only
+        git push "https://$GIT_TOKEN@${REPO_URL#https://}" HEAD
         echo "Build number synced to git successfully."
     fi
 else
