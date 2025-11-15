@@ -32,8 +32,30 @@ if [ "$CURRENT_BUILD_NUMBER" != "$XCLOUD_BUILD_NUMBER" ]; then
             REPO_URL=$(echo "$REPO_URL" | sed -E 's/git@(.*):(.*)\.git/https:\/\/\1\/\2.git/')
         fi
 
-        TARGET_BRANCH="${XCODE_BRANCH:-unknown}"
-        git push "https://$GIT_TOKEN@${REPO_URL#https://}" HEAD:$TARGET_BRANCH
+        BRANCHES_JSON=$(curl -s -H "Authorization: token $GIT_TOKEN" \
+          "https://api.github.com/repos/$(git config --get remote.origin.url | sed -E 's#.*github.com[:/](.*)\.git#\1#')/commits/$(git rev-parse HEAD)/branches-where-head")
+
+        BRANCHES=$(echo "$BRANCHES_JSON" | jq -r '.[].name')
+
+        TARGET_BRANCH=""
+
+        # 우선순위 적용
+        for PRIORITY in release-candidate development; do
+            for B in $BRANCHES; do
+                if [[ "$B" == "$PRIORITY"* ]]; then
+                    TARGET_BRANCH="$B"
+                    break 2
+                fi
+            done
+        done
+
+        if [ -z "$TARGET_BRANCH" ]; then
+            echo "⚠️  No suitable branch found to push. Exiting."
+            exit 1
+        fi
+
+        echo "Target branch selected: $TARGET_BRANCH"
+        git push "https://$GIT_TOKEN@${REPO_URL#https://}" HEAD:refs/heads/$TARGET_BRANCH
         echo "Build number synced to git successfully."
     fi
 else
