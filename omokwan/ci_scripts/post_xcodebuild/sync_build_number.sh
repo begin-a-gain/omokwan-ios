@@ -29,7 +29,8 @@ if [ "$CURRENT_BUILD_NUMBER" != "$XCLOUD_BUILD_NUMBER" ]; then
             REPO_URL=$(echo "$REPO_URL" | sed -E 's/git@(.*):(.*)\.git/https:\/\/\1\/\2.git/')
         fi
 
-        git push "https://$GIT_TOKEN@${REPO_URL#https://}" HEAD
+        TARGET_BRANCH="${CI_BRANCH:-unknown}"
+        git push "https://$GIT_TOKEN@${REPO_URL#https://}" HEAD:$TARGET_BRANCH
         echo "Build number synced to git successfully."
     fi
 else
