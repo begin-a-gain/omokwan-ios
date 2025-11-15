@@ -30,6 +30,17 @@ echo "   Workflow: ${CI_WORKFLOW:-Unknown}"
 echo "   Build Version: ${VERSION_NAME}"
 echo "   Build Number: ${CI_BUILD_NUMBER:-Unknown}"
 
+if [ -f "ci_scripts/post_xcodebuild/sync_build_number.sh" ]; then
+    chmod +x ci_scripts/post_xcodebuild/sync_build_number.sh
+    ./ci_scripts/post_xcodebuild/sync_build_number.sh || {
+        echo "❌ Build Number Push failed!"
+        exit 1
+    }
+else
+    echo "❌ ci_scripts/post_xcodebuild/sync_build_number.sh not found!"
+    exit 1
+fi
+
 # === Discord 알림 전송 ===
 if [ -f "post_xcodebuild/send_discord.sh" ]; then
     chmod +x post_xcodebuild/send_discord.sh
