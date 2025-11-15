@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "📂 Current directory: $(pwd)"
-INFO_PLIST_PATH="../Projects/Omokwan/Support/Info.plist"
+INFO_PLIST_PATH="../../Projects/Omokwan/Support/Info.plist"
 CURRENT_BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print CFBundleVersion" "$INFO_PLIST_PATH")
 
 echo "Xcode Cloud Build Number: $CURRENT_BUILD_NUMBER"
