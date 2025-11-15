@@ -8,6 +8,9 @@ XCLOUD_BUILD_NUMBER="${CI_BUILD_NUMBER:-$CURRENT_BUILD_NUMBER}"
 echo "Info.plist Build Number: $CURRENT_BUILD_NUMBER"
 echo "Xcode Cloud Build Number: $XCLOUD_BUILD_NUMBER"
 
+echo "CI_BRANCH: ${CI_BRANCH:-<empty>}"
+echo "XCODE_BRANCH: ${XCODE_BRANCH:-<empty>}"
+
 # 다르면 업데이트
 if [ "$CURRENT_BUILD_NUMBER" != "$XCLOUD_BUILD_NUMBER" ]; then
     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $XCLOUD_BUILD_NUMBER" "$INFO_PLIST_PATH"
@@ -29,7 +32,7 @@ if [ "$CURRENT_BUILD_NUMBER" != "$XCLOUD_BUILD_NUMBER" ]; then
             REPO_URL=$(echo "$REPO_URL" | sed -E 's/git@(.*):(.*)\.git/https:\/\/\1\/\2.git/')
         fi
 
-        TARGET_BRANCH="${CI_BRANCH:-unknown}"
+        TARGET_BRANCH="${XCODE_BRANCH:-unknown}"
         git push "https://$GIT_TOKEN@${REPO_URL#https://}" HEAD:$TARGET_BRANCH
         echo "Build number synced to git successfully."
     fi
