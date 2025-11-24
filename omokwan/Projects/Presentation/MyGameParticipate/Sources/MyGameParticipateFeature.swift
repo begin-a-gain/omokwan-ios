@@ -72,6 +72,7 @@ public struct MyGameParticipateFeature {
         
         var hasNext: Bool = false
         var currentPage: Int = 1
+        var isLoadingProgress: Bool = false
     }
     
     public enum Action: BindableAction {
@@ -127,6 +128,7 @@ public struct MyGameParticipateFeature {
                 return .none
             case .showAlert(let alertCase):
                 state.isLoading = false
+                state.isLoadingProgress = false
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
             case .handleInitDataError(let alertCase):
@@ -139,11 +141,12 @@ public struct MyGameParticipateFeature {
                 state.isLoading = value
                 return .none
             case .onAppear:
+                state.currentPage = 1
                 let request = GameRoomInformationRequestModel(
                     joinable: state.isAvailableParticipateRoomSelected ? true : nil,
                     categoryList: state.selectedCategoryList.isEmpty ? nil : state.selectedCategoryList,
                     search: state.searchText,
-                    pageNumber: 1,
+                    pageNumber: state.currentPage,
                     pageSize: 10
                 )
                 
@@ -279,13 +282,13 @@ public struct MyGameParticipateFeature {
                 
                 return .concatenate(effects)
             case let .participateRoom(roomInfo, password):
-                state.isLoading = true
+                state.isLoadingProgress = true
                 
                 return .run { send in
                     await send(participateRoom(roomInfo: roomInfo, password: password))
                 }
             case .participateCompleted(let roomInfo):
-                state.isLoading = false
+                state.isLoadingProgress = false
                 let selectedDateString = Date.now.formattedString(
                     format: DateFormatConstants.yearMonthDayRequestFormat
                 )

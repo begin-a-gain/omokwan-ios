@@ -33,6 +33,7 @@ public struct MyGameParticipateView: View {
         .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {
             alertView
         }
+        .oLoading(isPresent: viewStore.isLoadingProgress)
     }
     
     private var myGameParticipateBody: some View {
@@ -187,7 +188,7 @@ private extension MyGameParticipateView {
     
     var gameRoomCards: some View {
         LazyVStack(spacing: 0) {
-            ForEach(viewStore.gameRoomInformationList, id: \.self) { roomInfo in
+            ForEach(viewStore.gameRoomInformationList, id: \.id) { roomInfo in
                 GameRoomCardView(
                     isLoading: viewStore.isLoading,
                     roomInfo: roomInfo,
