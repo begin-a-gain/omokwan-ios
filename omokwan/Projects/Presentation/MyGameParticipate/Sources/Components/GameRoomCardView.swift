@@ -64,10 +64,10 @@ private extension GameRoomCardView {
         .shimmer(isLoading, cornerRadius: 4)
     }
     
-    func getLockImage(_ isPrivate: Bool) -> Image {
-        isPrivate
-        ? OImages.icLockClosed.swiftUIImage
-        : OImages.icLockOpen.swiftUIImage
+    func getLockImage(_ isPublic: Bool) -> Image {
+        isPublic
+        ? OImages.icLockOpen.swiftUIImage
+        : OImages.icLockClosed.swiftUIImage
     }
 }
 

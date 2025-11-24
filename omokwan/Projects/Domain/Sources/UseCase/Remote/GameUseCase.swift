@@ -15,6 +15,7 @@ public struct GameUseCase {
     public let fetchDetailInfoWithPaging: (_ gameID: Int, _ dateString: String, _ pageSize: Int) async -> Result<MyGameDetailInfo, NetworkError>
     public let fetchDetailUserInfo: (_ gameID: Int, _ userID: Int) async -> Result<DetailUserInfo, NetworkError>
     public let updateTodayGameStatus: (_ gameID: Int) async -> Result<OmokStoneStatus, NetworkError>
+    public let participateRoom: (_ gameID: Int, _ password: String?) async -> Result<Bool, NetworkError>
     public let fetchAllGameInfoList: (_ request: GameRoomInformationRequestModel) async -> Result<GameRoomInfo, NetworkError>
 }
 
@@ -46,6 +47,12 @@ extension GameUseCase: DependencyKey {
             },
             updateTodayGameStatus: { gameID in
                 await repository.putTodayGameStatus(gameID)
+            },
+            participateRoom: { gameID, password in
+                await repository.postParticipateRoom(
+                    gameID: gameID,
+                    password: password
+                )
             },
             fetchAllGameInfoList: { request in
                 await repository.getAllGameInfoList(request)

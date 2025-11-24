@@ -33,6 +33,7 @@ public struct MyGameParticipateView: View {
         .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {
             alertView
         }
+        .oLoading(isPresent: viewStore.isLoadingProgress)
     }
     
     private var myGameParticipateBody: some View {
@@ -187,7 +188,7 @@ private extension MyGameParticipateView {
     
     var gameRoomCards: some View {
         LazyVStack(spacing: 0) {
-            ForEach(viewStore.gameRoomInformationList, id: \.self) { roomInfo in
+            ForEach(viewStore.gameRoomInformationList, id: \.id) { roomInfo in
                 GameRoomCardView(
                     isLoading: viewStore.isLoading,
                     roomInfo: roomInfo,
@@ -228,8 +229,10 @@ private extension MyGameParticipateView {
                     errorAlertView(error)
                 case .participateDoubleCheck(let roomInfo):
                     participateDoubleCheckAlertView(roomInfo: roomInfo)
-                case .password:
-                    passwordAlertView
+                case .password(let roomInfo):
+                    passwordAlertView(roomInfo)
+                case .passwordError:
+                    passwordErrorAlertView
                 }
             }
         }
@@ -255,7 +258,7 @@ private extension MyGameParticipateView {
         }
     }
     
-    var passwordAlertView: some View {
+    func passwordAlertView(_ roomInfo: GameRoomInformation) -> some View {
         CommonPasswordAlertView(
             focusedField: $passwordFocusedField,
             thousandsPlaceText: viewStore.$thousandsPlace,
@@ -263,7 +266,18 @@ private extension MyGameParticipateView {
             tensPlaceText: viewStore.$tensPlace,
             onesPlaceText: viewStore.$onesPlace,
             primaryButtonAction: { viewStore.send(.passwordAlertCancelButtonTapped) },
-            secondaryButtonAction: { viewStore.send(.passwordAlertConfirmButtonTapped) }
+            secondaryButtonAction: { viewStore.send(.passwordAlertConfirmButtonTapped(roomInfo)) }
+        )
+    }
+    
+    var passwordErrorAlertView: some View {
+        OAlert(
+            type: .defaultOnlyOK,
+            title: "비밀번호 오류",
+            content: "다시 확인해주세요.",
+            primaryButtonAction: {
+                viewStore.send(.alertAction(.dismiss))
+            }
         )
     }
 }
