@@ -11,6 +11,7 @@ import GameDetail
 
 @Reducer
 public struct MainCoordinatorFeature {
+    private typealias PathAction = MainCoordinatorFeature.MainPath.Action
     public init() {}
     
     @ObservableState
@@ -33,22 +34,22 @@ public struct MainCoordinatorFeature {
 
         Reduce { state, action in
             switch action {
-            case .navigationPath(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.myGame(let myGameAction))):
+            case .navigationPath(.element(id: _, action: PathAction.myGame(let myGameAction))):
                 return myGameNavigation(&state, myGameAction)
-            case .navigationPath(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.myGameAddCategory(let myGameAddCategoryAction))):
+            case .navigationPath(.element(id: _, action: PathAction.myGameAddCategory(let myGameAddCategoryAction))):
                 return myGameAddCategoryNavigation(&state, myGameAddCategoryAction)
-            case .navigationPath(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.myGameAdd(let myGameAddAction))):
+            case .navigationPath(.element(id: _, action: PathAction.myGameAdd(let myGameAddAction))):
                 return myGameAddNavigation(&state, myGameAddAction)
-            case .navigationPath(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.myGameParticipate(let myGameParticipateAction))):
+            case .navigationPath(.element(id: _, action: PathAction.myGameParticipate(let myGameParticipateAction))):
                 return myGameParticipateNavigation(&state, myGameParticipateAction)
-            case .navigationPath(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.gameDetail(let gameDetailAction))):
+            case .navigationPath(.element(id: _, action: PathAction.gameDetail(let gameDetailAction))):
                 return gameDetailNavigation(&state, gameDetailAction)
-            case .navigationPath(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.gameDetailSetting(let gameDetailSettingAction))):
+            case .navigationPath(.element(id: _, action: PathAction.gameDetailSetting(let gameDetailSettingAction))):
                 return gameDetailSettingNavigation(&state, gameDetailSettingAction)
-            case .navigationPath(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.hostChange(let hostChangeAction))):
-                return hostChangeNavigation(&state, hostChangeAction)
-            case .navigationPath(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.editNickname(let editNicknameAction))):
+            case .navigationPath(.element(id: _, action: PathAction.editNickname(let editNicknameAction))):
                 return editNicknameNavigation(&state, editNicknameAction)
+            case .navigationPath(.element(id: _, action: PathAction.accountDelete(let accountDeleteAction))):
+                return accountDeleteNavigation(&state, accountDeleteAction)
             case .navigationPath:
                 return .none
             case .mainAction(let mainAction):
@@ -81,6 +82,9 @@ private extension MainCoordinatorFeature {
             return .none
         case .navigateToEditNickname:
             state.navigationPath.append(.editNickname(.init()))
+            return .none
+        case .navigateToAccountDelete:
+            state.navigationPath.append(.accountDelete(.init()))
             return .none
         default:
             return .none

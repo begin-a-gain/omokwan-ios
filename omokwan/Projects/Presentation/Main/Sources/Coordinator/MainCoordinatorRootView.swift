@@ -41,6 +41,8 @@ public struct MainCoordinatorRootView: View {
                 HostChangeView(store: store)
             case .editNickname(let store):
                 EditNicknameView(store: store)
+            case .accountDelete(let store):
+                AccountDeleteView(store: store)
             }
         }
     }

@@ -154,3 +154,15 @@ extension MainCoordinatorFeature {
         }
     }
 }
+
+extension MainCoordinatorFeature {
+    func accountDeleteNavigation(_ state: inout State, _ action: AccountDeleteFeature.Action) -> Effect<Action> {
+        switch action {
+        case .navigateToBack:
+            _ = state.navigationPath.popLast()
+            return .none
+        default:
+            return .none
+        }
+    }
+}
