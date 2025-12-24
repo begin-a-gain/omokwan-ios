@@ -59,6 +59,14 @@ extension EndPoint {
             headers: ["Cookie": "refresh_token=\(refreshToken)"]
         )
     }
+    
+    static func postDeleteAccount(requestBody: DeleteAccountRequest) -> EndPoint<T> {
+        return EndPoint(
+            path: .postDeleteAccount,
+            method: .POST,
+            requestBody: requestBody
+        )
+    }
 }
 
 // MARK: Game

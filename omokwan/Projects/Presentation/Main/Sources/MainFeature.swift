@@ -51,6 +51,7 @@ public struct MainFeature {
         case alertLogoutButtonTapped
         case navigateToEditNickname
         case nicknameUpdateCompleted
+        case navigateToAccountDelete
     }
     
     public var body: some ReducerOf<Self> {
@@ -126,6 +127,8 @@ public struct MainFeature {
                 return .none
             case .nicknameUpdateCompleted:
                 return .none
+            case .navigateToAccountDelete:
+                return .none
             }
         }
         .ifLet(\.$mainSheet, action: \.mainSheet) {
@@ -174,6 +177,8 @@ private extension MainFeature {
             return .send(.showAlert(.logout))
         case .navigateToEditNickname:
             return .send(.navigateToEditNickname)
+        case .navigateToAccountDelete:
+            return .send(.navigateToAccountDelete)
         default:
             return .none
         }

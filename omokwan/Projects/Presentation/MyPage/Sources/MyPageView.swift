@@ -219,7 +219,7 @@ private extension MyPageView {
                 .hPadding(8)
             
             Button {
-                
+                viewStore.send(.deleteAccountButtonTapped)
             } label: {
                 OText("회원탈퇴", token: .title_02)
                     .vPadding(14)

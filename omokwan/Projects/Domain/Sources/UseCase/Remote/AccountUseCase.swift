@@ -13,6 +13,7 @@ public struct AccountUseCase {
     public let checkNicknameDuplicated: (_ nickname: String) async -> Result<NicknameDuplicateValidation, NetworkError>
     public let updateNickname: (_ nickname: String) async -> Result<Void, NetworkError>
     public let fetchUserInfo: () async -> Result<UserInfo, NetworkError>
+    public let deleteAccount: (_ reasons: [String], _ otherReasonText: String?) async -> Result<Void, NetworkError>
 }
 
 extension AccountUseCase: DependencyKey {
@@ -33,6 +34,9 @@ extension AccountUseCase: DependencyKey {
             },
             fetchUserInfo: {
                 await repository.getUserInfo()
+            },
+            deleteAccount: { reasons, otherReasonText in
+                await repository.postDeleteAccount(reasons: reasons, otherReasonText: otherReasonText)
             }
         )
     }()

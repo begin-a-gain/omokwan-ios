@@ -23,5 +23,6 @@ extension MainCoordinatorFeature {
         case gameDetailSetting(GameDetailSettingFeature)
         case hostChange(HostChangeFeature)
         case editNickname(EditNicknameFeature)
+        case accountDelete(AccountDeleteFeature)
     }
 }

@@ -58,4 +58,21 @@ public struct AccountRepository: AccountRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func postDeleteAccount(
+        reasons: [String],
+        otherReasonText: String?
+    ) async -> Result<Void, NetworkError> {
+        do {
+            let request = DeleteAccountRequest(
+                reasons: reasons,
+                otherReason: otherReasonText
+            )
+            let endPoint = EndPoint<RemoteResponseModel<String>>.postDeleteAccount(requestBody: request)
+            let _ = try await apiService.call(endPoint)
+            return .success(())
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }

@@ -24,6 +24,8 @@ public struct MyPageFeature {
         case nicknameTapped
         case logoutButtonTapped
         case navigateToEditNickname
+        case deleteAccountButtonTapped
+        case navigateToAccountDelete
     }
 
     public var body: some ReducerOf<Self> {
@@ -36,6 +38,10 @@ public struct MyPageFeature {
             case .logoutButtonTapped:
                 return .none
             case .navigateToEditNickname:
+                return .none
+            case .deleteAccountButtonTapped:
+                return .send(.navigateToAccountDelete)
+            case .navigateToAccountDelete:
                 return .none
             }
         }
