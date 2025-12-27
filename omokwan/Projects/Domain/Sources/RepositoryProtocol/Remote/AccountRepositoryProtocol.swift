@@ -10,5 +10,6 @@ public protocol AccountRepositoryProtocol {
     func postNicknameDuplicated(nickname: String) async -> Result<NicknameDuplicateValidation, NetworkError>
     func putNickname(nickname: String) async -> Result<Void, NetworkError>
     func getUserInfo() async -> Result<UserInfo, NetworkError>
-    func postDeleteAccount(reasons: [String], otherReasonText: String?) async -> Result<Void, NetworkError>
+    func postDeletionSurvey(reasons: [String], otherReasonText: String?) async -> Result<Void, NetworkError>
+    func deleteUserAccount() async -> Result<Void, NetworkError>
 }
