@@ -64,7 +64,7 @@ public struct AccountRepository: AccountRepositoryProtocol {
         otherReasonText: String?
     ) async -> Result<Void, NetworkError> {
         do {
-            let request = DeleteAccountRequest(
+            let request = DeletionSurveyRequest(
                 reasons: reasons,
                 otherReason: otherReasonText
             )

@@ -1,11 +1,11 @@
 //
-//  DeleteAccountRequest.swift
+//  DeletionSurveyRequest.swift
 //  Data
 //
 //  Created by 김동준 on 12/24/25
 //
 
-struct DeleteAccountRequest: Encodable {
+struct DeletionSurveyRequest: Encodable {
     let reasons: [String]
     let otherReason: String?
     
