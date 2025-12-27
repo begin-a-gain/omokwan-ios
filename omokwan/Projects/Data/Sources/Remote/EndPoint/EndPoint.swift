@@ -60,7 +60,7 @@ extension EndPoint {
         )
     }
     
-    static func postDeletionSurvey(requestBody: DeleteAccountRequest) -> EndPoint<T> {
+    static func postDeletionSurvey(requestBody: DeletionSurveyRequest) -> EndPoint<T> {
         return EndPoint(
             path: .postDeletionSurvey,
             method: .POST,
