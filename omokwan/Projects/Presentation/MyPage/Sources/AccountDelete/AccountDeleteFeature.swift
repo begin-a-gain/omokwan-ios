@@ -132,8 +132,6 @@ private extension AccountDeleteFeature {
     }
     
     func deleteAccount() async -> Action {
-        // TODO: return 제거, 현재 테스트용
-        return .deleteCompleted
         let response = await accountUseCase.deleteUserAccount()
         
         switch response {
