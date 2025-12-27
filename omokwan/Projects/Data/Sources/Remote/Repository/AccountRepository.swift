@@ -78,7 +78,7 @@ public struct AccountRepository: AccountRepositoryProtocol {
     
     public func deleteUserAccount() async -> Result<Void, NetworkError> {
         do {
-            let endPoint = EndPoint<RemoteResponseModel<String?>>.deleteUserAccount()
+            let endPoint = EndPoint<EmptyResponse>.deleteUserAccount()
             let _ = try await apiService.call(endPoint)
             return .success(())
         } catch {
