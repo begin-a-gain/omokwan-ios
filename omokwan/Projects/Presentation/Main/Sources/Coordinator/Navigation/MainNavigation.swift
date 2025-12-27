@@ -161,6 +161,8 @@ extension MainCoordinatorFeature {
         case .navigateToBack:
             _ = state.navigationPath.popLast()
             return .none
+        case .deleteAccountAlertButtonTapped:
+            return .send(.mainAction(.alertLogoutButtonTapped))
         default:
             return .none
         }

@@ -61,6 +61,7 @@ public struct AccountDeleteFeature {
         case deleteAccountButtonTapped
         case deleteCompleted
         case deleteAccountAlertButtonTapped
+        case sentSurvey
     }
     
     public var body: some ReducerOf<Self> {
@@ -101,22 +102,37 @@ public struct AccountDeleteFeature {
                 }
                 
                 return .run { send in
-                    await send(deleteAccount(reasons: reasons, otherText: otherText))
+                    await send(sendSurvey(reasons: reasons, otherText: otherText))
                 }
             case .deleteCompleted:
                 state.isLoading = false
                 return .send(.showAlert(.deleteCompleted))
             case .deleteAccountAlertButtonTapped:
                 return .none
+            case .sentSurvey:
+                return .run { send in
+                    await send(deleteAccount())
+                }
             }
         }
     }
 }
 
 private extension AccountDeleteFeature {
-    func deleteAccount(reasons: [AccountDeleteReason], otherText: String?) async -> Action {
+    func sendSurvey(reasons: [AccountDeleteReason], otherText: String?) async -> Action {
         let requestReasons = reasons.map { $0.code }
-        let response = await accountUseCase.deleteAccount(requestReasons, otherText)
+        let response = await accountUseCase.sendDeletionSurvey(requestReasons, otherText)
+        
+        switch response {
+        case .success:
+            return .sentSurvey
+        case .failure(let error):
+            return .showAlert(.error(error))
+        }
+    }
+    
+    func deleteAccount() async -> Action {
+        let response = await accountUseCase.deleteUserAccount()
         
         switch response {
         case .success:

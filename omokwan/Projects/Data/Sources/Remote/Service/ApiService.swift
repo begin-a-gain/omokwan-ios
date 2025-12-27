@@ -63,6 +63,13 @@ public final class ApiService {
             
             guard let error = mapStatusCodeToRemoteNetworkError(statusCode) else {
                 do {
+                    if data.isEmpty {
+                        if let emptyResponse = EmptyResponse() as? T {
+                            return emptyResponse
+                        } else {
+                            throw RemoteNetworkError.responseDataNilError
+                        }
+                    }
                     let decodedResponse = try JSONDecoder().decode(T.self, from: data)
                     checkCookieForRefreshToken(
                         path: endPoint.path.value,
