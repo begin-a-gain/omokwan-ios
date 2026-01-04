@@ -128,4 +128,19 @@ extension EndPoint {
             requestBody: request
         )
     }
+    
+    static func getGameParticipants(gameID: Int) -> EndPoint<T> {
+        return EndPoint(
+            path: .getGameParticipants(gameID),
+            method: .GET
+        )
+    }
+    
+    static func putGameHost(gameID: Int, request: HostChangeRequest) -> EndPoint<T> {
+        return EndPoint(
+            path: .putGameHost(gameID),
+            method: .PUT,
+            requestBody: request
+        )
+    }
 }
