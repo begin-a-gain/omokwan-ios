@@ -8,6 +8,8 @@
 import ComposableArchitecture
 import SwiftUI
 import DesignSystem
+import Base
+import Domain
 
 public struct HostChangeView: View {
     private let store: StoreOf<HostChangeFeature>
@@ -38,6 +40,10 @@ public struct HostChangeView: View {
         .onAppear {
             viewStore.send(.onAppear)
         }
+        .oLoading(isPresent: viewStore.isLoading)
+        .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
+            alertView
+        }
     }
     
     private var hostChangeBody: some View {
@@ -45,8 +51,8 @@ public struct HostChangeView: View {
             navigationBar
             ScrollView {
                 VStack(spacing: 16) {
-                    ForEach(viewStore.tempUsers, id: \.self) { element in
-                        radioButton(element)
+                    ForEach(viewStore.participants, id: \.self) { participant in
+                        radioButton(participant)
                     }
                 }
                 .padding(.top, 24)
@@ -93,44 +99,53 @@ private extension HostChangeView {
 }
 
 private extension HostChangeView {
-    func radioButton(_ element: String) -> some View {
-        HStack(spacing: 0) {
-            avatarView(element)
-            
-            infoView(element)
-                .padding(.trailing, 32)
-            
-            OImages.icRadioUnChecked.swiftUIImage
-                .resizedToFit(20, 20)
+    func radioButton(_ participant: GameParticipantInfo) -> some View {
+        let isSelected = participant.userId == viewStore.selectedParticipant?.userId
+        
+        return Button {
+            viewStore.send(.participantTapped(participant))
+        } label: {
+            HStack(spacing: 0) {
+                avatarView(participant.nickname)
+                
+                infoView(participant)
+                    .padding(.trailing, 32)
+                
+                radioImage(isSelected)
+            }
+            .hPadding(20)
+            .vPadding(18)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(getStrokeColor(isSelected), lineWidth: 1.0)
+            )
+            .background(getBackground(isSelected))
         }
-        .hPadding(20)
-        .vPadding(18)
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(OColors.stroke02.swiftUIColor, lineWidth: 1.0))
     }
     
-    func avatarView(_ element: String) -> some View {
+    func avatarView(_ name: String) -> some View {
         Circle()
             .fill(OColors.ui03.swiftUIColor)
             .frame(width: 48, height: 48)
             .overlay {
                 OText(
-                    String(element.prefix(1)),
+                    String(name.prefix(1)),
                     token: .display
                 )
             }
     }
     
-    func infoView(_ element: String) -> some View {
+    func infoView(_ participant: GameParticipantInfo) -> some View {
         VStack(spacing: 8) {
             OText(
-                element,
+                participant.nickname,
                 token: .subtitle_01
             )
             .greedyWidth(.leading)
             
             HStack(spacing: 0) {
                 OText(
-                    "콤보 6",
+                    "콤보 \(participant.combo)",
                     token: .caption
                 )
                 
@@ -140,7 +155,7 @@ private extension HostChangeView {
                     .hPadding(8)
                 
                 OText(
-                    "오목알 60",
+                    "오목알 \(participant.participantNumbers)",
                     token: .caption
                 )
                 
@@ -150,7 +165,7 @@ private extension HostChangeView {
                     .hPadding(8)
                 
                 OText(
-                    "대국 +20일 째",
+                    "대국 +\(participant.participantDays)일 째",
                     token: .caption
                 )
             }
@@ -158,5 +173,42 @@ private extension HostChangeView {
         }
         .vPadding(4)
         .hPadding(8)
+    }
+    
+    func radioImage(_ isSelected: Bool) -> some View {
+        isSelected
+            ? OImages.icRadioChecked.swiftUIImage.resizedToFit(20, 20)
+            : OImages.icRadioUnChecked.swiftUIImage.resizedToFit(20, 20)
+    }
+    
+    func getStrokeColor(_ isSelected: Bool) -> Color {
+        isSelected
+            ? OColors.strokePrimary.swiftUIColor
+            : OColors.stroke02.swiftUIColor
+    }
+    
+    func getBackground(_ isSelected: Bool) -> Color {
+        isSelected
+            ? OColors.uiPrimary.swiftUIColor.opacity(0.1)
+            : .clear
+    }
+}
+
+private extension HostChangeView {
+    var alertView: some View {
+        Group {
+            if let alertCase = viewStore.alertCase {
+                switch alertCase {
+                case .error(let error):
+                    errorAlertView(error)
+                }
+            }
+        }
+    }
+    
+    func errorAlertView(_ networkError: NetworkError) -> some View {
+        CommonErrorAlertView(networkError) {
+            viewStore.send(.alertAction(.dismiss))
+        }
     }
 }

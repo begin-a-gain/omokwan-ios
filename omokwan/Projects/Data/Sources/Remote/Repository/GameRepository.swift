@@ -147,4 +147,28 @@ public struct GameRepository: GameRepositoryProtocol {
             return .failure(.unKnownError)
         }
     }
+    
+    public func getGameParticipants(gameID: Int) async -> Result<[GameParticipantInfo], NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<GameParticipantsResponse>>.getGameParticipants(gameID: gameID)
+            let response = try await apiService.call(endPoint)
+            return .success(try GameMapper.toGameParticipantInfoList(response.data))
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
+    
+    public func putGameHost(gameID: Int, userID: Int) async -> Result<Void, NetworkError> {
+        do {
+            let request = HostChangeRequest(userId: userID)
+            let endPoint = EndPoint<RemoteResponseModel<HostChangeResponse>>.putGameHost(
+                gameID: gameID,
+                request: request
+            )
+            let _ = try await apiService.call(endPoint)
+            return .success(())
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }

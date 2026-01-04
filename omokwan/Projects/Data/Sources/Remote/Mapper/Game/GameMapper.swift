@@ -119,4 +119,21 @@ struct GameMapper {
             hasNext: response.hasNext ?? false
         )
     }
+    
+    static func toGameParticipantInfoList(_ response: GameParticipantsResponse?) throws -> [GameParticipantInfo] {
+        guard let response = response,
+              let userInfo = response.userInfo else {
+            throw RemoteNetworkError.responseDataNilError
+        }
+        
+        return userInfo.map {
+            GameParticipantInfo(
+                userId: $0.userId ?? 0,
+                nickname: $0.nickname ?? "",
+                combo: $0.combo ?? 0,
+                participantDays: $0.participantDays ?? 0,
+                participantNumbers: $0.participantNumbers ?? 0
+            )
+        }
+    }
 }

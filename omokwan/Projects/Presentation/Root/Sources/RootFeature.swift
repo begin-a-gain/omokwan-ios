@@ -57,6 +57,8 @@ public struct RootFeature {
                 return handleGameDetailActionAtRoot(&state, gameDetailAction)
             case .root(.main(.mainAction(let mainAction))):
                 return handleMainActionFromRoot(&state, mainAction)
+            case .root(.main(.navigationPath(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.hostChange(let hostChangeAction))))):
+                return handleHostChangeActionAtRoot(&state, hostChangeAction)
             default:
                 return .none
             }
@@ -116,5 +118,21 @@ private extension RootFeature {
     
     func clearUserInfo(_ state: inout State) {
         state.userInfo = UserInfo()
+    }
+}
+
+private extension RootFeature {
+    func handleHostChangeActionAtRoot(
+        _ state: inout State,
+        _ action: HostChangeFeature.Action
+    ) -> Effect<Action> {
+        switch action {
+        case .notifyHostChanged(let nickname):
+            state.toastMessage = "대국장이 ‘\(nickname)’님으로 바뀌었어요."
+            state.isToastPresented = true
+            return .none
+        default:
+            return .none
+        }
     }
 }
