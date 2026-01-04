@@ -46,6 +46,8 @@ public struct MainCoordinatorFeature {
                 return gameDetailNavigation(&state, gameDetailAction)
             case .navigationPath(.element(id: _, action: PathAction.gameDetailSetting(let gameDetailSettingAction))):
                 return gameDetailSettingNavigation(&state, gameDetailSettingAction)
+            case .navigationPath(.element(id: _, action: PathAction.hostChange(let hostChangeAction))):
+                return hostChangeNavigation(&state, hostChangeAction)
             case .navigationPath(.element(id: _, action: PathAction.editNickname(let editNicknameAction))):
                 return editNicknameNavigation(&state, editNicknameAction)
             case .navigationPath(.element(id: _, action: PathAction.accountDelete(let accountDeleteAction))):

@@ -104,8 +104,15 @@ extension MainCoordinatorFeature {
         case .navigateToBack:
             _ = state.navigationPath.popLast()
             return .none
-        case .menuButtonTapped:
-            state.navigationPath.append(.gameDetailSetting(.init()))
+        case let .navigateToSetting(gameID, gameUserInfos):
+            state.navigationPath.append(
+                .gameDetailSetting(
+                    .init(
+                        gameID: gameID,
+                        gameUserInfos: gameUserInfos
+                    )
+                )
+            )
             return .none
         default:
             return .none
@@ -119,8 +126,15 @@ extension MainCoordinatorFeature {
         case .navigateToBack:
             _ = state.navigationPath.popLast()
             return .none
-        case .hostChangeButtonTapped:
-            state.navigationPath.append(.hostChange(.init()))
+        case let .navigateToHostChange(gameID, gameUserInfos):
+            state.navigationPath.append(
+                .hostChange(
+                    .init(
+                        gameID: gameID,
+                        gameUserInfos: gameUserInfos
+                    )
+                )
+            )
             return .none
         default:
             return .none
@@ -134,6 +148,11 @@ extension MainCoordinatorFeature {
         case .navigateToBack:
             _ = state.navigationPath.popLast()
             return .none
+        case .hostChangedWithData(let infos):
+            guard let targetID = state.navigationPath.ids.dropLast().last else { return .none }
+            _ = state.navigationPath.popLast()
+            
+            return .send(.navigationPath(.element(id: targetID, action: .gameDetailSetting(.updateGameUserInfos(infos)))))
         default:
             return .none
         }

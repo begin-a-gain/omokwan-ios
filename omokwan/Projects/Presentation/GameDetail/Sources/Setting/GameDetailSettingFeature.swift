@@ -18,7 +18,13 @@ public struct GameDetailSettingFeature {
     public init() {}
     
     public struct State: Equatable {
-        public init() {}
+        public init(
+            gameID: Int,
+            gameUserInfos: [GameUserInfo]
+        ) {
+            self.gameID = gameID
+            self.gameUserInfos = gameUserInfos
+        }
         
         public enum AlertCase: Equatable {
             case error(NetworkError)
@@ -43,10 +49,17 @@ public struct GameDetailSettingFeature {
         @BindingState var tensPlace: String = ""
         @BindingState var onesPlace: String = ""
 
-        let isHost: Bool = true
+        let gameID: Int
+        var gameUserInfos: [GameUserInfo]
         
         @PresentationState var maxNumOfPeopleSheet: CommonMaxNumOfPeopleFeature.State?
         @PresentationState var categorySheet: CommonCategoryFeature.State?
+        @Shared(.userInfo) var userInfo = UserInfo()
+
+        var isHost: Bool {
+            let hostUser = gameUserInfos.first { $0.isHost }
+            return hostUser?.userID == userInfo.id
+        }
     }
     
     public enum Action: BindableAction {
@@ -62,11 +75,13 @@ public struct GameDetailSettingFeature {
         case privateRoomToggleButtonTapped
         case inviteButtonTapped
         case hostChangeButtonTapped
+        case navigateToHostChange(Int, [GameUserInfo])
         case exitButtonTapped
         case categoriesFetched([GameCategory])
         case maxNumOfPeopleSheet(PresentationAction<CommonMaxNumOfPeopleFeature.Action>)
         case categorySheet(PresentationAction<CommonCategoryFeature.Action>)
         case passwordAlertConfirmButtonTapped
+        case updateGameUserInfos([GameUserInfo])
     }
     
     public var body: some ReducerOf<Self> {
@@ -80,7 +95,6 @@ public struct GameDetailSettingFeature {
             switch action {
             case .onAppear:
                 state.isLoading = true
-                
                 return .run { send in
                     await send(fetchCategories())
                 }
@@ -140,6 +154,10 @@ public struct GameDetailSettingFeature {
             case .inviteButtonTapped:
                 return .none
             case .hostChangeButtonTapped:
+                let gameID = state.gameID
+                let gameUserInfos = state.gameUserInfos
+                return .send(.navigateToHostChange(gameID, gameUserInfos))
+            case .navigateToHostChange:
                 return .none
             case .exitButtonTapped:
                 return .none
@@ -186,6 +204,9 @@ public struct GameDetailSettingFeature {
                     return .none
                 }
             case .categorySheet(.dismiss):
+                return .none
+            case .updateGameUserInfos(let infos):
+                state.gameUserInfos = infos
                 return .none
             }
         }

@@ -63,6 +63,7 @@ public struct GameDetailFeature {
         case onAppear
         case navigateToBack
         case menuButtonTapped
+        case navigateToSetting(Int, [GameUserInfo])
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
         
@@ -89,6 +90,10 @@ public struct GameDetailFeature {
             case .navigateToBack:
                 return .none
             case .menuButtonTapped:
+                let gameID = state.gameID
+                let gameUserInfos = state.gameUserInfos.compactMap { $0 }
+                return .send(.navigateToSetting(gameID, gameUserInfos))
+            case .navigateToSetting:
                 return .none
             case .alertAction:
                 return .none
