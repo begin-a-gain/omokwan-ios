@@ -152,19 +152,20 @@ public struct OTextField<FocusedFieldType: Hashable>: View {
     }
     
     private var normalTextFieldView: some View {
-        ZStack {
-            TextField(
-                placeholder,
-                text: $text
-            )
-            .multilineTextAlignment(.leading)
-            .focused($focusedField, equals: focusedFieldType)
-            .keyboardType(keyboardType)
-            .font(.suit(token: .body_02))
-            .foregroundStyle(textColor)
-            .greedyWidth(.leading)
-            .disabled(isReadOnly ? true : isDisabled)
-        }
+        TextField(
+            "",
+            text: $text,
+            prompt: Text(placeholder)
+                .font(.suit(token: .body_02))
+                .foregroundStyle(OColors.textDisable.swiftUIColor)
+        )
+        .multilineTextAlignment(.leading)
+        .focused($focusedField, equals: focusedFieldType)
+        .keyboardType(keyboardType)
+        .font(.suit(token: .body_02))
+        .foregroundStyle(textColor)
+        .greedyWidth(.leading)
+        .disabled(isReadOnly ? true : isDisabled)
     }
     
     private func errorMessageView(_ errorMessage: String) -> some View {
