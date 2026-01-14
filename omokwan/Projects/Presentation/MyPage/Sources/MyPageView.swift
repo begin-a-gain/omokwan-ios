@@ -171,26 +171,26 @@ private extension MyPageView {
         isShowArrowButton: Bool = false,
         buttonAction: (() -> Void)? = nil
     ) -> some View {
-        HStack(spacing: 0) {
-            OText(
-                title,
-                token: .subtitle_03
-            )
-            
-            Spacer()
-            
-            if let content = content {
+        Button {
+            buttonAction?()
+        } label: {
+            HStack(spacing: 0) {
                 OText(
-                    content,
-                    token: .body_02,
-                    color: OColors.text02.swiftUIColor
+                    title,
+                    token: .subtitle_03
                 )
-            }
-            
-            if isShowArrowButton {
-                Button {
-                    buttonAction?()
-                } label: {
+                
+                Spacer()
+                
+                if let content = content {
+                    OText(
+                        content,
+                        token: .body_02,
+                        color: OColors.text02.swiftUIColor
+                    )
+                }
+                
+                if isShowArrowButton {
                     OImages.icArrowRight.swiftUIImage
                         .renderingMode(.template)
                         .resizedToFit(16, 16)
@@ -198,9 +198,10 @@ private extension MyPageView {
                         .padding(.leading, 8)
                 }
             }
+            .vPadding(6)
+            .padding(16)
         }
-        .vPadding(6)
-        .padding(16)
+        .disabled(!isShowArrowButton)
     }
 }
 
