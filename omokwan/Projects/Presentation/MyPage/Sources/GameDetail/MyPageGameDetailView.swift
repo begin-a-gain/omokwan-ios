@@ -33,9 +33,14 @@ public struct MyPageGameDetailView: View {
         VStack(spacing: 0) {
             navigationBar
             ScrollView {
-                
+                if viewStore.isLoading {
+                    shimmerView
+                } else {
+                    detailRoomCards
+                }
             }
         }
+        .background(OColors.ui02.swiftUIColor)
     }
 }
 
@@ -53,6 +58,55 @@ private extension MyPageGameDetailView {
                 viewStore.send(.navigateToBack)
             }
         )
+    }
+}
+
+private extension MyPageGameDetailView {
+    var shimmerView: some View {
+        VStack(spacing: 0) {
+            ForEach(0..<10, id: \.self) { index in
+                MyPageGameDetailCard(
+                    isLoading: viewStore.isLoading,
+                    roomInfo: .init(),
+                    isButtonDisabled: viewStore.type == .completed
+                )
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(20)
+    }
+    
+    var detailRoomCards: some View {
+        LazyVStack(spacing: 0) {
+            ForEach(viewStore.models, id: \.id) { roomInfo in
+                MyPageGameDetailCard(
+                    isLoading: viewStore.isLoading,
+                    roomInfo: roomInfo,
+                    isButtonDisabled: viewStore.type == .completed,
+                    buttonAction: {
+                        viewStore.send(.buttonTapped(roomInfo))
+                    }
+                )
+                .id(roomInfo.id)
+            }
+            
+            if viewStore.hasNext {
+                progressView
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(20)
+    }
+    
+    var progressView: some View {
+        ProgressView()
+            .controlSize(.large)
+            .tint(.blue)
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    // TODO: Call API
+                }
+            }
     }
 }
 
