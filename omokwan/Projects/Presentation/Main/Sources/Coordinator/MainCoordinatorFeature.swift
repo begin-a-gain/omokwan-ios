@@ -52,6 +52,8 @@ public struct MainCoordinatorFeature {
                 return editNicknameNavigation(&state, editNicknameAction)
             case .navigationPath(.element(id: _, action: PathAction.accountDelete(let accountDeleteAction))):
                 return accountDeleteNavigation(&state, accountDeleteAction)
+            case .navigationPath(.element(id: _, action: PathAction.myPageGameDetail(let myPageGameDetailAction))):
+                return myPageGameDetailNavigation(&state, myPageGameDetailAction)
             case .navigationPath:
                 return .none
             case .mainAction(let mainAction):
@@ -87,6 +89,9 @@ private extension MainCoordinatorFeature {
             return .none
         case .navigateToAccountDelete:
             state.navigationPath.append(.accountDelete(.init()))
+            return .none
+        case .navigateToMyPageGameDetail(let type):
+            state.navigationPath.append(.myPageGameDetail(.init(type: type)))
             return .none
         default:
             return .none

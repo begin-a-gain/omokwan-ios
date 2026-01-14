@@ -52,6 +52,7 @@ public struct MainFeature {
         case navigateToEditNickname
         case nicknameUpdateCompleted
         case navigateToAccountDelete
+        case navigateToMyPageGameDetail(MyPageGameDetailType)
     }
     
     public var body: some ReducerOf<Self> {
@@ -129,6 +130,8 @@ public struct MainFeature {
                 return .none
             case .navigateToAccountDelete:
                 return .none
+            case .navigateToMyPageGameDetail:
+                return .none
             }
         }
         .ifLet(\.$mainSheet, action: \.mainSheet) {
@@ -179,6 +182,8 @@ private extension MainFeature {
             return .send(.navigateToEditNickname)
         case .navigateToAccountDelete:
             return .send(.navigateToAccountDelete)
+        case .navigateToMyPageGameDetail(let type):
+            return .send(.navigateToMyPageGameDetail(type))
         default:
             return .none
         }

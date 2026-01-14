@@ -43,6 +43,8 @@ public struct MainCoordinatorRootView: View {
                 EditNicknameView(store: store)
             case .accountDelete(let store):
                 AccountDeleteView(store: store)
+            case .myPageGameDetail(let store):
+                MyPageGameDetailView(store: store)
             }
         }
     }

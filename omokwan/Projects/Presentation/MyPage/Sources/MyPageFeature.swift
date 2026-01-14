@@ -26,6 +26,7 @@ public struct MyPageFeature {
         case navigateToEditNickname
         case deleteAccountButtonTapped
         case navigateToAccountDelete
+        case navigateToMyPageGameDetail(MyPageGameDetailType)
     }
 
     public var body: some ReducerOf<Self> {
@@ -42,6 +43,8 @@ public struct MyPageFeature {
             case .deleteAccountButtonTapped:
                 return .send(.navigateToAccountDelete)
             case .navigateToAccountDelete:
+                return .none
+            case .navigateToMyPageGameDetail:
                 return .none
             }
         }

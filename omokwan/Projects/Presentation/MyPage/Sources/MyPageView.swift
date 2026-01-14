@@ -110,12 +110,18 @@ private extension MyPageView {
                     titleContentButton(
                         title: "진행 중인 대국",
                         content: "123",
-                        isShowArrowButton: true
+                        isShowArrowButton: true,
+                        buttonAction: {
+                            viewStore.send(.navigateToMyPageGameDetail(.ongoing))
+                        }
                     )
                     titleContentButton(
                         title: "완료한 대국",
                         content: "123",
-                        isShowArrowButton: true
+                        isShowArrowButton: true,
+                        buttonAction: {
+                            viewStore.send(.navigateToMyPageGameDetail(.completed))
+                        }
                     )
                 }
             }
@@ -171,26 +177,26 @@ private extension MyPageView {
         isShowArrowButton: Bool = false,
         buttonAction: (() -> Void)? = nil
     ) -> some View {
-        HStack(spacing: 0) {
-            OText(
-                title,
-                token: .subtitle_03
-            )
-            
-            Spacer()
-            
-            if let content = content {
+        Button {
+            buttonAction?()
+        } label: {
+            HStack(spacing: 0) {
                 OText(
-                    content,
-                    token: .body_02,
-                    color: OColors.text02.swiftUIColor
+                    title,
+                    token: .subtitle_03
                 )
-            }
-            
-            if isShowArrowButton {
-                Button {
-                    buttonAction?()
-                } label: {
+                
+                Spacer()
+                
+                if let content = content {
+                    OText(
+                        content,
+                        token: .body_02,
+                        color: OColors.text02.swiftUIColor
+                    )
+                }
+                
+                if isShowArrowButton {
                     OImages.icArrowRight.swiftUIImage
                         .renderingMode(.template)
                         .resizedToFit(16, 16)
@@ -198,9 +204,10 @@ private extension MyPageView {
                         .padding(.leading, 8)
                 }
             }
+            .vPadding(6)
+            .padding(16)
         }
-        .vPadding(6)
-        .padding(16)
+        .disabled(!isShowArrowButton)
     }
 }
 
