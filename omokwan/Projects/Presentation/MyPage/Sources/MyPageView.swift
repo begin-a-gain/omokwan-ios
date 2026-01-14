@@ -110,12 +110,18 @@ private extension MyPageView {
                     titleContentButton(
                         title: "진행 중인 대국",
                         content: "123",
-                        isShowArrowButton: true
+                        isShowArrowButton: true,
+                        buttonAction: {
+                            viewStore.send(.navigateToMyPageGameDetail(.ongoing))
+                        }
                     )
                     titleContentButton(
                         title: "완료한 대국",
                         content: "123",
-                        isShowArrowButton: true
+                        isShowArrowButton: true,
+                        buttonAction: {
+                            viewStore.send(.navigateToMyPageGameDetail(.completed))
+                        }
                     )
                 }
             }
