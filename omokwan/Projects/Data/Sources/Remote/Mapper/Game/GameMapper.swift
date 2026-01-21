@@ -6,6 +6,7 @@
 //
 
 import Domain
+import Util
 
 struct GameMapper {
     static func toMyGameModels(_ gameInfoResponseList: [GameInfoResponse]?, _ isToday: Bool) throws -> [MyGameModel] {
@@ -135,5 +136,24 @@ struct GameMapper {
                 participantNumbers: $0.participantNumbers ?? 0
             )
         }
+    }
+    
+    static func toGameDetailSettingConfiguration(_ response: GameDetailSettingResponse?) throws -> GameDetailSettingConfiguration {
+        guard let response = response else {
+            throw RemoteNetworkError.responseDataNilError
+        }
+        
+        return GameDetailSettingConfiguration(
+            title: response.name ?? "-",
+            daysInProgress: response.ongoingDays ?? 0,
+            code: response.matchCode ?? "-",
+            dayDescription: response.repeatDayTypes
+                .compactMap { $0 }
+                .toDayDescription(isSpaced: true),
+            maxNumberOfPlayers: response.maxParticipants ?? 0,
+            categoryString: response.category ?? "",
+            password: response.password,
+            isPublic: response.isPublic ?? false
+        )
     }
 }

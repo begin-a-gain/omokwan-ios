@@ -143,4 +143,11 @@ extension EndPoint {
             requestBody: request
         )
     }
+    
+    static func getGameDetailSetting(gameID: Int) -> EndPoint<T> {
+        return EndPoint(
+            path: .getGameDetailSetting(gameID),
+            method: .GET
+        )
+    }
 }

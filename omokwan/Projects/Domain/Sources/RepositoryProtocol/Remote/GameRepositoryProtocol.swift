@@ -16,4 +16,5 @@ public protocol GameRepositoryProtocol {
     func getAllGameInfoList(_ request: GameRoomInformationRequestModel) async -> Result<GameRoomInfo, NetworkError>
     func getGameParticipants(gameID: Int) async -> Result<[GameParticipantInfo], NetworkError>
     func putGameHost(gameID: Int, userID: Int) async -> Result<Void, NetworkError>
+    func getGameDetailSetting(gameID: Int) async -> Result<GameDetailSettingConfiguration, NetworkError>
 }
