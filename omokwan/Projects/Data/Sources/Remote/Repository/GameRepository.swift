@@ -171,4 +171,16 @@ public struct GameRepository: GameRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func getGameDetailSetting(gameID: Int) async -> Result<GameDetailSettingConfiguration, NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<GameDetailSettingResponse>>.getGameDetailSetting(
+                gameID: gameID
+            )
+            let response = try await apiService.call(endPoint)
+            return .success(try GameMapper.toGameDetailSettingConfiguration(response.data))
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }

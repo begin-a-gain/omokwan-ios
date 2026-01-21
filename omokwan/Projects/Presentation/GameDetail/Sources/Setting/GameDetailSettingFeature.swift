@@ -35,15 +35,12 @@ public struct GameDetailSettingFeature {
         var alertState: AlertFeature.State = .init()
         var isLoading: Bool = false
         
-        @BindingState var gameName: String = ""
-        var gameNameValidStatus: GameNameValidStatus?
+        @BindingState var gameTitle: String = ""
+        var gameTitleValidStatus: GameNameValidStatus?
 
-        var maxNumOfPeople: Int = 5
         var selectedCategory: GameCategory?
         var categories: [GameCategory] = []
         
-        var privateRoomPassword: String?
-        var isPrivateRoom: Bool = false
         @BindingState var thousandsPlace: String = ""
         @BindingState var hundredsPlace: String = ""
         @BindingState var tensPlace: String = ""
@@ -52,6 +49,9 @@ public struct GameDetailSettingFeature {
         let gameID: Int
         var gameUserInfos: [GameUserInfo]
         
+        var originalConfiguration: GameDetailSettingConfiguration = .init()
+        var currentConfiguration: GameDetailSettingConfiguration = .init()
+        
         @PresentationState var maxNumOfPeopleSheet: CommonMaxNumOfPeopleFeature.State?
         @PresentationState var categorySheet: CommonCategoryFeature.State?
         @Shared(.userInfo) var userInfo = UserInfo()
@@ -59,6 +59,11 @@ public struct GameDetailSettingFeature {
         var isHost: Bool {
             let hostUser = gameUserInfos.first { $0.isHost }
             return hostUser?.userID == userInfo.id
+        }
+        
+        var isSaveButtonEnable: Bool {
+            let isConfigurationChanged = currentConfiguration != originalConfiguration
+            return isConfigurationChanged && gameTitleValidStatus == .valid
         }
     }
     
@@ -77,11 +82,13 @@ public struct GameDetailSettingFeature {
         case hostChangeButtonTapped
         case navigateToHostChange(Int, [GameUserInfo])
         case exitButtonTapped
-        case categoriesFetched([GameCategory])
         case maxNumOfPeopleSheet(PresentationAction<CommonMaxNumOfPeopleFeature.Action>)
         case categorySheet(PresentationAction<CommonCategoryFeature.Action>)
         case passwordAlertConfirmButtonTapped
         case updateGameUserInfos([GameUserInfo])
+        case configurationFetched(GameDetailSettingConfiguration)
+        case initialDataFetched([GameCategory], GameDetailSettingConfiguration)
+        case saveButtonTapped
     }
     
     public var body: some ReducerOf<Self> {
@@ -94,9 +101,22 @@ public struct GameDetailSettingFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                let gameID = state.gameID
+                
                 state.isLoading = true
-                return .run { send in
-                    await send(fetchCategories())
+                if state.categories.isEmpty {
+                    return .run { send in
+                        await send(fetchInitialData(gameID))
+                    }
+                } else {
+                    return .run { send in
+                        do {
+                            let configuration = try await fetchSettingConfiguration(gameID)
+                            await send(.configurationFetched(configuration))
+                        } catch let error as NetworkError {
+                            await send(.showAlert(.error(error)))
+                        }
+                    }
                 }
             case .navigateToBack:
                 return .none
@@ -106,26 +126,29 @@ public struct GameDetailSettingFeature {
                 state.isLoading = false
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
-            case .binding(\.$gameName):
-                if state.gameName.isEmpty {
-                    state.gameNameValidStatus = .empty
+            case .binding(\.$gameTitle):
+                state.currentConfiguration.title = state.gameTitle
+                if state.gameTitle.isEmpty {
+                    state.gameTitleValidStatus = .empty
                     return .none
                 }
                 
-                let isValid = state.gameName.checkRegexValidation(
-                    pattern: RegexPattern.gameName.regex
+                let isValid = state.gameTitle.checkRegexValidation(
+                    pattern: RegexPattern.gameTitle.regex
                 )
                 
-                state.gameNameValidStatus = isValid ? .valid : .inValidFormat
+                state.gameTitleValidStatus = isValid ? .valid : .inValidFormat
                 return .none
             case .binding:
                 return .none
             case .maxNumOfPeopleButtonTapped:
-                state.maxNumOfPeopleSheet = .init(selectedMaxNumOfPeopleCount: state.maxNumOfPeople)
+                state.maxNumOfPeopleSheet = .init(
+                    selectedMaxNumOfPeopleCount: state.currentConfiguration.maxNumberOfPlayers
+                )
                 return .none
             case .privateRoomCodeButtonTapped:
-                if let _ = state.privateRoomPassword {
-                    if state.isPrivateRoom {
+                if let _ = state.currentConfiguration.password {
+                    if !state.currentConfiguration.isPublic {
                         return .send(.showAlert(.password))
                     }
                 }
@@ -135,17 +158,17 @@ public struct GameDetailSettingFeature {
                 if state.isHost {
                     return .send(.privateRoomToggleButtonTapped)
                 } else {
-                    if state.isPrivateRoom {
+                    if !state.currentConfiguration.isPublic {
                         // TODO: 클립보드에 복사됐습니다 토스트
                     }
                     return .none
                 }
             case .privateRoomToggleButtonTapped:
-                if state.isPrivateRoom {
-                    state.isPrivateRoom = false
+                if !state.currentConfiguration.isPublic {
+                    state.currentConfiguration.isPublic = true
                 } else {
-                    if let _ = state.privateRoomPassword {
-                        state.isPrivateRoom = true
+                    if let _ = state.currentConfiguration.password {
+                        state.currentConfiguration.isPublic = false
                     } else {
                         return .send(.showAlert(.password))
                     }
@@ -165,7 +188,7 @@ public struct GameDetailSettingFeature {
                 switch presentAction {
                 case .selectButtonTapped(let value):
                     state.maxNumOfPeopleSheet = nil
-                    state.maxNumOfPeople = value
+                    state.currentConfiguration.maxNumberOfPlayers = value
                     return .none
                 default:
                     return .none
@@ -180,14 +203,10 @@ public struct GameDetailSettingFeature {
                 else { return .none }
                 
                 let password = (1000 * thousands) + (100 * hundreds) + (10 * tens) + ones
-                state.privateRoomPassword = String(password)
-                state.isPrivateRoom = true
+                state.currentConfiguration.password = String(password)
+                state.currentConfiguration.isPublic = false
                 
                 return .send(.alertAction(.dismiss))
-            case .categoriesFetched(let categories):
-                state.isLoading = false
-                state.categories = categories
-                return .none
             case .gameCategorySettingButtonTapped:
                 state.categorySheet = .init(
                     categories: state.categories,
@@ -199,6 +218,8 @@ public struct GameDetailSettingFeature {
                 case .selectButtonTapped(let value):
                     state.categorySheet = nil
                     state.selectedCategory = value
+                    guard let categoryCode = state.selectedCategory?.code else { return .none }
+                    state.currentConfiguration.categoryCode = categoryCode
                     return .none
                 default:
                     return .none
@@ -207,6 +228,23 @@ public struct GameDetailSettingFeature {
                 return .none
             case .updateGameUserInfos(let infos):
                 state.gameUserInfos = infos
+                return .none
+            case .configurationFetched(let configuration):
+                state.isLoading = false
+                setConfiguration(
+                    state: &state,
+                    configuration: configuration
+                )
+                return .none
+            case let .initialDataFetched(categories, configuration):
+                state.isLoading = false
+                state.categories = categories
+                setConfiguration(
+                    state: &state,
+                    configuration: configuration
+                )
+                return .none
+            case .saveButtonTapped:
                 return .none
             }
         }
@@ -220,13 +258,55 @@ public struct GameDetailSettingFeature {
 }
 
 private extension GameDetailSettingFeature {
-    func fetchCategories() async -> Action {
+    func fetchCategories() async throws -> [GameCategory] {
         let response = await gameUseCase.fetchGameCategories()
         switch response {
         case .success(let categories):
-            return .categoriesFetched(categories)
+            return categories
         case .failure(let error):
-            return .showAlert(.error(error))
+            throw error
         }
+    }
+    
+    func fetchSettingConfiguration(_ gameID: Int) async throws -> GameDetailSettingConfiguration {
+        let response = await gameUseCase.fetchGameDetailSetting(gameID)
+        switch response {
+        case .success(let configuration):
+            return configuration
+        case .failure(let error):
+            throw error
+        }
+    }
+    
+    func fetchInitialData(_ gameID: Int) async -> Action {
+        do {
+            async let categoryResponse = fetchCategories()
+            async let settingResponse = fetchSettingConfiguration(gameID)
+
+            let (category, setting) = try await (categoryResponse, settingResponse)
+            
+            return .initialDataFetched(category, setting)
+        } catch let error as NetworkError {
+            return .showAlert(.error(error))
+        } catch {
+            return .showAlert(.error(.unKnownError))
+        }
+    }
+}
+
+private extension GameDetailSettingFeature {
+    func setConfiguration(
+        state: inout State,
+        configuration: GameDetailSettingConfiguration
+    ) {
+        state.originalConfiguration = configuration
+        state.currentConfiguration = configuration
+        
+        state.gameTitle = configuration.title
+        state.gameTitleValidStatus = .valid
+        state.selectedCategory = state.categories.find(
+            for: Int(configuration.categoryCode) ?? -1
+        )
+        
     }
 }

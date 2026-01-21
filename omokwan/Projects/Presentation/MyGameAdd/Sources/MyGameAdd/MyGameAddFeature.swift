@@ -119,7 +119,7 @@ public struct MyGameAddFeature {
                 }
                 
                 let isValid = state.gameName.checkRegexValidation(
-                    pattern: RegexPattern.gameName.regex
+                    pattern: RegexPattern.gameTitle.regex
                 )
                 
                 state.gameNameValidStatus = isValid ? .valid : .inValidFormat

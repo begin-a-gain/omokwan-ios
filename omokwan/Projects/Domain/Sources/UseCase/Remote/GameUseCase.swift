@@ -19,6 +19,7 @@ public struct GameUseCase {
     public let fetchAllGameInfoList: (_ request: GameRoomInformationRequestModel) async -> Result<GameRoomInfo, NetworkError>
     public let fetchGameParticipants: (_ gameID: Int) async -> Result<[GameParticipantInfo], NetworkError>
     public let updateGameHost: (_ gameID: Int, _ userID: Int) async -> Result<Void, NetworkError>
+    public let fetchGameDetailSetting: (_ gameID: Int) async -> Result<GameDetailSettingConfiguration, NetworkError>
 }
 
 extension GameUseCase: DependencyKey {
@@ -26,7 +27,10 @@ extension GameUseCase: DependencyKey {
         let repository: GameRepositoryProtocol = DIContainer.shared.resolve()
         return GameUseCase(
             fetchGameInfosFromDate: { dateString, isToday in
-                await repository.getGameInfosFromDate(dateString: dateString, isToday: isToday)
+                await repository.getGameInfosFromDate(
+                    dateString: dateString,
+                    isToday: isToday
+                )
             },
             createGame: { configuration in
                 await repository.postCreateGame(configuration)
@@ -63,7 +67,13 @@ extension GameUseCase: DependencyKey {
                 await repository.getGameParticipants(gameID: gameID)
             },
             updateGameHost: { gameID, userID in
-                await repository.putGameHost(gameID: gameID, userID: userID)
+                await repository.putGameHost(
+                    gameID: gameID,
+                    userID: userID
+                )
+            },
+            fetchGameDetailSetting: { gameID in
+                await repository.getGameDetailSetting(gameID: gameID)
             }
         )
     }()
