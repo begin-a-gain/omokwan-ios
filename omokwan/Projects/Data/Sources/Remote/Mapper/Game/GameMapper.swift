@@ -151,7 +151,7 @@ struct GameMapper {
                 .compactMap { $0 }
                 .toDayDescription(isSpaced: true),
             maxNumberOfPlayers: response.maxParticipants ?? 0,
-            categoryString: response.category ?? "",
+            categoryCode: response.category ?? "",
             password: response.password,
             isPublic: response.isPublic ?? false
         )

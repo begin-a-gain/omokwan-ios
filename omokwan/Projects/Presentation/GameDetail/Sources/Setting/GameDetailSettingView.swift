@@ -18,7 +18,7 @@ public struct GameDetailSettingView: View {
     @FocusState private var passwordFocusedField: PasswordField?
 
     private enum GameDetailSettingTextFieldType {
-        case gameName
+        case gameTitle
     }
     
     public init(store: StoreOf<GameDetailSettingFeature>) {
@@ -27,22 +27,37 @@ public struct GameDetailSettingView: View {
     }
     
     public var body: some View {
-        settingBody
-            .onAppear {
-                viewStore.send(.onAppear)
-            }
-            .oLoading(isPresent: viewStore.isLoading)
-            .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
-                alertView
-            }
-            .sheet(store: store.scope(state: \.$maxNumOfPeopleSheet, action: \.maxNumOfPeopleSheet)) { store in
-                CommonMaxNumOfPeopleView(store: store)
-                    .modifier(CommonSheetModifier(detent: [.medium]))
-            }
-            .sheet(store: store.scope(state: \.$categorySheet, action: \.categorySheet)) { store in
-                CommonCategoryView(store: store)
-                    .modifier(CommonSheetModifier(detent: [.medium]))
-            }
+        ZStack {
+            settingBody
+                .ignoresSafeArea(edges: .bottom)
+                .padding(.bottom, GameDetailConstants.bottomPadding)
+
+            bottomShadowView
+                .height(GameDetailConstants.bottomTabBarHeight)
+                .greedyHeight(.bottom)
+                .ignoresSafeArea(edges: .bottom)
+
+            bottomButtonView
+                .padding(.bottom, GameDetailConstants.homeIndicatorHeight)
+                .height(GameDetailConstants.bottomTabBarHeight)
+                .greedyHeight(.bottom)
+                .ignoresSafeArea(edges: .bottom)
+        }
+        .onAppear {
+            viewStore.send(.onAppear)
+        }
+        .oLoading(isPresent: viewStore.isLoading)
+        .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
+            alertView
+        }
+        .sheet(store: store.scope(state: \.$maxNumOfPeopleSheet, action: \.maxNumOfPeopleSheet)) { store in
+            CommonMaxNumOfPeopleView(store: store)
+                .modifier(CommonSheetModifier(detent: [.medium]))
+        }
+        .sheet(store: store.scope(state: \.$categorySheet, action: \.categorySheet)) { store in
+            CommonCategoryView(store: store)
+                .modifier(CommonSheetModifier(detent: [.medium]))
+        }
     }
     
     private var settingBody: some View {
@@ -57,16 +72,43 @@ public struct GameDetailSettingView: View {
             scrollContent
         }
     }
+    
+    private var bottomShadowView: some View {
+        RoundedCorner(radius: 16, corners: [.topLeft, .topRight])
+            .fill(OColors.oWhite.swiftUIColor)
+            .shadow(
+                color: OColors.oPrimary.swiftUIColor.opacity(0.3),
+                radius: 20,
+                x: 0, y: 0
+            )
+    }
+
+    var bottomButtonView: some View {
+        OButton(
+            title: "저장하기",
+            status: viewStore.isSaveButtonEnable ? .default : .disable,
+            type: .default
+        ) {
+            viewStore.send(.saveButtonTapped)
+        }
+        .vPadding(16)
+        .hPadding(20)
+    }
+
 }
 
 private extension GameDetailSettingView {
     var scrollContent: some View {
         ScrollView {
             VStack(spacing: 24) {
-                gameNameSection
+                gameTitleSection
+                    .padding(.top, 24)
                 
                 GameDefaultSettingView(
-                    maxNumOfPeople: viewStore.maxNumOfPeople,
+                    daysInProgress: viewStore.currentConfiguration.daysInProgress,
+                    gameCode: viewStore.currentConfiguration.code,
+                    dayDescription: viewStore.currentConfiguration.dayDescription,
+                    maxNumOfPeople: viewStore.currentConfiguration.maxNumberOfPlayers,
                     canChangeMaxNumOfPeopleSetting: viewStore.isHost,
                     maxNumOfPeopleButtonAction: {
                         viewStore.send(.maxNumOfPeopleButtonTapped)
@@ -75,8 +117,8 @@ private extension GameDetailSettingView {
                 
                 GameOhterSettingView(
                     gameCategory: viewStore.selectedCategory,
-                    privateRoomPassword: viewStore.privateRoomPassword,
-                    isPrivateRoom: viewStore.isPrivateRoom,
+                    privateRoomPassword: viewStore.currentConfiguration.password,
+                    isPrivateRoom: !viewStore.currentConfiguration.isPublic,
                     canChangeSetting: viewStore.isHost,
                     categoryButtonAction: {
                         viewStore.send(.gameCategorySettingButtonTapped)
@@ -106,33 +148,34 @@ private extension GameDetailSettingView {
                 ) {
                     viewStore.send(.exitButtonTapped)
                 }
+                .padding(.bottom, 24)
             }
         }
         .hPadding(20)
-        .vPadding(24)
         .scrollIndicators(.hidden)
     }
 }
 
 // MARK: Title
 private extension GameDetailSettingView {
-    var gameNameSection: some View {
+    var gameTitleSection: some View {
         OTextField<GameDetailSettingTextFieldType>(
-            text: viewStore.$gameName,
+            text: viewStore.$gameTitle,
             focusedField: $focusedField,
-            focusedFieldType: .gameName,
+            focusedFieldType: .gameTitle,
             label: "대국 이름",
             isLabel: true,
             placeholder: "대국 이름을 적어주세요.",
-            errorMessage: mappingGameNameErrorMessage(viewStore.gameNameValidStatus),
-            trailingIcon: OImages.icCancel.swiftUIImage,
+            errorMessage: mappingGameTitleErrorMessage(viewStore.gameTitleValidStatus),
+            isDisabled: !viewStore.isHost,
+            trailingIcon: viewStore.isHost ? OImages.icCancel.swiftUIImage : nil,
             trailingIconButtonAction: {
-                viewStore.send(.binding(.set(\.$gameName, "")))
+                viewStore.send(.binding(.set(\.$gameTitle, "")))
             }
         )
     }
     
-    func mappingGameNameErrorMessage(_ status: GameNameValidStatus?) -> String {
+    func mappingGameTitleErrorMessage(_ status: GameNameValidStatus?) -> String {
         guard let status = status else { return "" }
         
         return status.errorMessage

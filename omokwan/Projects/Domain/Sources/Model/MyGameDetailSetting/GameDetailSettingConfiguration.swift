@@ -6,32 +6,55 @@
 //
 
 public struct GameDetailSettingConfiguration: Equatable {
-    public let title: String
-    public let daysInProgress: Int
-    public let code: String
-    public let dayDescription: String
-    public let maxNumberOfPlayers: Int
-    public let categoryString: String
-    public let password: String?
-    public let isPublic: Bool
+    public var title: String
+    public var daysInProgress: Int
+    public var code: String
+    public var dayDescription: String
+    public var maxNumberOfPlayers: Int
+    public var categoryCode: String
+    public var password: String?
+    public var isPublic: Bool
     
     public init(
-        title: String,
-        daysInProgress: Int,
-        code: String,
-        dayDescription: String,
-        maxNumberOfPlayers: Int,
-        categoryString: String,
-        password: String?,
-        isPublic: Bool
+        title: String = "",
+        daysInProgress: Int = 0,
+        code: String = "",
+        dayDescription: String = "",
+        maxNumberOfPlayers: Int = 0,
+        categoryCode: String = "",
+        password: String? = nil,
+        isPublic: Bool = true
     ) {
         self.title = title
         self.daysInProgress = daysInProgress
         self.code = code
         self.dayDescription = dayDescription
         self.maxNumberOfPlayers = maxNumberOfPlayers
-        self.categoryString = categoryString
+        self.categoryCode = categoryCode
         self.password = password
         self.isPublic = isPublic
+    }
+    
+    public static func == (
+        lhs: GameDetailSettingConfiguration,
+        rhs: GameDetailSettingConfiguration
+    ) -> Bool {
+        guard
+            lhs.title == rhs.title,
+            lhs.daysInProgress == rhs.daysInProgress,
+            lhs.code == rhs.code,
+            lhs.dayDescription == rhs.dayDescription,
+            lhs.maxNumberOfPlayers == rhs.maxNumberOfPlayers,
+            lhs.categoryCode == rhs.categoryCode,
+            lhs.isPublic == rhs.isPublic
+        else {
+            return false
+        }
+
+        if lhs.isPublic == false {
+            return lhs.password == rhs.password
+        } else {
+            return true
+        }
     }
 }

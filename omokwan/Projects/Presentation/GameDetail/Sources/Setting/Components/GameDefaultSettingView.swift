@@ -9,15 +9,24 @@ import SwiftUI
 import DesignSystem
 
 struct GameDefaultSettingView: View {
+    private let daysInProgress: Int
+    private let gameCode: String
+    private let dayDescription: String
     private let maxNumOfPeople: Int
     private let canChangeMaxNumOfPeopleSetting: Bool
     private let maxNumOfPeopleButtonAction: (() -> Void)?
     
     init(
+        daysInProgress: Int,
+        gameCode: String,
+        dayDescription: String,
         maxNumOfPeople: Int,
         canChangeMaxNumOfPeopleSetting: Bool,
         maxNumOfPeopleButtonAction: (() -> Void)? = nil
     ) {
+        self.daysInProgress = daysInProgress
+        self.gameCode = gameCode
+        self.dayDescription = dayDescription
         self.maxNumOfPeople = maxNumOfPeople
         self.canChangeMaxNumOfPeopleSetting = canChangeMaxNumOfPeopleSetting
         self.maxNumOfPeopleButtonAction = maxNumOfPeopleButtonAction
@@ -54,7 +63,7 @@ private extension GameDefaultSettingView {
             )
             Spacer()
             OText(
-                "+123일 째",
+                "+\(daysInProgress)일 째",
                 token: .subtitle_03,
                 color: OColors.text02.swiftUIColor
             )
@@ -70,10 +79,10 @@ private extension GameDefaultSettingView {
             )
             Spacer()
             Button {
-                UIPasteboard.general.string = "XALXBB6ZU2"
+                UIPasteboard.general.string = gameCode
             } label: {
                 OText(
-                    "XALXBB6ZU2",
+                    gameCode,
                     token: .subtitle_03,
                     color: OColors.text02.swiftUIColor,
                     isUnderline: true
@@ -91,7 +100,7 @@ private extension GameDefaultSettingView {
             )
             Spacer()
             OText(
-                "월, 수, 금",
+                dayDescription,
                 token: .subtitle_03,
                 color: OColors.text02.swiftUIColor
             )

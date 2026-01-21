@@ -78,7 +78,7 @@ private extension GameRoomCardView {
             peopleCountView
             
             if let categoryId = roomInfo.categoryId,
-               let category = categories.category(for: categoryId) {
+               let category = categories.find(for: categoryId) {
                 verticalDividerView
                 categoryView(category)
             }

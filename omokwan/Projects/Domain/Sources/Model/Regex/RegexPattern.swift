@@ -7,13 +7,13 @@
 
 public enum RegexPattern {
     case nickname
-    case gameName
+    case gameTitle
     
     public var regex: String {
         switch self {
         case .nickname:
             return #"^[가-힣a-zA-Z0-9]{2,10}$"#
-        case .gameName:
+        case .gameTitle:
             return #"^(?=.{1,30}$)[가-힣a-zA-Z0-9\s]+$"#
         }
     }

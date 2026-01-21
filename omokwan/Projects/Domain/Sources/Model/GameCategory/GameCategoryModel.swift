@@ -18,7 +18,11 @@ public struct GameCategory: Hashable {
 }
 
 public extension Array where Element == GameCategory {
-    func category(for code: Int) -> GameCategory? {
+    func find(for code: Int) -> GameCategory? {
         first { $0.code == String(code) }
+    }
+    
+    func find(stringKey category: String) -> GameCategory? {
+        first { $0.category == category }
     }
 }
