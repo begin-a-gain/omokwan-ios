@@ -145,14 +145,20 @@ private extension GameDetailView {
                     CommonErrorAlertView(networkError) {
                         viewStore.send(.alertAction(.dismiss))
                     }
-                case .kickOut(let nickname):
-                    kickOutAlertView(nickname)
+                case let .kickOut(nickname, userID):
+                    kickOutAlertView(
+                        nickname: nickname,
+                        userID: userID
+                    )
                 }
             }
         }
     }
     
-    func kickOutAlertView(_ nickname: String) -> some View {
+    func kickOutAlertView(
+        nickname: String,
+        userID: Int
+    ) -> some View {
         OAlert(
             type: .default,
             title: "이 멤버를 내보낼까요?",
@@ -163,7 +169,9 @@ private extension GameDetailView {
             secondaryButtonTitle: "내보내기",
             secondaryButtonBackgroundColor: OColors.uiAlert.swiftUIColor,
             secondaryButtonAction: {
-                viewStore.send(.kickOutAlertButtonTapped(nickname))
+                viewStore.send(
+                    .kickOutAlertButtonTapped(nickname, userID)
+                )
             }
         )
     }

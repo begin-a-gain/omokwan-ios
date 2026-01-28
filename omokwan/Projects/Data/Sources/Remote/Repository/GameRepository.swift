@@ -183,4 +183,17 @@ public struct GameRepository: GameRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func postKickUser(gameID: Int, userID: Int) async -> Result<Void, NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<KickUserResponse>>.postKickUser(
+                gameID: gameID,
+                userID: userID
+            )
+            let _ = try await apiService.call(endPoint)
+            return .success(())
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }

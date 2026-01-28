@@ -144,7 +144,7 @@ private extension UserAvatarInfoView {
             type: .default,
             size: .big
         ) {
-            viewStore.send(.shootStoneButtonTapped(viewStore.state.detailUserInfo.nickname))
+            viewStore.send(.shootStoneButtonTapped(viewStore.detailUserInfo.nickname))
         }
     }
     
@@ -155,7 +155,12 @@ private extension UserAvatarInfoView {
             type: .text,
             size: .big
         ) {
-            viewStore.send(.kickOutButtonTapped(viewStore.state.detailUserInfo.nickname))
+            viewStore.send(
+                .kickOutButtonTapped(
+                    viewStore.detailUserInfo.nickname,
+                    viewStore.userID
+                )
+            )
         }
     }
 }

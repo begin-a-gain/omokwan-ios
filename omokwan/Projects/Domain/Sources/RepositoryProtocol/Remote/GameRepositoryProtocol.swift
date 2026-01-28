@@ -17,4 +17,5 @@ public protocol GameRepositoryProtocol {
     func getGameParticipants(gameID: Int) async -> Result<[GameParticipantInfo], NetworkError>
     func putGameHost(gameID: Int, userID: Int) async -> Result<Void, NetworkError>
     func getGameDetailSetting(gameID: Int) async -> Result<GameDetailSettingConfiguration, NetworkError>
+    func postKickUser(gameID: Int, userID: Int) async -> Result<Void, NetworkError>
 }

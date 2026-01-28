@@ -20,6 +20,7 @@ public struct GameUseCase {
     public let fetchGameParticipants: (_ gameID: Int) async -> Result<[GameParticipantInfo], NetworkError>
     public let updateGameHost: (_ gameID: Int, _ userID: Int) async -> Result<Void, NetworkError>
     public let fetchGameDetailSetting: (_ gameID: Int) async -> Result<GameDetailSettingConfiguration, NetworkError>
+    public let kickOutUser: (_ gameID: Int, _ userID: Int) async -> Result<Void, NetworkError>
 }
 
 extension GameUseCase: DependencyKey {
@@ -74,6 +75,12 @@ extension GameUseCase: DependencyKey {
             },
             fetchGameDetailSetting: { gameID in
                 await repository.getGameDetailSetting(gameID: gameID)
+            },
+            kickOutUser: { gameID, userID in
+                await repository.postKickUser(
+                    gameID: gameID,
+                    userID: userID
+                )
             }
         )
     }()

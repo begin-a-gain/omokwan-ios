@@ -81,7 +81,7 @@ private extension RootFeature {
             state.toastMessage = "오목알 튕기기 실패!"
             state.isToastPresented = true
             return .none
-        case .kickOutAlertButtonTapped(let nickname):
+        case let .userKicked(nickname, _):
             state.toastMessage = "‘\(nickname)’님을 내보냈어요."
             state.isToastPresented = true
             return .none
@@ -117,7 +117,9 @@ private extension RootFeature {
     }
     
     func clearUserInfo(_ state: inout State) {
-        state.userInfo = UserInfo()
+        state.$userInfo.withLock {
+            $0 = UserInfo()
+        }
     }
 }
 

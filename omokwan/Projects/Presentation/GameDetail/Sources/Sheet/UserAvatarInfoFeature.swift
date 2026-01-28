@@ -13,19 +13,25 @@ public struct UserAvatarInfoFeature {
     public init() {}
     
     public struct State: Equatable {
-        public init(detailUserInfo: DetailUserInfo, participantRole: ParticipantRole) {
+        public init(
+            detailUserInfo: DetailUserInfo,
+            participantRole: ParticipantRole,
+            userID: Int
+        ) {
             self.detailUserInfo = detailUserInfo
             self.participantRole = participantRole
+            self.userID = userID
         }
         
         let detailUserInfo: DetailUserInfo
         let participantRole: ParticipantRole
+        let userID: Int
     }
     
     public enum Action {
         case onAppear
         case shootStoneButtonTapped(String)
-        case kickOutButtonTapped(String)
+        case kickOutButtonTapped(String, Int)
     }
     
     public var body: some ReducerOf<Self> {

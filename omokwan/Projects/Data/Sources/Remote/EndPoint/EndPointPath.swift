@@ -25,6 +25,7 @@ enum EndPointPath {
     case postDeletionSurvey
     case deleteUserAccount
     case getGameDetailSetting(Int)
+    case postKickUser(Int, Int)
     
     var value: String {
         switch self {
@@ -66,6 +67,8 @@ enum EndPointPath {
             "/users/me"
         case .getGameDetailSetting(let gameID):
             "/matches/\(gameID)/settings"
+        case let .postKickUser(gameID, userID):
+            "/matches/\(gameID)/users/\(userID)/kick"
         }
     }
 }
