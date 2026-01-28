@@ -113,8 +113,8 @@ public struct HostChangeFeature {
                 }
                 
                 return .concatenate([
-                    .send(.hostChangedWithData(hostChangedGameUserInfos)),
-                    .send(.notifyHostChanged(host.nickname))
+                    .send(.notifyHostChanged(host.nickname)),
+                    .send(.hostChangedWithData(hostChangedGameUserInfos))
                 ])
             case .notifyHostChanged:
                 return .none

@@ -150,4 +150,11 @@ extension EndPoint {
             method: .GET
         )
     }
+    
+    static func postKickUser(gameID: Int, userID: Int) -> EndPoint<T> {
+        return EndPoint(
+            path: .postKickUser(gameID, userID),
+            method: .POST
+        )
+    }
 }

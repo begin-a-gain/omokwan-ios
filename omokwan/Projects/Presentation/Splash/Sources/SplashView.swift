@@ -12,23 +12,21 @@ import Base
 import Util
 
 public struct SplashView: View {
-    private let store: StoreOf<SplashFeature>
-    @ObservedObject private var viewStore: ViewStoreOf<SplashFeature>
+    @Bindable private var store: StoreOf<SplashFeature>
 
     public init(store: StoreOf<SplashFeature>) {
         self.store = store
-        self.viewStore = ViewStore(store, observe: { $0 })
     }
     
     public var body: some View {
         splashBody
             .navigationBarBackButtonHidden(true)
-            .oLoading(isPresent: viewStore.isLoading)
+            .oLoading(isPresent: store.isLoading)
             .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
                 alertView
             }
             .onAppear {
-                viewStore.send(.onAppear)
+                store.send(.onAppear)
                 AnalyticsManager.shared.logEvent(
                     "splash_view",
                     parameters: [
@@ -50,11 +48,11 @@ public struct SplashView: View {
 private extension SplashView {
     var alertView: some View {
         Group {
-            if let alertCase = viewStore.alertCase {
+            if let alertCase = store.alertCase {
                 switch alertCase {
                 case .error(let networkError):
                     CommonErrorAlertView(networkError) {
-                        viewStore.send(.alertAction(.dismiss))
+                        store.send(.alertAction(.dismiss))
                     }
                 }
             }

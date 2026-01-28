@@ -33,7 +33,7 @@ public struct GameDetailFeature {
         
         public enum AlertCase: Equatable {
             case error(NetworkError)
-            case kickOut(String)
+            case kickOut(String, Int)
         }
         
         enum BottomButtonType {
@@ -69,11 +69,12 @@ public struct GameDetailFeature {
         
         case avatarButtonTapped(Int?)
         case detailUserInfoFetched(DetailUserInfo, Int)
+        case userKicked(String, Int)
         
         case userAvatarInfoSheet(PresentationAction<UserAvatarInfoFeature.Action>)
         case shootStoneSuccess(String)
         case shootStoneFailed
-        case kickOutAlertButtonTapped(String)
+        case kickOutAlertButtonTapped(String, Int)
         case updateTodayOmokStatus
         case omokStatusUpdated(OmokStoneStatus)
         
@@ -125,7 +126,11 @@ public struct GameDetailFeature {
                     return .other
                 }
                 
-                state.userAvatarInfoSheet = .init(detailUserInfo: detailUserInfo, participantRole: role)
+                state.userAvatarInfoSheet = .init(
+                    detailUserInfo: detailUserInfo,
+                    participantRole: role,
+                    userID: userID
+                )
 
                 return .none
             case .userAvatarInfoSheet(.presented(let sheetAction)):
@@ -140,10 +145,10 @@ public struct GameDetailFeature {
                         state.userAvatarInfoSheet = nil
                         return .send(.shootStoneFailed)
                     }
-                case .kickOutButtonTapped(let nickname):
+                case let .kickOutButtonTapped(nickname, userID):
                     state.userAvatarInfoSheet = nil
                     
-                    return .send(.showAlert(.kickOut(nickname)))
+                    return .send(.showAlert(.kickOut(nickname, userID)))
                 default:
                     return .none
                 }
@@ -153,8 +158,15 @@ public struct GameDetailFeature {
                 return .none
             case .shootStoneFailed:
                 return .none
-            case .kickOutAlertButtonTapped:
-                return .send(.alertAction(.dismiss))
+            case let .kickOutAlertButtonTapped(nickname, userID):
+                let gameID = state.gameID
+                state.isLoading = true
+                return .merge([
+                    .send(.alertAction(.dismiss)),
+                    .run { send in
+                        await send(kickOutUser(gameID, userID, nickname))
+                    },
+                ])
             case .updateTodayOmokStatus:
                 state.isLoading = true
                 let gameID = state.gameID
@@ -178,6 +190,14 @@ public struct GameDetailFeature {
                 default:
                     return .none
                 }
+            case let .userKicked(_, userID):
+                state.isLoading = false
+                let filteredUserList = state.gameUserInfos
+                    .compactMap { $0 }
+                    .filter { $0.userID != userID }
+                    
+                setGameUserInfo(&state, filteredUserList)
+                return .send(.stickyCalendarAction(.needRefresh))
             }
         }
         .ifLet(\.$userAvatarInfoSheet, action: \.userAvatarInfoSheet) {
@@ -212,6 +232,21 @@ private extension GameDetailFeature {
         switch response {
         case .success(let status):
             return .omokStatusUpdated(status)
+        case .failure(let error):
+            return .showAlert(.error(error))
+        }
+    }
+    
+    func kickOutUser(
+        _ gameID: Int,
+        _ userID: Int,
+        _ nickname: String
+    ) async -> Action {
+        let response = await gameUseCase.kickOutUser(gameID, userID)
+        
+        switch response {
+        case .success:
+            return .userKicked(nickname, userID)
         case .failure(let error):
             return .showAlert(.error(error))
         }

@@ -16,6 +16,7 @@ public struct EditNicknameFeature {
     
     public init() {}
     
+    @ObservableState
     public struct State: Equatable {
         public init() {}
         
@@ -38,7 +39,7 @@ public struct EditNicknameFeature {
         var alertState: AlertFeature.State = .init()
         
         @Shared(.userInfo) var userInfo = UserInfo()
-        @BindingState var nickname: String = ""
+        var nickname: String = ""
         var originalNickname: String = ""
         var nicknameValidStatus: NicknameValidStatus?
         var isButtonEnabled: Bool {
@@ -72,7 +73,7 @@ public struct EditNicknameFeature {
                 state.nickname = state.userInfo.nickname
                 state.originalNickname = state.userInfo.nickname
                 return .none
-            case .binding(\.$nickname):
+            case .binding(\.nickname):
                 let nickname = state.nickname
                 
                 guard !nickname.isEmpty else {
@@ -148,7 +149,9 @@ public struct EditNicknameFeature {
                 }
             case .nicknameUpdateCompleted:
                 state.isLoading = false
-                state.userInfo.nickname = state.nickname
+                state.$userInfo.withLock {
+                    $0.nickname = state.nickname
+                }
                 return .none
             }
         }
