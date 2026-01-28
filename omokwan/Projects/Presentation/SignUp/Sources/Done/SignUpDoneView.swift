@@ -11,18 +11,16 @@ import ComposableArchitecture
 import Base
 
 public struct SignUpDoneView: View {
-    private let store: StoreOf<SignUpDoneFeature>
-    @ObservedObject private var viewStore: ViewStoreOf<SignUpDoneFeature>
+    @Bindable private var store: StoreOf<SignUpDoneFeature>
 
     public init(store: StoreOf<SignUpDoneFeature>) {
         self.store = store
-        self.viewStore = ViewStore(store, observe: { $0 })
     }
     
     public var body: some View {
         signUpDoneBody
             .navigationBarBackButtonHidden(true)
-            .oLoading(isPresent: viewStore.isLoading)
+            .oLoading(isPresent: store.isLoading)
             .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {
                 alertView
             }
@@ -42,7 +40,7 @@ public struct SignUpDoneView: View {
                 status: .default,
                 type: .default,
                 action: {
-                    viewStore.send(.startButtonTapped)
+                    store.send(.startButtonTapped)
                 }
             ).padding(20)
         }
@@ -53,11 +51,11 @@ public struct SignUpDoneView: View {
 private extension SignUpDoneView {
     var alertView: some View {
         Group {
-            if let alertCase = viewStore.alertCase {
+            if let alertCase = store.alertCase {
                 switch alertCase {
                 case .error(let networkError):
                     CommonErrorAlertView(networkError) {
-                        viewStore.send(.alertAction(.dismiss))
+                        store.send(.alertAction(.dismiss))
                     }
                 }
             }

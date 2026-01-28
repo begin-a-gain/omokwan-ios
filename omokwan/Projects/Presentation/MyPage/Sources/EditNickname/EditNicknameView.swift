@@ -11,12 +11,10 @@ import DesignSystem
 import Base
 
 public struct EditNicknameView: View {
-    private let store: StoreOf<EditNicknameFeature>
-    @ObservedObject private var viewStore: ViewStoreOf<EditNicknameFeature>
+    @Bindable private var store: StoreOf<EditNicknameFeature>
     
     public init(store: StoreOf<EditNicknameFeature>) {
         self.store = store
-        viewStore = ViewStore(store) { $0 }
     }
     
     @FocusState private var focusedField: TextFieldType?
@@ -27,8 +25,8 @@ public struct EditNicknameView: View {
     
     public var body: some View {
         editNicknameBody
-            .onAppear { viewStore.send(.onAppear) }
-            .oLoading(isPresent: viewStore.isLoading)
+            .onAppear { store.send(.onAppear) }
+            .oLoading(isPresent: store.isLoading)
             .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {
                 alertView
             }
@@ -54,7 +52,7 @@ private extension EditNicknameView {
             title: "닉네임 변경",
             leadingIcon: OImages.icArrowLeft.swiftUIImage,
             leadingIconAction: {
-                viewStore.send(.navigateToBack)
+                store.send(.navigateToBack)
             }
         )
     }
@@ -80,15 +78,15 @@ private extension EditNicknameView {
             .padding(.bottom, 24)
             
             OTextField<TextFieldType>(
-                text: viewStore.$nickname,
+                text: $store.nickname,
                 focusedField: $focusedField,
                 focusedFieldType: .nickname,
                 placeholder: "ex.오목완",
-                errorMessage: mappingNicknameErrorMessage(viewStore.nicknameValidStatus),
+                errorMessage: mappingNicknameErrorMessage(store.nicknameValidStatus),
                 textMaxCount: 10,
                 trailingIcon: OImages.icCancel.swiftUIImage,
                 trailingIconButtonAction: {
-                    viewStore.send(.binding(.set(\.$nickname, "")))
+                    store.send(.binding(.set(\.nickname, "")))
                 }
             )
         }
@@ -113,10 +111,10 @@ private extension EditNicknameView {
     var buttonView: some View {
         OButton(
             title: "변경하기",
-            status: viewStore.isButtonEnabled ? .default : .disable,
+            status: store.isButtonEnabled ? .default : .disable,
             type: .default
         ) {
-            viewStore.send(.nicknameUpdateButtonTapped)
+            store.send(.nicknameUpdateButtonTapped)
         }
         .vPadding(16)
         .hPadding(20)
@@ -126,11 +124,11 @@ private extension EditNicknameView {
 private extension EditNicknameView {
     var alertView: some View {
         Group {
-            if let alertCase = viewStore.alertCase {
+            if let alertCase = store.alertCase {
                 switch alertCase {
                 case .error(let networkError):
                     CommonErrorAlertView(networkError) {
-                        viewStore.send(.alertAction(.dismiss))
+                        store.send(.alertAction(.dismiss))
                     }
                 }
             }

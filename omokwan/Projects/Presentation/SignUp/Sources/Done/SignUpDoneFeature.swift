@@ -16,6 +16,7 @@ public struct SignUpDoneFeature {
 
     public init() {}
     
+    @ObservableState
     public struct State: Equatable {
         public init() {}
 
@@ -91,8 +92,10 @@ private extension SignUpDoneFeature {
     }
     
     func setUserInfo(_ state: inout State, _ info: UserInfo) {
-        state.userInfo.id = info.id
-        state.userInfo.email = info.email
-        state.userInfo.nickname = info.nickname
+        state.$userInfo.withLock {
+            $0.id = info.id
+            $0.email = info.email
+            $0.nickname = info.nickname
+        }
     }
 }

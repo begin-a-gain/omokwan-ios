@@ -11,19 +11,17 @@ import ComposableArchitecture
 import Base
 
 public struct SignInView: View {
-    private let store: StoreOf<SignInFeature>
-    @ObservedObject private var viewStore: ViewStoreOf<SignInFeature>
+    @Bindable private var store: StoreOf<SignInFeature>
 
     public init(store: StoreOf<SignInFeature>) {
         self.store = store
-        self.viewStore = ViewStore(store, observe: { $0 })
     }
     
     public var body: some View {
         signInBody
             .navigationBarBackButtonHidden(true)
-            .oLoading(isPresent: viewStore.isLoading)
-            .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {
+            .oLoading(isPresent: store.isLoading)
+            .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
                 alertView
             }
     }
@@ -42,12 +40,12 @@ public struct SignInView: View {
     private var loginButton: some View {
         HStack(spacing: 20) {
             Button {
-                viewStore.send(.kakaoButtonTapped)
+                store.send(.kakaoButtonTapped)
             } label: {
                 OImages.icKakao.swiftUIImage
             }
             Button {
-                viewStore.send(.appleButtonTapped)
+                store.send(.appleButtonTapped)
             } label: {
                 OImages.icApple.swiftUIImage
             }
@@ -95,11 +93,11 @@ public struct SignInView: View {
 private extension SignInView {
     var alertView: some View {
         Group {
-            if let alertCase = viewStore.alertCase {
+            if let alertCase = store.alertCase {
                 switch alertCase {
                 case .error(let networkError):
                     CommonErrorAlertView(networkError) {
-                        viewStore.send(.alertAction(.dismiss))
+                        store.send(.alertAction(.dismiss))
                     }
                 }
             }
