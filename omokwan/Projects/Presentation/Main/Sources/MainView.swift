@@ -24,9 +24,7 @@ public struct MainView: View {
     public var body: some View {
         GeometryReader { proxy in
             ZStack {
-                let hasBottomSafeArea = proxy.safeAreaInsets.bottom > 0
-
-                mainContentView(hasBottomSafeArea)
+                mainContentView(DeviceInfo.shared.hasHomeIndicator)
                     .ignoresSafeArea(edges: .bottom)
                 
                 MainBottomTabBarShape()
@@ -36,12 +34,12 @@ public struct MainView: View {
                         radius: 20,
                         x: 0, y: 0
                     )
-                    .height(MainUtil.getBottomTabBarHeight(hasBottomSafeArea))
+                    .height(DeviceInfo.shared.bottomTabBarHeight)
                     .greedyHeight(.bottom)
                     .ignoresSafeArea(edges: .bottom)
                 
-                MainBottomTabBarView(viewStore: viewStore, hasBottomSafeArea: hasBottomSafeArea)
-                    .height(MainUtil.getBottomTabBarHeight(hasBottomSafeArea) + (MainConstants.circleButtonSize / 2))
+                MainBottomTabBarView(viewStore: viewStore)
+                    .height(DeviceInfo.shared.bottomTabBarHeight + (MainConstants.circleButtonSize / 2))
                     .overlay(alignment: .top) {
                         CenterPlusFloatingActionButton() {
                             viewStore.send(.addGameButtonTapped)
@@ -71,11 +69,11 @@ public struct MainView: View {
                 case .myGame:
                     MyGameView(
                         store: store.scope(state: \.myGameState, action: \.myGameAction)
-                    ).padding(.bottom, MainUtil.getBottomTabBarHeight(hasBottomSafeArea))
+                    ).padding(.bottom, DeviceInfo.shared.bottomTabBarHeight)
                 case .myPage:
                     MyPageView(
                         store: store.scope(state: \.myPageState, action: \.myPageAction)
-                    ).padding(.bottom, MainUtil.getBottomTabBarHeight(hasBottomSafeArea))
+                    ).padding(.bottom, DeviceInfo.shared.bottomTabBarHeight)
                 }
             }
         }
