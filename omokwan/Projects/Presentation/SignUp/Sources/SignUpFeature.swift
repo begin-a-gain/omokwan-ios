@@ -14,15 +14,16 @@ import Util
 @Reducer
 public struct SignUpFeature {
     @Dependency(\.accountUseCase) private var accountUseCase
+    @Dependency(\.mainQueue) private var mainQueue
 
     public init() {}
     
-    enum DebounceID {
-        case nickname
-    }
-    
     public struct State: Equatable{
         public init() {}
+        
+        fileprivate enum DebounceID {
+            case nickname
+        }
         
         public enum AlertCase: Equatable {
             case error(NetworkError)
@@ -49,9 +50,8 @@ public struct SignUpFeature {
         case nextButtonTapped
         case navigateToBack
         case binding(BindingAction<State>)
-        case validNickname
+        case validNickname(NicknameDuplicateValidation)
         case checkNicknameValidation(String)
-        case checkNicknameDuplicated(String)
         case nicknameUpdateCompleted
         case navigateToSignUpDone
         case alertAction(AlertFeature.Action)
@@ -64,32 +64,27 @@ public struct SignUpFeature {
         Reduce { state, action in
             switch action {
             case .binding(\.$nickname):
+                let nickname = state.nickname
+                
                 if state.nickname.isEmpty {
                     state.nicknameValidStatus = .empty
                     return .none
                 }
                 
-                let nickname = state.nickname
                 return .run { send in
                     await send(.checkNicknameValidation(nickname))
                 }
-                .debounce(id: DebounceID.nickname, for: .milliseconds(500), scheduler: DispatchQueue.main)
+                .debounce(id: State.DebounceID.nickname, for: .milliseconds(500), scheduler: mainQueue)
             case .binding:
                 return .none
             case .checkNicknameValidation(let nickname):
-                let isValid = nickname.checkRegexValidation(pattern: RegexPattern.nickname.regex)
-                
-                if !isValid {
+                guard nickname.checkRegexValidation(pattern: RegexPattern.nickname.regex) else {
                     state.nicknameValidStatus = .invalidFormat
                     return .none
                 }
                 
-                return .run { send in
-                    await send(.checkNicknameDuplicated(nickname))
-                }
-            case .checkNicknameDuplicated(let nickname):
                 state.isLoading = true
-                
+
                 return .run { send in
                     await send(checkNicknameDuplicated(nickname))
                 }
@@ -101,9 +96,15 @@ public struct SignUpFeature {
                 }
             case .navigateToBack:
                 return .none
-            case .validNickname:
+            case .validNickname(let nicknameValidation):
                 state.isLoading = false
-                state.nicknameValidStatus = .valid
+                
+                if nicknameValidation.isDuplicated {
+                    state.nicknameValidStatus = .duplicated
+                    return .none
+                }
+
+                state.nicknameValidStatus = nicknameValidation.isValid ? .valid : .invalidFormat
                 return .none
             case .nicknameUpdateCompleted:
                 state.isLoading = false
@@ -128,8 +129,8 @@ private extension SignUpFeature {
     func checkNicknameDuplicated(_ nickname: String) async -> Action {
         let response = await accountUseCase.checkNicknameDuplicated(nickname)
         switch response {
-        case .success:
-            return .validNickname
+        case .success(let duplicationValidation):
+            return .validNickname(duplicationValidation)
         case let .failure(error):
             return .showAlert(.error(error))
         }
