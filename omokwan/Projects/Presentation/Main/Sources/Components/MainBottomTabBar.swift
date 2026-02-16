@@ -8,14 +8,13 @@
 import SwiftUI
 import DesignSystem
 import ComposableArchitecture
+import Base
 
 struct MainBottomTabBarView: View {
     @ObservedObject private var viewStore: ViewStoreOf<MainFeature>
-    private let hasBottomSafeArea: Bool
 
-    init(viewStore: ViewStoreOf<MainFeature>, hasBottomSafeArea: Bool) {
+    init(viewStore: ViewStoreOf<MainFeature>) {
         self.viewStore = viewStore
-        self.hasBottomSafeArea = hasBottomSafeArea
     }
     
     var body: some View {
@@ -26,7 +25,7 @@ struct MainBottomTabBarView: View {
                 Spacer().height(16)
             }
        }
-        .height(MainUtil.getBottomTabBarHeight(hasBottomSafeArea))
+        .height(DeviceInfo.shared.bottomTabBarHeight)
         .greedyWidth()
     }
     

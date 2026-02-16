@@ -27,13 +27,13 @@ public struct HostChangeView: View {
                 .padding(.bottom, GameDetailConstants.bottomPadding)
             
             bottomShadowView
-                .height(GameDetailConstants.bottomTabBarHeight)
+                .height(DeviceInfo.shared.bottomTabBarHeight)
                 .greedyHeight(.bottom)
                 .ignoresSafeArea(edges: .bottom)
 
             bottomButtonView
-                .padding(.bottom, GameDetailConstants.homeIndicatorHeight)
-                .height(GameDetailConstants.bottomTabBarHeight)
+                .padding(.bottom, DeviceInfo.shared.homeIndicatorHeight)
+                .height(DeviceInfo.shared.bottomTabBarHeight)
                 .greedyHeight(.bottom)
                 .ignoresSafeArea(edges: .bottom)
         }

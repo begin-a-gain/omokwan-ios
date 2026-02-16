@@ -11,6 +11,7 @@ import SignIn
 import Main
 import Splash
 import SignUp
+import Base
 
 public struct RootView: View {
     @Bindable private var store: StoreOf<RootFeature>
@@ -22,8 +23,6 @@ public struct RootView: View {
     public var body: some View {
         let rootPathStore = store.scope(state: \.root, action: \.root)
         GeometryReader { proxy in
-            let hasBottomSafeArea = proxy.safeAreaInsets.bottom > 0
-            
             ZStack {
                 switch rootPathStore.state {
                 case .splash:
@@ -47,15 +46,18 @@ public struct RootView: View {
             .oToast(
                 isPresented: $store.isToastPresented,
                 message: store.state.toastMessage,
-                bottomPadding: getToastBottomPadding(hasBottomSafeArea)
+                bottomPadding: getToastBottomPadding(DeviceInfo.shared.hasHomeIndicator)
             )
+            .onAppear {
+                DeviceInfo.shared.update(bottom: proxy.safeAreaInsets.bottom)
+            }
         }
     }
 }
 
 private extension RootView {
     func getToastBottomPadding(_ hasBottomSafeArea: Bool) -> Double {
-        let bottomTabBarHeight = MainUtil.getBottomTabBarHeight(hasBottomSafeArea)
+        let bottomTabBarHeight = DeviceInfo.shared.bottomTabBarHeight
         let defaultPadding: Double = 24
         
         switch store.root {
