@@ -20,7 +20,7 @@ public struct SplashFeature {
     public init() {}
     
     @ObservableState
-    public struct State: Equatable {
+    public struct State {
         public init() {}
 
         public enum AlertCase: Equatable {
@@ -133,10 +133,6 @@ private extension SplashFeature {
     }
     
     func setUserInfo(_ state: inout State, _ info: UserInfo) {
-        state.$userInfo.withLock {
-            $0.id = info.id
-            $0.email = info.email
-            $0.nickname = info.nickname
-        }
+        state.userInfo = info
     }
 }
