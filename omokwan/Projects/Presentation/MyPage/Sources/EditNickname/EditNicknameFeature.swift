@@ -83,7 +83,7 @@ public struct EditNicknameFeature {
                 
                 return .run { send in
                     await send(.checkNicknameValidation(nickname))
-                }.debounce(id: State.DebounceID.defaultValidation, for: .milliseconds(200), scheduler: mainQueue)
+                }.debounce(id: State.DebounceID.defaultValidation, for: .milliseconds(500), scheduler: mainQueue)
             case .navigateToBack:
                 return .none
             case .binding:
@@ -149,9 +149,7 @@ public struct EditNicknameFeature {
                 }
             case .nicknameUpdateCompleted:
                 state.isLoading = false
-                state.$userInfo.withLock {
-                    $0.nickname = state.nickname
-                }
+                state.userInfo.nickname = state.nickname
                 return .none
             }
         }
