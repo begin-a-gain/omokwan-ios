@@ -29,6 +29,7 @@ public struct GameDetailSettingFeature {
         public enum AlertCase: Equatable {
             case error(NetworkError)
             case password
+            case exit
         }
         
         var alertCase: AlertCase?
@@ -89,6 +90,10 @@ public struct GameDetailSettingFeature {
         case configurationFetched(GameDetailSettingConfiguration)
         case initialDataFetched([GameCategory], GameDetailSettingConfiguration)
         case saveButtonTapped
+        case exitAlertButtonTapped
+        case exitRoom
+        case exitCompleted
+        case sendToast(String)
     }
     
     public var body: some ReducerOf<Self> {
@@ -183,7 +188,7 @@ public struct GameDetailSettingFeature {
             case .navigateToHostChange:
                 return .none
             case .exitButtonTapped:
-                return .none
+                return .send(.showAlert(.exit))
             case .maxNumOfPeopleSheet(.presented(let presentAction)):
                 switch presentAction {
                 case .selectButtonTapped(let value):
@@ -246,6 +251,29 @@ public struct GameDetailSettingFeature {
                 return .none
             case .saveButtonTapped:
                 return .none
+            case .exitAlertButtonTapped:
+                state.alertCase = nil
+                
+                let isMultipleUsers = state.gameUserInfos.count > 1
+                let isHost = state.gameUserInfos.first?.isHost == true
+
+                if isMultipleUsers && isHost {
+                    return .send(.hostChangeButtonTapped)
+                }
+
+                return .send(.exitRoom)
+            case .exitRoom:
+                state.isLoading = true
+                let gameID = state.gameID
+                return .run { send in
+                    await send(exitRoom(gameID))
+                }
+            case .exitCompleted:
+                state.isLoading = false
+                let title = state.gameTitle
+                return .send(.sendToast(title))
+            case .sendToast:
+                return .none
             }
         }
         .ifLet(\.$maxNumOfPeopleSheet, action: \.maxNumOfPeopleSheet) {
@@ -292,6 +320,16 @@ private extension GameDetailSettingFeature {
             return .showAlert(.error(.unKnownError))
         }
     }
+    
+    func exitRoom(_ gameID: Int) async -> Action {
+        let response = await gameUseCase.exitGame(gameID)
+        switch response {
+        case .success:
+            return .exitCompleted
+        case .failure(let error):
+            return .showAlert(.error(error))
+        }
+    }
 }
 
 private extension GameDetailSettingFeature {
@@ -307,6 +345,5 @@ private extension GameDetailSettingFeature {
         state.selectedCategory = state.categories.find(
             for: Int(configuration.categoryCode) ?? -1
         )
-        
     }
 }

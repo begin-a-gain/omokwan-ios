@@ -186,10 +186,20 @@ public struct GameRepository: GameRepositoryProtocol {
     
     public func postKickUser(gameID: Int, userID: Int) async -> Result<Void, NetworkError> {
         do {
-            let endPoint = EndPoint<RemoteResponseModel<KickUserResponse>>.postKickUser(
+            let endPoint = EndPoint<RemoteResponseModel<UserIDResponse>>.postKickUser(
                 gameID: gameID,
                 userID: userID
             )
+            let _ = try await apiService.call(endPoint)
+            return .success(())
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
+    
+    public func deleteGame(gameID: Int) async -> Result<Void, NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<UserIDResponse>>.deleteGame(gameID: gameID)
             let _ = try await apiService.call(endPoint)
             return .success(())
         } catch {

@@ -30,7 +30,9 @@ struct OToast: View {
         OText(
             message,
             token: .body_02,
-            color: textColor
+            color: textColor,
+            alignment: .leading,
+            lineLimit: 2
         )
         .greedyWidth(.leading)
         .padding(16)

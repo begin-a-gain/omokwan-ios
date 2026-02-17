@@ -1,10 +1,10 @@
 //
-//  KickUserResponse.swift
+//  UserIDResponse.swift
 //  Data
 //
 //  Created by 김동준 on 1/21/26
 //
 
-struct KickUserResponse: Decodable {
+struct UserIDResponse: Decodable {
     let userId: Int?
 }
