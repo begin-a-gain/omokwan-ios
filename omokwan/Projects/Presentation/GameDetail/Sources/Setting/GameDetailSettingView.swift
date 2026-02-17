@@ -191,6 +191,8 @@ private extension GameDetailSettingView {
                     errorAlertView(error)
                 case .password:
                     passwordAlertView
+                case .exit:
+                    exitAlertView
                 }
             }
         }
@@ -211,6 +213,22 @@ private extension GameDetailSettingView {
             onesPlaceText: viewStore.$onesPlace,
             primaryButtonAction: { viewStore.send(.alertAction(.dismiss)) },
             secondaryButtonAction: { viewStore.send(.passwordAlertConfirmButtonTapped) }
+        )
+    }
+    
+    var exitAlertView: some View {
+        OAlert(
+            type: .default,
+            title: "대국에서 나가시겠어요?",
+            content: "대국에 대한 모든 정보가 사라지며 복구할 수 없어요.",
+            primaryButtonAction: {
+                viewStore.send(.alertAction(.dismiss))
+            },
+            secondaryButtonTitle: "나가기",
+            secondaryButtonBackgroundColor: OColors.uiAlert.swiftUIColor,
+            secondaryButtonAction: {
+                viewStore.send(.exitAlertButtonTapped)
+            }
         )
     }
 }
