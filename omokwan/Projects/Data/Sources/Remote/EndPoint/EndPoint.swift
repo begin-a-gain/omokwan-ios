@@ -157,4 +157,11 @@ extension EndPoint {
             method: .POST
         )
     }
+    
+    static func deleteGame(gameID: Int) -> EndPoint<T> {
+        return EndPoint(
+            path: .deleteGame(gameID),
+            method: .DELETE
+        )
+    }
 }
