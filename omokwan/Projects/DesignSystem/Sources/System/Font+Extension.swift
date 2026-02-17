@@ -48,7 +48,7 @@ public extension Font {
         case .body_02:
             .custom(DesignSystemFontFamily.Suit.regular.name, size: 16)
         case .body_long_02:
-            .custom(DesignSystemFontFamily.Suit.regular.name, size: 16)
+            .custom(DesignSystemFontFamily.Suit.regular.name, size: 14)
         case .body_01:
             .custom(DesignSystemFontFamily.Suit.regular.name, size: 14)
         case .body_long_01:
