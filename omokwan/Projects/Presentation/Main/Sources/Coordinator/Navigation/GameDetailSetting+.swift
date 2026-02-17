@@ -24,6 +24,9 @@ extension MainCoordinatorFeature {
                 )
             )
             return .none
+        case .sendToast:
+            state.navigationPath.removeAll()
+            return .none
         default:
             return .none
         }
