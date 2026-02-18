@@ -16,8 +16,12 @@ public struct MyPageGameDetailFeature {
     public init() {}
     
     public struct State: Equatable {
-        public init(type: MyPageGameDetailType) {
+        public init(
+            type: MyPageGameDetailType,
+            info: [MyPageGameDetailModel]
+        ) {
             self.type = type
+            self.models = info
         }
         
         public enum AlertCase: Equatable {
@@ -28,8 +32,7 @@ public struct MyPageGameDetailFeature {
         
         var isLoading: Bool = false
         let type: MyPageGameDetailType
-        var models: [MyPageGameDetailModel] = []
-        var hasNext: Bool = false
+        var models: [MyPageGameDetailModel]
     }
 
     public enum Action {
@@ -45,24 +48,6 @@ public struct MyPageGameDetailFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                state.models = [
-                    .init(
-                        id: 28,
-                        title: "추가 테스트",
-                        ongoingDays: 3,
-                        combo: 30,
-                        stone: 12,
-                        dayDescription: "주중"
-                    ),
-                    .init(
-                        id: 30,
-                        title: "동준이 SE 공개 테스트 오랜만",
-                        ongoingDays: 31,
-                        combo: 18,
-                        stone: 99,
-                        dayDescription: "월,화,수,목"
-                    )
-                ]
                 return .none
             case .navigateToBack:
                 return .none
@@ -77,7 +62,7 @@ public struct MyPageGameDetailFeature {
                     format: DateFormatConstants.yearMonthDayRequestFormat
                 )
 
-                return .send(.navigateToGameDetail(roomInfo.id, roomInfo.title, selectedDateString))
+                return .send(.navigateToGameDetail(roomInfo.gameID, roomInfo.title, selectedDateString))
             case .navigateToGameDetail:
                 return .none
             }

@@ -78,7 +78,7 @@ private extension MyPageGameDetailView {
     
     var detailRoomCards: some View {
         LazyVStack(spacing: 0) {
-            ForEach(viewStore.models, id: \.id) { roomInfo in
+            ForEach(viewStore.models, id: \.gameID) { roomInfo in
                 MyPageGameDetailCard(
                     isLoading: viewStore.isLoading,
                     roomInfo: roomInfo,
@@ -87,26 +87,11 @@ private extension MyPageGameDetailView {
                         viewStore.send(.buttonTapped(roomInfo))
                     }
                 )
-                .id(roomInfo.id)
-            }
-            
-            if viewStore.hasNext {
-                progressView
+                .id(roomInfo.gameID)
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .padding(20)
-    }
-    
-    var progressView: some View {
-        ProgressView()
-            .controlSize(.large)
-            .tint(.blue)
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    // TODO: Call API
-                }
-            }
     }
 }
 

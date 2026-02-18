@@ -8,6 +8,7 @@
 import Base
 import ComposableArchitecture
 import GameDetail
+import Domain
 
 @Reducer
 public struct MainCoordinatorFeature {
@@ -90,8 +91,17 @@ private extension MainCoordinatorFeature {
         case .navigateToAccountDelete:
             state.navigationPath.append(.accountDelete(.init()))
             return .none
-        case .navigateToMyPageGameDetail(let type):
-            state.navigationPath.append(.myPageGameDetail(.init(type: type)))
+        case let .navigateToMyPageGameDetail(type, info):
+            let gameInfo: [MyPageGameDetailModel] = switch type {
+            case .ongoing:
+                info.inProgressGames
+            case .completed:
+                info.completedGames
+            }
+            
+            state.navigationPath.append(
+                .myPageGameDetail(.init(type: type, info: gameInfo))
+            )
             return .none
         default:
             return .none

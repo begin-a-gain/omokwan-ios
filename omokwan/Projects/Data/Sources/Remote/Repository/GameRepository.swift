@@ -206,4 +206,17 @@ public struct GameRepository: GameRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func getMyPage(userID: Int) async -> Result<MyPageGameInfo, NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<MyPageGameInfoResponse>>.getMyPage(userID: userID)
+            let response = try await apiService.call(endPoint)
+            guard let data = response.data else {
+                throw RemoteNetworkError.responseDataNilError
+            }
+            return .success(data.toDomain())
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }
