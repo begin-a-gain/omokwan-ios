@@ -109,18 +109,18 @@ private extension MyPageView {
                 VStack(spacing: 0) {
                     titleContentButton(
                         title: "진행 중인 대국",
-                        content: "123",
+                        content: "\(viewStore.info.inProgressGameCount)",
                         isShowArrowButton: true,
                         buttonAction: {
-                            viewStore.send(.navigateToMyPageGameDetail(.ongoing))
+                            viewStore.send(.navigateToMyPageGameDetail(.ongoing, viewStore.info))
                         }
                     )
                     titleContentButton(
                         title: "완료한 대국",
-                        content: "123",
+                        content: "\(viewStore.info.completedGameCount)",
                         isShowArrowButton: true,
                         buttonAction: {
-                            viewStore.send(.navigateToMyPageGameDetail(.completed))
+                            viewStore.send(.navigateToMyPageGameDetail(.completed, viewStore.info))
                         }
                     )
                 }

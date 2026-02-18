@@ -52,7 +52,7 @@ public struct MainFeature {
         case navigateToEditNickname
         case nicknameUpdateCompleted
         case navigateToAccountDelete
-        case navigateToMyPageGameDetail(MyPageGameDetailType)
+        case navigateToMyPageGameDetail(MyPageGameDetailType, MyPageGameInfo)
     }
     
     public var body: some ReducerOf<Self> {
@@ -182,8 +182,13 @@ private extension MainFeature {
             return .send(.navigateToEditNickname)
         case .navigateToAccountDelete:
             return .send(.navigateToAccountDelete)
-        case .navigateToMyPageGameDetail(let type):
-            return .send(.navigateToMyPageGameDetail(type))
+        case let .navigateToMyPageGameDetail(type, info):
+            return .send(.navigateToMyPageGameDetail(type, info))
+        case .passError(let networkError):
+            return .send(.showAlert(.error(networkError)))
+        case .setLoading(let value):
+            state.isMainLoading = value
+            return .none
         default:
             return .none
         }
