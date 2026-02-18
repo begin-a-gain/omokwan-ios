@@ -164,4 +164,11 @@ extension EndPoint {
             method: .DELETE
         )
     }
+    
+    static func getMyPage(userID: Int) -> EndPoint<T> {
+        return EndPoint(
+            path: .getMyPage(userID),
+            method: .GET
+        )
+    }
 }
