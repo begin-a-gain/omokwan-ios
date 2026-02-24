@@ -14,6 +14,7 @@ import ComposableArchitecture
 @main
 struct RootApp: App {
     @UIApplicationDelegateAdaptor var delegate: AppDelegate
+    let isMockData = true // TODO: RemoteConfig Flag 혹은 Local Flag로 개발
 
     init() {
         let kakaoAppKey = Bundle.main.infoDictionary?[AppKeys.KAKAOKEY] ?? ""
@@ -25,6 +26,12 @@ struct RootApp: App {
             RootView(
                 store: Store(initialState: RootFeature.State()) {
                     RootFeature()
+                } withDependencies: {
+                    if isMockData {
+                        $0.serverUseCase = .mockValue
+                        $0.accountUseCase = .mockValue
+                        $0.gameUseCase = .mockValue
+                    }
                 }
             )
             .onAppear(perform: UIApplication.shared.addTapGestureRecognizer)

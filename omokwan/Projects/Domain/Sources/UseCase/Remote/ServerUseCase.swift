@@ -23,6 +23,14 @@ extension ServerUseCase: DependencyKey {
     }()
 }
 
+extension ServerUseCase {
+    public static var mockValue: ServerUseCase = .init(
+        healthCheck: {
+            return .success(true)
+        }
+    )
+}
+
 extension DependencyValues {
     public var serverUseCase: ServerUseCase {
         get { self[ServerUseCase.self] }

@@ -86,6 +86,47 @@ extension GameUseCase: DependencyKey {
     }()
 }
 
+extension GameUseCase {
+    public static var mockValue: GameUseCase = .init(
+        fetchGameInfosFromDate: { dateString, isToday in
+            return .success(GameFixtures.myGameModelList)
+        },
+        createGame: { configuration in
+            return .success(())
+        },
+        fetchGameCategories: {
+            return .success(GameFixtures.gameCategories)
+        },
+        fetchDetailInfoWithPaging: { gameID, dateString, pageSize in
+            return .success(GameFixtures.detailInfo)
+        },
+        fetchDetailUserInfo: { gameID, userID in
+            return .success(GameFixtures.detailUserInfo)
+        },
+        updateTodayGameStatus: { gameID in
+            return .success(GameFixtures.omokStoneStatus)
+        },
+        participateRoom: { gameID, password in
+            return .success(true)
+        },
+        fetchAllGameInfoList: { request in
+            return .success(GameFixtures.roomInfo)
+        },
+        fetchGameParticipants: { gameID in
+            return .failure(.clientError)
+        },
+        updateGameHost: { gameID, userID in
+            return .success(())
+        },
+        fetchGameDetailSetting: { gameID in
+            return .success(GameFixtures.detailSetting)
+        },
+        kickOutUser: { gameID, userID in
+            return .success(())
+        }
+    )
+}
+
 extension DependencyValues {
     public var gameUseCase: GameUseCase {
         get { self[GameUseCase.self] }
