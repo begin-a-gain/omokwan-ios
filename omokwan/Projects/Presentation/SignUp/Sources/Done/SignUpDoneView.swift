@@ -28,13 +28,17 @@ public struct SignUpDoneView: View {
     
     private var signUpDoneBody: some View {
         VStack(spacing: 0) {
-            Spacer().height(164)
-            Rectangle()
-                .background(.gray)
-                .greedyWidth()
-                .hPadding(38)
-                .height(394)
-            Spacer()
+            titleText
+                .padding(.bottom, 64)
+                .padding(.leading, 32)
+                .greedyWidth(.leading)
+            
+            OImages.imgWelcome.swiftUIImage
+                .resizable()
+                .scaledToFit()
+                .hPadding(40)
+                .padding(.bottom, 46)
+            
             OButton(
                 title: "오목완 시작하기",
                 status: .default,
@@ -44,6 +48,29 @@ public struct SignUpDoneView: View {
                 }
             ).padding(20)
         }
+        .greedyHeight(.bottom)
+    }
+    
+    var titleText: some View {
+        var text: AttributedString {
+            let textString = """
+            환영해요!
+            오늘의 목표를
+            완료하러 가볼까요?
+            """
+            var text = AttributedString(textString)
+
+            for char in ["오", "목", "완"] {
+                if let range = text.range(of: char) {
+                    text[range].foregroundColor = OColors.oPrimary.swiftUIColor
+                }
+            }
+            return text
+        }
+        
+        return Text(text)
+            .font(.suit(token: .title_light))
+            .lineLimit(3)
     }
 }
 

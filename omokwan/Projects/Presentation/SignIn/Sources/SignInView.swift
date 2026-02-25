@@ -34,7 +34,7 @@ public struct SignInView: View {
             OImages.imgOmok.swiftUIImage
                 .resizable()
                 .scaledToFit()
-                .padding(.horizontal, 25)
+                .hPadding(24)
                 .padding(.bottom, 10)
             
             loginButton
