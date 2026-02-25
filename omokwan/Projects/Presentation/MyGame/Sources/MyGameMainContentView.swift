@@ -69,6 +69,9 @@ struct MyGameMainContentView: View {
                 item: item,
                 stoneTapAction: { info in
                     viewStore.send(.stoneTapped(info))
+                },
+                quickCompleteAction: { info in
+                    viewStore.send(.quickCompleteButtonTapped(info))
                 }
             )
         }
