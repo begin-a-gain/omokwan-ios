@@ -15,18 +15,21 @@ struct MyGameStone: View {
     let item: MyGameModel
     let omokStoneType: OmokStoneType
     let stoneTapAction: (MyGameModel) -> Void
-    
+    let quickCompleteAction: (MyGameModel) -> Void
+
     init(
         fullRectSize: CGFloat,
         stoneSize: CGFloat,
         item: MyGameModel,
-        stoneTapAction: @escaping (MyGameModel) -> Void
+        stoneTapAction: @escaping (MyGameModel) -> Void,
+        quickCompleteAction: @escaping (MyGameModel) -> Void
     ) {
         self.fullRectSize = fullRectSize
         self.stoneSize = stoneSize
         self.item = item
         self.stoneTapAction = stoneTapAction
-        
+        self.quickCompleteAction = quickCompleteAction
+
         self.omokStoneType = switch item.myGameCompleteStatus {
         case .complete: .primary
         case .inComplete, .inCompleteWithSkip: .white
@@ -95,21 +98,25 @@ private extension MyGameStone {
         ZStack(alignment: .topTrailing) {
             Color.clear
             
-            ZStack {
-                Circle()
-                    .fill(stoneStatusButtonBackgroundColor)
-                    .padding(.trailing, 4)
-                    .padding(.top, 4)
-                    .frame(fullRectSize / 3, fullRectSize / 3)
-                    .modifier(
-                        MyGameStoneStatusViewModifier(
-                            myGameCompleteStatus: item.myGameCompleteStatus,
-                            size: fullRectSize / 3
+            Button {
+                quickCompleteAction(item)
+            } label: {
+                ZStack {
+                    Circle()
+                        .fill(stoneStatusButtonBackgroundColor)
+                        .padding(.trailing, 4)
+                        .padding(.top, 4)
+                        .frame(fullRectSize / 3, fullRectSize / 3)
+                        .modifier(
+                            MyGameStoneStatusViewModifier(
+                                myGameCompleteStatus: item.myGameCompleteStatus,
+                                size: fullRectSize / 3
+                            )
                         )
-                    )
-                stoneStatusButtonContent
-                    .padding(.trailing, 4)
-                    .padding(.top, 4)
+                    stoneStatusButtonContent
+                        .padding(.trailing, 4)
+                        .padding(.top, 4)
+                }
             }
         }.frame(fullRectSize, fullRectSize)
     }

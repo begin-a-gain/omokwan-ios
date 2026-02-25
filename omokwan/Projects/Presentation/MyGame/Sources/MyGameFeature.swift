@@ -45,7 +45,9 @@ public struct MyGameFeature {
         case fetchGameInfo
         case passError(NetworkError)
         case stoneTapped(MyGameModel)
+        case quickCompleteButtonTapped(MyGameModel)
         case navigateToGameDetail(Int, String, String)
+        case omokStatusUpdated(Int)
     }
     
     public var body: some ReducerOf<Self> {
@@ -143,6 +145,34 @@ public struct MyGameFeature {
                 // TODO: 추방 당한, 셀프로 나간, 끝난 대국에 대한 API가 나오면 그 때 세부 작업. 현재는 detail로 이동만.
                 let dateString = state.selectedDate.formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
                 return .send(.navigateToGameDetail(stoneInfo.gameID, stoneInfo.name, dateString))
+            case .quickCompleteButtonTapped(let stoneInfo):
+                switch stoneInfo.myGameCompleteStatus {
+                case .inComplete:
+                    return .concatenate([
+                        .send(.setLoading(true)),
+                        .run { send in
+                            await send(updateTodayOmokStatus(stoneInfo.gameID))
+                        }
+                    ])
+                default:
+                    return .none
+                }
+            case let .omokStatusUpdated(gameID):
+                state.myGameList = state.myGameList.map { (game: MyGameModel?) -> MyGameModel? in
+                    guard let game else { return nil }
+                    guard game.gameID == gameID else { return game }
+
+                    return MyGameModel(
+                        gameID: game.gameID,
+                        name: game.name,
+                        onGoingDays: game.onGoingDays,
+                        participants: game.participants,
+                        maxParticipants: game.maxParticipants,
+                        myGameCompleteStatus: .complete,
+                        isPrivateRoom: game.isPrivateRoom
+                    )
+                }
+                return .send(.setLoading(false))
             case .navigateToGameDetail:
                 return .none
             }
@@ -187,6 +217,17 @@ private extension MyGameFeature {
         switch response {
         case .success(let myGameModels):
             return .gameInfoFetched(myGameModels)
+        case .failure(let error):
+            return .passError(error)
+        }
+    }
+    
+    func updateTodayOmokStatus(_ gameID: Int) async -> Action {
+        let response = await gameUseCase.updateTodayGameStatus(gameID)
+        
+        switch response {
+        case .success:
+            return .omokStatusUpdated(gameID)
         case .failure(let error):
             return .passError(error)
         }
