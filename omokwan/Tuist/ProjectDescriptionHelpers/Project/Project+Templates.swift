@@ -55,7 +55,8 @@ public extension Project {
     static let fontFamilys: [Plist.Value] = [
         .string("SUIT-Bold.otf"),
         .string("SUIT-Medium.otf"),
-        .string("SUIT-Regular.otf")
+        .string("SUIT-Regular.otf"),
+        .string("SUIT-Light.otf")
     ]
     
     static func designSystemModule(

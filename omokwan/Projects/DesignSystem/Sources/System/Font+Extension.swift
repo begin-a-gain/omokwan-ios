@@ -25,6 +25,9 @@ public extension Font {
         
         case caption
         case caption_long
+        
+        case body_light
+        case title_light
     }
     
     static func suit(token: FontToken) -> Font {
@@ -57,6 +60,10 @@ public extension Font {
             .custom(DesignSystemFontFamily.Suit.regular.name, size: 12)
         case .caption_long:
             .custom(DesignSystemFontFamily.Suit.regular.name, size: 12)
+        case .body_light:
+            .custom(DesignSystemFontFamily.Suit.light.name, size: 28)
+        case .title_light:
+            .custom(DesignSystemFontFamily.Suit.light.name, size: 36)
         }
     }
 }

@@ -56,6 +56,9 @@ public struct OText: View {
         
         case .caption: return 4
         case .caption_long: return 8
+            
+        case .body_light: return 0
+        case .title_light: return 0
         }
     }
 }
