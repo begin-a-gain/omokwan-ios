@@ -34,6 +34,7 @@ public struct OSheetView<Content: View>: View {
             }
             sheetButton
         }
+        .background(OColors.uiBackground.swiftUIColor)
     }
     
     private var sheetTitle: some View {

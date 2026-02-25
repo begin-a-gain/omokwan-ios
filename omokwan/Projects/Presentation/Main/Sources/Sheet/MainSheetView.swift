@@ -32,25 +32,23 @@ struct MainSheetView: View {
 
 // MARK: Body
 private extension MainSheetView {
-    private var bodyView: some View {
+    var bodyView: some View {
         HStack(spacing: 16) {
             ForEach(MainSheetFeature.State.AddGameType.allCases, id: \.self) { item in
                 addGameCardView(type: item)
             }
         }
-        .vPadding(14)
+        .vPadding(16)
         .hPadding(20)
     }
     
-    private func addGameCardView(type: MainSheetFeature.State.AddGameType) -> some View {
+    func addGameCardView(type: MainSheetFeature.State.AddGameType) -> some View {
         Button {
             viewStore.send(.selectType(type))
         } label: {
             VStack(spacing: 16) {
                 // TODO: Change Image Later
-                Rectangle()
-                    .fill(.gray)
-                    .frame(width: 121, height: 147)
+                getImage(type)
                 OText(
                     getGameCardTitle(type: type),
                     token: .title_02,
@@ -68,7 +66,16 @@ private extension MainSheetView {
         }
     }
     
-    private func getGameCardTitle(type: MainSheetFeature.State.AddGameType) -> String {
+    func getImage(_ type: MainSheetFeature.State.AddGameType) -> some View {
+        switch type {
+        case .add:
+            OImages.imgAdd.swiftUIImage
+        case .participate:
+            OImages.imgSearch.swiftUIImage
+        }
+    }
+    
+    func getGameCardTitle(type: MainSheetFeature.State.AddGameType) -> String {
         switch type {
         case .add:
             return "대국 만들기"

@@ -38,9 +38,16 @@ public struct SplashView: View {
     }
     
     private var splashBody: some View {
-        VStack(spacing: 0) {
-            Text("Splash~ Hi~")
+        VStack(spacing: 12) {
+            OImages.imgSplashLogo.swiftUIImage
+            OText(
+                "OMOKWAN",
+                token: .body_light,
+                color: .white
+            )
         }
+        .greedyFrame()
+        .background(OColors.uiPrimary.swiftUIColor)
     }
 }
 

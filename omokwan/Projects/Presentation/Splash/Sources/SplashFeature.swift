@@ -52,7 +52,12 @@ public struct SplashFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                return .send(.checkAppTrackingPermission)
+                return .concatenate([
+                    .run { send in
+                        try? await Task.sleep(for: .seconds(1))
+                    },
+                    .send(.checkAppTrackingPermission)
+                ])
             case .checkAppTrackingPermission:
                 let needTrackingAuthorization = firebaseUseCase.needTrackingAuthorization
                 if needTrackingAuthorization {
