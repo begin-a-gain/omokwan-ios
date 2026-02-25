@@ -36,7 +36,7 @@ extension EndPoint {
 
 // MARK: Account
 extension EndPoint {
-    static func postSignIn(provider: String, requestBody: SignInRequest) -> EndPoint<T> {
+    static func postSignIn<Body: Encodable>(provider: String, requestBody: Body) -> EndPoint<T> {
         return EndPoint(path: .postSignIn(provider), method: .POST, requestBody: requestBody)
     }
     
