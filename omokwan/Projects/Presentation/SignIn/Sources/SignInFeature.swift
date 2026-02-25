@@ -59,7 +59,7 @@ public struct SignInFeature {
             case .receiveKakaoTokenSuccessfully(let token):
                 return .run { send in
                     await send(
-                        signIn(provider: .kakao, accessToken: token)
+                        signIn(provider: .kakao, token: token)
                     )
                 }
             case .kakaoLoginError(let error):
@@ -67,11 +67,16 @@ public struct SignInFeature {
                 state.isLoading = false
                 return .none
             case .appleButtonTapped:
+                state.isLoading = true
                 return .run { send in
                     await send(signInWithApple())
                 }
             case .receiveAppleTokenSuccessfully(let token):
-                return .send(.navigateToSignUp)
+                return .run { send in
+                    await send(
+                        signIn(provider: .apple, token: token)
+                    )
+                }
             case .appleLoginError(let error):
                 // TODO: 애플 에러 핸들링
                 return .none
@@ -126,8 +131,8 @@ private extension SignInFeature {
         }
     }
     
-    func signIn(provider: SocialSignProvider, accessToken: String) async -> Action {
-        let response = await accountUseCase.signIn(provider, accessToken)
+    func signIn(provider: SocialSignProvider, token: String) async -> Action {
+        let response = await accountUseCase.signIn(provider, token)
         switch response {
         case let .success(signInResult):
             _ = localUseCase.setAccessToken(signInResult.accessToken)

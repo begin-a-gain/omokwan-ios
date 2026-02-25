@@ -14,13 +14,24 @@ public struct AccountRepository: AccountRepositoryProtocol {
         self.apiService = apiService
     }
     
-    public func postSignIn(provider: String, accessToken: String) async -> Result<SignInResult, NetworkError> {
+    public func postSignIn(provider: SocialSignProvider, token: String) async -> Result<SignInResult, NetworkError> {
         do {
-            let endPoint = EndPoint<RemoteResponseModel<SignInResponse>>.postSignIn(
-                provider: provider,
-                requestBody: SignInRequest(accessToken: accessToken)
-            )
-            let response = try await apiService.call(endPoint)
+            let response: RemoteResponseModel<SignInResponse>
+
+            switch provider {
+            case .kakao:
+                let endPoint = EndPoint<RemoteResponseModel<SignInResponse>>.postSignIn(
+                    provider: provider.rawValue,
+                    requestBody: KakaoSignInRequest(accessToken: token)
+                )
+                response = try await apiService.call(endPoint)
+            case .apple:
+                let endPoint = EndPoint<RemoteResponseModel<SignInResponse>>.postSignIn(
+                    provider: provider.rawValue,
+                    requestBody: AppleSignInRequest(identityToken: token)
+                )
+                response = try await apiService.call(endPoint)
+            }
             return .success(try SignInMapper.toSignInResult(response.data))
         } catch {
             return .failure(ErrorMapper.toNetworkError(error))

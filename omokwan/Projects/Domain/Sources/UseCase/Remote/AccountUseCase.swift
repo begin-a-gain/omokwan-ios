@@ -9,7 +9,7 @@ import DI
 import Dependencies
 
 public struct AccountUseCase {
-    public let signIn: (_ provider: SocialSignProvider, _ accessToken: String) async -> Result<SignInResult, NetworkError>
+    public let signIn: (_ provider: SocialSignProvider, _ token: String) async -> Result<SignInResult, NetworkError>
     public let checkNicknameDuplicated: (_ nickname: String) async -> Result<NicknameDuplicateValidation, NetworkError>
     public let updateNickname: (_ nickname: String) async -> Result<Void, NetworkError>
     public let fetchUserInfo: () async -> Result<UserInfo, NetworkError>
@@ -21,10 +21,10 @@ extension AccountUseCase: DependencyKey {
     public static var liveValue: AccountUseCase = {
         let repository: AccountRepositoryProtocol = DIContainer.shared.resolve()
         return AccountUseCase(
-            signIn: { provider, accessToken in
+            signIn: { provider, token in
                 await repository.postSignIn(
-                    provider: provider.rawValue,
-                    accessToken: accessToken
+                    provider: provider,
+                    token: token
                 )
             },
             checkNicknameDuplicated: { nickname in
