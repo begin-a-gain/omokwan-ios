@@ -28,13 +28,20 @@ public struct SignInView: View {
     
     private var signInBody: some View {
         VStack(spacing: 0) {
-            Spacer().height(78)
-            Rectangle().fill(.gray).greedyWidth().height(484).hPadding(20)
-            Spacer().height(32)
+            titleSection
+                .padding(.bottom, 28)
+            
+            OImages.imgOmok.swiftUIImage
+                .resizable()
+                .scaledToFit()
+                .padding(.horizontal, 25)
+                .padding(.bottom, 10)
+            
             loginButton
-            Spacer()
+                .padding(.bottom, 16)
             policyView
         }
+        .greedyHeight(.bottom)
     }
     
     private var loginButton: some View {
@@ -102,5 +109,33 @@ private extension SignInView {
                 }
             }
         }
+    }
+}
+
+private extension SignInView {
+    var titleSection: some View {
+        VStack(spacing: 12) {
+            OImages.imgSplashLogo.swiftUIImage
+                .renderingMode(.template)
+                .foregroundStyle(OColors.uiPrimary.swiftUIColor)
+            
+            titleText
+        }
+    }
+    
+    var titleText: some View {
+        var text: AttributedString {
+            var text = AttributedString("오늘의 목표 완료")
+
+            for char in ["오", "목", "완"] {
+                if let range = text.range(of: char) {
+                    text[range].foregroundColor = OColors.oPrimary.swiftUIColor
+                }
+            }
+            return text
+        }
+        
+        return Text(text)
+            .font(.suit(token: .body_light))
     }
 }
