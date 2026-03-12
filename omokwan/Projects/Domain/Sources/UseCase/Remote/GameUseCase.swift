@@ -23,6 +23,7 @@ public struct GameUseCase {
     public let kickOutUser: (_ gameID: Int, _ userID: Int) async -> Result<Void, NetworkError>
     public let exitGame: (_ gameID: Int) async -> Result<Void, NetworkError>
     public let fetchMyPageGameInfo: (_ userID: Int) async -> Result<MyPageGameInfo, NetworkError>
+    public let updateGameDetailSetting: (_ gameID: Int, _ request: GameDetailSettingRequestDTO) async -> Result<Void, NetworkError>
 }
 
 extension GameUseCase: DependencyKey {
@@ -89,6 +90,12 @@ extension GameUseCase: DependencyKey {
             },
             fetchMyPageGameInfo: { userID in
                 await repository.getMyPage(userID: userID)
+            },
+            updateGameDetailSetting: { gameID, request in
+                await repository.putGameDetailSetting(
+                    gameID: gameID,
+                    request: request
+                )
             }
         )
     }()

@@ -219,4 +219,20 @@ public struct GameRepository: GameRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func putGameDetailSetting(
+        gameID: Int,
+        request: GameDetailSettingRequestDTO
+    ) async -> Result<Void, NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<EmptyResponse>>.putGameDetailSetting(
+                gameID: gameID,
+                request: request
+            )
+            let response = try await apiService.call(endPoint)
+            return .success(())
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }
