@@ -181,4 +181,12 @@ extension EndPoint {
             requestBody: request
         )
     }
+    
+    static func postInviteUsers(gameID: Int, request: InviteUsersRequest) -> EndPoint<T> {
+        return EndPoint(
+            path: .postInviteUsers(gameID),
+            method: .POST,
+            requestBody: request
+        )
+    }
 }

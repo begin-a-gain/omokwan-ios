@@ -235,4 +235,20 @@ public struct GameRepository: GameRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func postInviteUsers(
+        gameID: Int,
+        userIDs: [Int]
+    ) async -> Result<Void, NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<EmptyResponse>>.postInviteUsers(
+                gameID: gameID,
+                request: InviteUsersRequest(userIds: userIDs)
+            )
+            let response = try await apiService.call(endPoint)
+            return .success(())
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }
