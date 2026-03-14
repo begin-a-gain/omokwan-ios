@@ -11,6 +11,7 @@ import Dependencies
 public struct NotificationUseCase {
     public let fetchNotificationList: (_ filter: NotificationFilter) async -> Result<[NotificationInfo], NetworkError>
     public let fetchNotificationBadgeStatus: () async -> Result<NotificationBadgeStatus, NetworkError>
+    public let patchNotificationRead: (_ id: Int?) async -> Result<Void, NetworkError>
 }
 
 extension NotificationUseCase: DependencyKey {
@@ -22,6 +23,9 @@ extension NotificationUseCase: DependencyKey {
             },
             fetchNotificationBadgeStatus: {
                 await repository.getNotificationBadgeStatus()
+            },
+            patchNotificationRead: { id in
+                await repository.patchNotificationRead(id: id)
             }
         )
     }()

@@ -207,4 +207,12 @@ extension EndPoint {
             method: .GET
         )
     }
+    
+    static func patchNotificationRead(request: NotificationReadRequest) -> EndPoint<T> {
+        return EndPoint(
+            path: .patchNotiRead,
+            method: .PATCH,
+            requestBody: request
+        )
+    }
 }

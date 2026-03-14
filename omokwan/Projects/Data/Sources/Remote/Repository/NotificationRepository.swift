@@ -34,4 +34,15 @@ public struct NotificationRepository: NotificationRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func patchNotificationRead(id: Int?) async -> Result<Void, NetworkError> {
+        do {
+            let request = NotificationReadRequest(notificationId: id)
+            let endPoint = EndPoint<EmptyResponse>.patchNotificationRead(request: request)
+            let _ = try await apiService.call(endPoint)
+            return .success(())
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }
