@@ -10,4 +10,5 @@ public enum HttpMethod: String {
     case POST = "POST"
     case DELETE = "DELETE"
     case PUT = "PUT"
+    case PATCH = "PATCH"
 }

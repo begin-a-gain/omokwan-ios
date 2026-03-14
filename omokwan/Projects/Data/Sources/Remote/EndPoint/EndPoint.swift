@@ -5,6 +5,8 @@
 //  Created by 김동준 on 6/9/25
 //
 
+import Domain
+
 struct EndPoint<T>: EndPointProtocol {
     public var path: EndPointPath
     public var method: HttpMethod
@@ -169,6 +171,48 @@ extension EndPoint {
         return EndPoint(
             path: .getMyPage(userID),
             method: .GET
+        )
+    }
+    
+    static func putGameDetailSetting(gameID: Int, request: GameDetailSettingRequestDTO) -> EndPoint<T> {
+        return EndPoint(
+            path: .putGameDetailSetting(gameID),
+            method: .PUT,
+            requestBody: request
+        )
+    }
+    
+    static func postInviteUsers(gameID: Int, request: InviteUsersRequest) -> EndPoint<T> {
+        return EndPoint(
+            path: .postInviteUsers(gameID),
+            method: .POST,
+            requestBody: request
+        )
+    }
+}
+
+// MARK: Notification
+extension EndPoint {
+    static func getNotificationList(_ queryParameters: NotificationFilterRequest) -> EndPoint<T> {
+        return EndPoint(
+            path: .getNotiList,
+            method: .GET,
+            queryParameters: queryParameters
+        )
+    }
+    
+    static func getNotificationBadgeStatus() -> EndPoint<T> {
+        return EndPoint(
+            path: .getNotiBadgeStatus,
+            method: .GET
+        )
+    }
+    
+    static func patchNotificationRead(request: NotificationReadRequest) -> EndPoint<T> {
+        return EndPoint(
+            path: .patchNotiRead,
+            method: .PATCH,
+            requestBody: request
         )
     }
 }

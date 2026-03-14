@@ -28,6 +28,11 @@ enum EndPointPath {
     case postKickUser(Int, Int)
     case deleteGame(Int)
     case getMyPage(Int)
+    case putGameDetailSetting(Int)
+    case postInviteUsers(Int)
+    case getNotiList
+    case getNotiBadgeStatus
+    case patchNotiRead
 
     var value: String {
         switch self {
@@ -75,6 +80,16 @@ enum EndPointPath {
             "/matches/\(gameID)/participants/me"
         case .getMyPage(let userID):
             "/users/\(userID)/mypage"
+        case .putGameDetailSetting(let gameID):
+            "/matches/\(gameID)/settings"
+        case .postInviteUsers(let gameID):
+            "/matches/\(gameID)/invites"
+        case .getNotiList:
+            "/notifications"
+        case .getNotiBadgeStatus:
+            "/notifications/unread-status"
+        case .patchNotiRead:
+            "/notifications/read"
         }
     }
 }

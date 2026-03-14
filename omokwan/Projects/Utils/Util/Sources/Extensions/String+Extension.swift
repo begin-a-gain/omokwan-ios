@@ -5,6 +5,8 @@
 //  Created by 김동준 on 7/13/25
 //
 
+import Foundation
+
 public extension String {
     func checkRegexValidation(pattern regex: String) -> Bool {
         return range(of: regex, options: .regularExpression) != nil
@@ -17,5 +19,12 @@ public extension String {
             return String(scalar)
         }
         return self
+    }
+    
+    func toDate(timeZone: TimeZone = TimeZone(identifier: "Asia/Seoul") ?? .current) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.timeZone = timeZone
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter.date(from: self)
     }
 }
