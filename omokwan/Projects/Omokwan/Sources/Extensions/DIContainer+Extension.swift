@@ -19,6 +19,7 @@ extension DIContainer {
         registerServerDependency()
         registerGameDependency()
         registerLocalStorageDependency()
+        registerNotificationDependency()
     }
     
     private func registerKeyChainStorage() {
@@ -77,6 +78,13 @@ extension DIContainer {
         container.register(LocalRepositoryProtocol.self) { resolver in
             let keyChainStorage: KeyChainStorage = resolver.resolve()
             return LocalRepository(keyChainStorage: keyChainStorage)
+        }
+    }
+    
+    private func registerNotificationDependency() {
+        container.register(NotificationRepositoryProtocol.self) { resolver in
+            let apiService: ApiService = resolver.resolve()
+            return NotificationRepository(apiService: apiService)
         }
     }
 }

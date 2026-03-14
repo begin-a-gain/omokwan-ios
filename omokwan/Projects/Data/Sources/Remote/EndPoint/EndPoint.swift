@@ -190,3 +190,14 @@ extension EndPoint {
         )
     }
 }
+
+// MARK: Notification
+extension EndPoint {
+    static func getNotificationList(_ queryParameters: NotificationFilterRequest) -> EndPoint<T> {
+        return EndPoint(
+            path: .getNotiList,
+            method: .GET,
+            queryParameters: queryParameters
+        )
+    }
+}
