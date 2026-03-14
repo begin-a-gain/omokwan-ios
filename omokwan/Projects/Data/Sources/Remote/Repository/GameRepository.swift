@@ -229,7 +229,7 @@ public struct GameRepository: GameRepositoryProtocol {
                 gameID: gameID,
                 request: request
             )
-            let response = try await apiService.call(endPoint)
+            let _ = try await apiService.call(endPoint)
             return .success(())
         } catch {
             return .failure(ErrorMapper.toNetworkError(error))
@@ -245,7 +245,7 @@ public struct GameRepository: GameRepositoryProtocol {
                 gameID: gameID,
                 request: InviteUsersRequest(userIds: userIDs)
             )
-            let response = try await apiService.call(endPoint)
+            let _ = try await apiService.call(endPoint)
             return .success(())
         } catch {
             return .failure(ErrorMapper.toNetworkError(error))
