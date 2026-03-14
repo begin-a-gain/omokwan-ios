@@ -35,4 +35,12 @@ struct NotificationMapper {
             )
         }
     }
+    
+    static func toNotificationBadgeStatus(_ response: NotificationBadgeResponse?) throws -> NotificationBadgeStatus {
+        guard let response = response else {
+            throw RemoteNetworkError.responseDataNilError
+        }
+        
+        return NotificationBadgeStatus(hasBadge: response.hasBadge ?? false)
+    }
 }

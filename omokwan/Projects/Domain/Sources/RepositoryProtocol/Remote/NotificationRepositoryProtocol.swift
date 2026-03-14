@@ -7,4 +7,5 @@
 
 public protocol NotificationRepositoryProtocol {
     func getNotificationList(_ filter: NotificationFilter) async -> Result<[NotificationInfo], NetworkError>
+    func getNotificationBadgeStatus() async -> Result<NotificationBadgeStatus, NetworkError>
 }

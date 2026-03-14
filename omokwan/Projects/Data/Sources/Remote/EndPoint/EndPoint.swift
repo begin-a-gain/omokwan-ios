@@ -200,4 +200,11 @@ extension EndPoint {
             queryParameters: queryParameters
         )
     }
+    
+    static func getNotificationBadgeStatus() -> EndPoint<T> {
+        return EndPoint(
+            path: .getNotiBadgeStatus,
+            method: .GET
+        )
+    }
 }

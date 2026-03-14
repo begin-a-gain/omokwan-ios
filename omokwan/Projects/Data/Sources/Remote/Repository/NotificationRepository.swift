@@ -24,4 +24,14 @@ public struct NotificationRepository: NotificationRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func getNotificationBadgeStatus() async -> Result<NotificationBadgeStatus, NetworkError> {
+        do {
+            let endPoint = EndPoint<RemoteResponseModel<NotificationBadgeResponse>>.getNotificationBadgeStatus()
+            let response = try await apiService.call(endPoint)
+            return .success(try NotificationMapper.toNotificationBadgeStatus(response.data))
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }
