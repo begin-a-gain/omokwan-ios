@@ -38,6 +38,7 @@ public struct MyGameFeature {
         case dateArrowRightButtonTapped
         case datePickerButtonTapped
         case navigateToMyGameAddCategory
+        case navigateToNotification
         case bellButtonTapped
         case myGameSheet(PresentationAction<MyGameSheetFeature.Action>)
         case gameCreated(String)
@@ -88,6 +89,8 @@ public struct MyGameFeature {
                 return .none
             case .navigateToMyGameAddCategory:
                 return .none
+            case .navigateToNotification:
+                return .none
             case .myGameSheet(let action):
                 switch action {
                 case .presented(let sheetAction):
@@ -103,31 +106,7 @@ public struct MyGameFeature {
                     return .none
                 }
             case .bellButtonTapped:
-                // 임시 로직
-                let randomValue: Int = Int.random(in: 0...2)
-                var myGameCompleteStatus: MyGameCompleteStatus = .complete
-                if randomValue == 0 {
-                    myGameCompleteStatus = .complete
-                } else if randomValue == 1 {
-                    myGameCompleteStatus = .inComplete
-                } else {
-                    myGameCompleteStatus = .inCompleteWithSkip
-                }
-                addSingleValueToMyGameList(
-                    MyGameModel(
-                        gameID: 1,
-                        name: "",
-                        onGoingDays: 1,
-                        participants: 1,
-                        maxParticipants: 1,
-                        myGameCompleteStatus: myGameCompleteStatus,
-                        isPrivateRoom: true
-                    ),
-                    state: &state
-                )
-                
-                checkAndAppendNilIfNeeded(state: &state)
-                return .none
+                return .send(.navigateToNotification)
             case .gameCreated(let title):
                 // TODO: 대국 생성 완료 토스트 생성
                 print("DONGJUN -> \(title) 생성 완료")

@@ -11,6 +11,7 @@ import MyGameAdd
 import MyGameParticipate
 import GameDetail
 import MyPage
+import Notification
 
 extension MainCoordinatorFeature {
     @Reducer
@@ -25,5 +26,6 @@ extension MainCoordinatorFeature {
         case editNickname(EditNicknameFeature)
         case accountDelete(AccountDeleteFeature)
         case myPageGameDetail(MyPageGameDetailFeature)
+        case notification(NotificationFeature)
     }
 }

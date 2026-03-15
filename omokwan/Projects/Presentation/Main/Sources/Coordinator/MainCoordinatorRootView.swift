@@ -12,6 +12,7 @@ import MyGameAdd
 import MyGameParticipate
 import GameDetail
 import MyPage
+import Notification
 
 public struct MainCoordinatorRootView: View {
     @Bindable private var store: StoreOf<MainCoordinatorFeature>
@@ -45,6 +46,8 @@ public struct MainCoordinatorRootView: View {
                 AccountDeleteView(store: store)
             case .myPageGameDetail(let store):
                 MyPageGameDetailView(store: store)
+            case .notification(let store):
+                NotificationView(store: store)
             }
         }
     }
