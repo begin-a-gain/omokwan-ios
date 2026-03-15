@@ -13,6 +13,7 @@ import Util
 @Reducer
 public struct MyGameFeature {
     @Dependency(\.gameUseCase) private var gameUseCase
+    @Dependency(\.notificationUseCase) private var notificationUseCase
 
     public init() {}
     
@@ -22,6 +23,7 @@ public struct MyGameFeature {
         @PresentationState var myGameSheet: MyGameSheetFeature.State?
         
         var isDatePickerVisible: Bool = false
+        var hasNotification: Bool = false
         var myGameList: [MyGameModel?] = Array(repeating: nil, count: 6)
         
         var isGameAddFloatingMessageVisible: Bool {
@@ -39,7 +41,7 @@ public struct MyGameFeature {
         case bellButtonTapped
         case myGameSheet(PresentationAction<MyGameSheetFeature.Action>)
         case gameCreated(String)
-        case gameInfoFetched([MyGameModel])
+        case initialDataFetched([MyGameModel], Bool)
         case noAction
         case setLoading(Bool)
         case fetchGameInfo
@@ -62,7 +64,7 @@ public struct MyGameFeature {
                 return .merge([
                     .send(.setLoading(true)),
                     .run { send in
-                        await send(fetchMyGameInfo(dateString, isToday))
+                        await send(fetchInitialData(dateString, isToday))
                     }
                 ])
             case .binding:
@@ -130,7 +132,8 @@ public struct MyGameFeature {
                 // TODO: 대국 생성 완료 토스트 생성
                 print("DONGJUN -> \(title) 생성 완료")
                 return .none
-            case .gameInfoFetched(let myGameModels):
+            case let .initialDataFetched(myGameModels, hasNotification):
+                state.hasNotification = hasNotification
                 state.myGameList = []
                 addListValueToMyGameList(myGameModels, state: &state)
                 checkAndAppendNilIfNeeded(state: &state)
@@ -212,13 +215,41 @@ private extension MyGameFeature {
 }
 
 private extension MyGameFeature {
-    func fetchMyGameInfo(_ dateString: String, _ isToday: Bool) async -> Action {
+    func fetchMyGameInfo(_ dateString: String, _ isToday: Bool) async throws -> [MyGameModel] {
         let response = await gameUseCase.fetchGameInfosFromDate(dateString, isToday)
         switch response {
         case .success(let myGameModels):
-            return .gameInfoFetched(myGameModels)
+            return myGameModels
         case .failure(let error):
+            throw error
+        }
+    }
+    
+    func fetchNotificationBadgeStatus() async throws -> Bool {
+        let response = await notificationUseCase.fetchNotificationBadgeStatus()
+        switch response {
+        case .success(let badgeStatus):
+            return badgeStatus.hasBadge
+        case .failure(let error):
+            throw error
+        }
+    }
+    
+    func fetchInitialData(_ dateString: String, _ isToday: Bool) async -> Action {
+        do {
+            async let myGameInfoResponse = fetchMyGameInfo(dateString, isToday)
+            async let notificationBadgeResponse = fetchNotificationBadgeStatus()
+            
+            let (myGameModels, hasNotification) = try await (
+                myGameInfoResponse,
+                notificationBadgeResponse
+            )
+            
+            return .initialDataFetched(myGameModels, hasNotification)
+        } catch let error as NetworkError {
             return .passError(error)
+        } catch {
+            return .passError(.unKnownError)
         }
     }
     
