@@ -8,6 +8,7 @@
 import SwiftUI
 import ComposableArchitecture
 import DesignSystem
+import Domain
 
 public struct NotificationView: View {
     private let store: StoreOf<NotificationFeature>
@@ -28,7 +29,25 @@ public struct NotificationView: View {
         VStack(spacing: 0) {
             navigationBar
             notificationHeader
-            Spacer()
+            ScrollView {
+                if store.isLoading {
+                    shimmerView
+                } else {
+                    VStack(spacing: 16) {
+                        detailNotificationCards
+                        
+                        OText(
+                            "* 알림은 30일 후, 자동 삭제 됩니다.",
+                            token: .caption,
+                            color: OColors.text02.swiftUIColor
+                        )
+                        .hPadding(20)
+                        .greedyWidth(.leading)
+                        .padding(.bottom, 20)
+                    }
+                }
+            }
+            .background(OColors.ui02.swiftUIColor)
         }
     }
     
@@ -83,5 +102,46 @@ private extension NotificationView {
         }
         .hPadding(20)
         .vPadding(16)
+    }
+}
+
+private extension NotificationView {
+    var filteredNotifications: [NotificationInfo] {
+        switch store.selectedFilter {
+        case .all:
+            store.notifications
+        case .unread:
+            store.notifications.filter { !$0.isRead }
+        }
+    }
+
+    var detailNotificationCards: some View {
+        LazyVStack(spacing: 0) {
+            ForEach(Array(filteredNotifications.enumerated()), id: \.element.id) { index, notification in
+                NotificationCard(
+                    notification: notification,
+                    action: {
+                        store.send(.notificationCardTapped(notification))
+                    }
+                )
+                .id(notification.id)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .hPadding(20)
+        .padding(.top, 20)
+    }
+    
+    var shimmerView: some View {
+        VStack(spacing: 0) {
+            ForEach(0..<10, id: \.self) { _ in
+                NotificationCard(
+                    isLoading: true,
+                    notification: .init()
+                )
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(20)
     }
 }

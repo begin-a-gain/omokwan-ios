@@ -18,14 +18,14 @@ public struct NotificationInfo: Equatable {
     public let newHostName: String?
     
     public init(
-        id: Int,
-        isRead: Bool,
-        createdDate: Date,
-        type: NotificationType,
-        title: String,
-        targetName: String?,
-        previousHostName: String?,
-        newHostName: String?
+        id: Int = 0,
+        isRead: Bool = false,
+        createdDate: Date = .now,
+        type: NotificationType = .joined,
+        title: String = "-",
+        targetName: String? = nil,
+        previousHostName: String? = nil,
+        newHostName: String? = nil
     ) {
         self.id = id
         self.isRead = isRead
