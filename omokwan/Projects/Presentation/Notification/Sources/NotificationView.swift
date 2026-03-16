@@ -9,6 +9,7 @@ import SwiftUI
 import ComposableArchitecture
 import DesignSystem
 import Domain
+import Base
 
 public struct NotificationView: View {
     private let store: StoreOf<NotificationFeature>
@@ -22,6 +23,10 @@ public struct NotificationView: View {
             .background(OColors.uiBackground.swiftUIColor)
             .onAppear {
                 store.send(.onAppear)
+            }
+            .oLoading(isPresent: store.isProgressLoading)
+            .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
+                alertView
             }
     }
     
@@ -111,7 +116,7 @@ private extension NotificationView {
         case .all:
             store.notifications
         case .unread:
-            store.notifications.filter { !$0.isRead }
+            store.unReadNotifications
         }
     }
 
@@ -143,5 +148,37 @@ private extension NotificationView {
         }
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .padding(20)
+    }
+}
+
+private extension NotificationView {
+    var alertView: some View {
+        Group {
+            if let alertCase = store.alertCase {
+                switch alertCase {
+                case .error(let networkError):
+                    CommonErrorAlertView(networkError) {
+                        store.send(.alertAction(.dismiss))
+                    }
+                case .participateDoubleCheck(let notificationInfo):
+                    participateDoubleCheckAlertView(notificationInfo)
+                }
+            }
+        }
+    }
+    
+    func participateDoubleCheckAlertView(_ notificationInfo: NotificationInfo) -> some View {
+        OAlert(
+            type: .default,
+            title: "대국에 참여할까요?",
+            content: "'\(notificationInfo.title)' 대국을 시작해보세요.",
+            primaryButtonAction: {
+                store.send(.alertAction(.dismiss))
+            },
+            secondaryButtonTitle: "참여하기",
+            secondaryButtonAction: {
+                store.send(.alertParticipateButtonTapped(notificationInfo))
+            }
+        )
     }
 }

@@ -7,94 +7,175 @@
 
 import ComposableArchitecture
 import Domain
+import Base
+import Util
 import Foundation
 
 @Reducer
 public struct NotificationFeature {
+    @Dependency(\.notificationUseCase) private var notificationUseCase
+    
     public init() {}
     
     @ObservableState
     public struct State: Equatable {
-        public init() {
-            self.notifications = [
-                NotificationInfo(
-                    id: 1,
-                    isRead: false,
-                    createdDate: .now,
-                    type: .joined,
-                    title: "모기",
-                    targetName: "수요오목방",
-                    previousHostName: "오목이",
-                    newHostName: "모기"
-                ),
-                NotificationInfo(
-                    id: 2,
-                    isRead: false,
-                    createdDate: .now.addingTimeInterval(-3600),
-                    type: .invited,
-                    title: "바둑이",
-                    targetName: "주말 오목 모임",
-                    previousHostName: nil,
-                    newHostName: nil
-                ),
-                NotificationInfo(
-                    id: 3,
-                    isRead: true,
-                    createdDate: .now.addingTimeInterval(-7200),
-                    type: .left,
-                    title: "호호",
-                    targetName: "새벽반",
-                    previousHostName: nil,
-                    newHostName: nil
-                ),
-                NotificationInfo(
-                    id: 4,
-                    isRead: true,
-                    createdDate: .now.addingTimeInterval(-7200),
-                    type: .hostChanged,
-                    title: "꺌꺌",
-                    targetName: "새벽반",
-                    previousHostName: "나는야빡빡이",
-                    newHostName: "나는갹갹이다"
-                )
-
-            ]
-            self.unreadNotificationCount = notifications.filter { !$0.isRead }.count
+        public init() {}
+        
+        public enum AlertCase: Equatable {
+            case error(NetworkError)
+            case participateDoubleCheck(NotificationInfo)
         }
         
+        var alertCase: AlertCase?
+        var alertState: AlertFeature.State = .init()
         var isLoading: Bool = false
+        var isProgressLoading: Bool = false
         var selectedFilter: NotificationFilter = .all
-        var unreadNotificationCount: Int = 0
+        var unreadNotificationCount: Int {
+            notifications.filter { !$0.isRead }.count
+        }
         var notifications: [NotificationInfo] = []
+        var unReadNotifications: [NotificationInfo] {
+            notifications.filter { !$0.isRead }
+        }
     }
     
     public enum Action {
         case onAppear
         case navigateToBack
+        case navigateToGameDetail(Int, String, String)
+        case alertAction(AlertFeature.Action)
+        case showAlert(State.AlertCase)
+        case notificationsFetched([NotificationInfo])
         case settingButtonTapped
         case filterButtonTapped(NotificationFilter)
         case readAllButtonTapped
+        case fetchNotificationInfo
         case notificationCardTapped(NotificationInfo)
+        case alertParticipateButtonTapped(NotificationInfo)
+        case readNotification(NotificationInfo)
+        case notificationReadSucceeded(NotificationInfo)
+        case setProgressLoading(Bool)
     }
     
     public var body: some ReducerOf<Self> {
+        Scope(state: \.alertState, action: \.alertAction) {
+            AlertFeature()
+        }
+        
         Reduce { state, action in
             switch action {
             case .onAppear:
-                return .none
+                return .send(.fetchNotificationInfo)
+            case .fetchNotificationInfo:
+                state.isLoading = true
+                return .run { [filter = state.selectedFilter] send in
+                    await send(fetchNotificationList(filter))
+                }
             case .navigateToBack:
+                return .none
+            case .navigateToGameDetail:
+                return .none
+            case .showAlert(let alertCase):
+                state.isLoading = false
+                state.isProgressLoading = false
+                state.alertCase = alertCase
+                return .send(.alertAction(.present))
+            case .notificationsFetched(let notifications):
+                state.notifications = notifications
+                state.isLoading = false
                 return .none
             case .settingButtonTapped:
                 // TODO: Navigate To Setting
                 return .none
             case .filterButtonTapped(let type):
+                guard state.selectedFilter != type else { return .none }
+                
                 state.selectedFilter = type
-                return .none
+                state.isLoading = true
+                return .run { send in
+                    await send(fetchNotificationList(type))
+                }
             case .readAllButtonTapped:
                 return .none
-            case .notificationCardTapped:
+            case .notificationCardTapped(let notificationInfo):
+                guard notificationInfo.type != .invited else {
+                    return .send(.showAlert(.participateDoubleCheck(notificationInfo)))
+                }
+                
+                return .send(.readNotification(notificationInfo))
+            case .alertParticipateButtonTapped(let notificationInfo):
+                return .concatenate([
+                    .send(.alertAction(.dismiss)),
+                    .send(.readNotification(notificationInfo))
+                ])
+            case .readNotification(let notificationInfo):
+                return .concatenate([
+                    .send(.setProgressLoading(true)),
+                    .run { send in
+                        await send(readNotification(notificationInfo))
+                    }
+                ])
+            case .notificationReadSucceeded(let notificationInfo):
+                updateNotificationStatus(notificationInfo.id, state: &state)
+                
+                let selectedDateString = Date.now.formattedString(
+                    format: DateFormatConstants.yearMonthDayRequestFormat
+                )
+                
+                // TODO: 여기 noti id말고, gameID를 넘겨야하는데, 서버에서 아직 작업이 되지 않음. 작업이 완료될 시 gameID로 바꾸도록.
+                return .concatenate([
+                    .send(.setProgressLoading(false)),
+                    .send(.navigateToGameDetail(notificationInfo.id, notificationInfo.title, selectedDateString))
+                ])
+            case .setProgressLoading(let value):
+                state.isProgressLoading = value
+                return .none
+            case .alertAction:
                 return .none
             }
         }
+    }
+}
+
+private extension NotificationFeature {
+    func fetchNotificationList(_ filter: NotificationFilter) async -> Action {
+        let response = await notificationUseCase.fetchNotificationList(filter)
+        
+        switch response {
+        case .success(let notifications):
+            return .notificationsFetched(notifications)
+        case .failure(let error):
+            return .showAlert(.error(error))
+        }
+    }
+    
+    func readNotification(_ notificationInfo: NotificationInfo) async -> Action {
+        let response = await notificationUseCase.patchNotificationRead(notificationInfo.id)
+        
+        switch response {
+        case .success:
+            return .notificationReadSucceeded(notificationInfo)
+        case .failure(let error):
+            return .showAlert(.error(error))
+        }
+    }
+    
+    func updateNotificationStatus(_ id: Int, state: inout State) {
+        guard let index = state.notifications.firstIndex(where: { $0.id == id }) else {
+            return
+        }
+        
+        let notification = state.notifications[index]
+        state.notifications[index] = NotificationInfo(
+            id: notification.id,
+            isRead: true,
+            createdDate: notification.createdDate,
+            type: notification.type,
+            title: notification.title,
+            targetName: notification.targetName,
+            previousHostName: notification.previousHostName,
+            newHostName: notification.newHostName
+        )
     }
 }
