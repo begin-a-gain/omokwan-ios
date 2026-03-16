@@ -55,6 +55,8 @@ public struct NotificationFeature {
         case alertParticipateButtonTapped(NotificationInfo)
         case readNotification(NotificationInfo)
         case notificationReadSucceeded(NotificationInfo)
+        case readAllNotifications
+        case allNotificationsReadSucceeded
         case setProgressLoading(Bool)
     }
     
@@ -97,7 +99,7 @@ public struct NotificationFeature {
                     await send(fetchNotificationList(type))
                 }
             case .readAllButtonTapped:
-                return .none
+                return .send(.readAllNotifications)
             case .notificationCardTapped(let notificationInfo):
                 guard notificationInfo.type != .invited else {
                     return .send(.showAlert(.participateDoubleCheck(notificationInfo)))
@@ -116,6 +118,13 @@ public struct NotificationFeature {
                         await send(readNotification(notificationInfo))
                     }
                 ])
+            case .readAllNotifications:
+                return .concatenate([
+                    .send(.setProgressLoading(true)),
+                    .run { send in
+                        await send(readAllNotifications())
+                    }
+                ])
             case .notificationReadSucceeded(let notificationInfo):
                 updateNotificationStatus(notificationInfo.id, state: &state)
                 
@@ -128,6 +137,20 @@ public struct NotificationFeature {
                     .send(.setProgressLoading(false)),
                     .send(.navigateToGameDetail(notificationInfo.id, notificationInfo.title, selectedDateString))
                 ])
+            case .allNotificationsReadSucceeded:
+                state.notifications = state.notifications.map {
+                    NotificationInfo(
+                        id: $0.id,
+                        isRead: true,
+                        createdDate: $0.createdDate,
+                        type: $0.type,
+                        title: $0.title,
+                        targetName: $0.targetName,
+                        previousHostName: $0.previousHostName,
+                        newHostName: $0.newHostName
+                    )
+                }
+                return .send(.setProgressLoading(false))
             case .setProgressLoading(let value):
                 state.isProgressLoading = value
                 return .none
@@ -156,6 +179,17 @@ private extension NotificationFeature {
         switch response {
         case .success:
             return .notificationReadSucceeded(notificationInfo)
+        case .failure(let error):
+            return .showAlert(.error(error))
+        }
+    }
+    
+    func readAllNotifications() async -> Action {
+        let response = await notificationUseCase.patchNotificationRead(nil)
+        
+        switch response {
+        case .success:
+            return .allNotificationsReadSucceeded
         case .failure(let error):
             return .showAlert(.error(error))
         }

@@ -19,7 +19,7 @@ public struct NotificationInfo: Equatable {
     
     public init(
         id: Int = 0,
-        isRead: Bool = false,
+        isRead: Bool = true,
         createdDate: Date = .now,
         type: NotificationType = .joined,
         title: String = "-",
