@@ -94,10 +94,7 @@ public struct NotificationFeature {
                 guard state.selectedFilter != type else { return .none }
                 
                 state.selectedFilter = type
-                state.isLoading = true
-                return .run { send in
-                    await send(fetchNotificationList(type))
-                }
+                return .none
             case .readAllButtonTapped:
                 return .send(.readAllNotifications)
             case .notificationCardTapped(let notificationInfo):

@@ -53,6 +53,7 @@ public struct NotificationView: View {
                 }
             }
             .background(OColors.ui02.swiftUIColor)
+            .animation(.easeInOut(duration: 0.2), value: store.selectedFilter)
         }
     }
     
@@ -107,6 +108,7 @@ private extension NotificationView {
         }
         .hPadding(20)
         .vPadding(16)
+        .animation(.easeInOut(duration: 0.2), value: store.selectedFilter)
     }
 }
 
@@ -130,6 +132,12 @@ private extension NotificationView {
                     }
                 )
                 .id(notification.id)
+                .transition(
+                    .asymmetric(
+                        insertion: .opacity.combined(with: .move(edge: .top)),
+                        removal: .identity
+                    )
+                )
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: 8))
