@@ -24,6 +24,12 @@ public extension String {
     func toDate(timeZone: TimeZone = TimeZone(identifier: "Asia/Seoul") ?? .current) -> Date? {
         let formatter = ISO8601DateFormatter()
         formatter.timeZone = timeZone
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        if let date = formatter.date(from: self) {
+            return date
+        }
+        
         formatter.formatOptions = [.withInternetDateTime]
         return formatter.date(from: self)
     }

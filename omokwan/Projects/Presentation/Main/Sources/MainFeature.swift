@@ -42,6 +42,7 @@ public struct MainFeature {
         case noAction
         case navigateToMyGameAddCategory
         case navigateToMyGameParticipate
+        case navigateToNotification
         case navigateToGameDetail(Int, String, String)
         case myGameAction(MyGameFeature.Action)
         case myPageAction(MyPageFeature.Action)
@@ -105,6 +106,8 @@ public struct MainFeature {
                 return .none
             case .navigateToMyGameParticipate:
                 return .none
+            case .navigateToNotification:
+                return .none
             case .navigateToGameDetail:
                 return .none
             case .addGameButtonTapped:
@@ -162,6 +165,8 @@ private extension MainFeature {
             return .none
         case .passError(let networkError):
             return .send(.showAlert(.error(networkError)))
+        case .navigateToNotification:
+            return .send(.navigateToNotification)
         case let .navigateToGameDetail(id, title, selectedDateString):
             return .send(.navigateToGameDetail(id, title, selectedDateString))
         default:

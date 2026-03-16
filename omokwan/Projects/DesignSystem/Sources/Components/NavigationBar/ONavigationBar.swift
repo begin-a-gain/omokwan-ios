@@ -15,6 +15,7 @@ public struct ONavigationBar: View {
     let leadingIconAction: (() -> Void)?
     let trailingIcon: Image?
     let trailingIconAction: (() -> Void)?
+    let hasNotification: Bool
     let trailingAdditionalIcon: Image?
     let trailingAdditionalIconAction: (() -> Void)?
  
@@ -26,6 +27,7 @@ public struct ONavigationBar: View {
         leadingIconAction: (() -> Void)? = nil,
         trailingIcon: Image? = nil,
         trailingIconAction: (() -> Void)? = nil,
+        hasNotification: Bool = false,
         trailingAdditionalIcon: Image? = nil,
         trailingAdditionalIconAction: (() -> Void)? = nil
     ) {
@@ -36,6 +38,7 @@ public struct ONavigationBar: View {
         self.leadingIconAction = leadingIconAction
         self.trailingIcon = trailingIcon
         self.trailingIconAction = trailingIconAction
+        self.hasNotification = hasNotification
         self.trailingAdditionalIcon = trailingAdditionalIcon
         self.trailingAdditionalIconAction = trailingAdditionalIconAction
     }
@@ -122,10 +125,19 @@ public struct ONavigationBar: View {
                     action()
                 }
             } label: {
-                image.resizedToFit(24,24)
-                    .vPadding(trailingAdditionalIcon == nil ? 16 : 12)
-                    .padding(.leading, trailingAdditionalIcon == nil ? 16 : 12)
-                    .padding(.trailing, trailingAdditionalIcon == nil ? 20 : 12)
+                ZStack(alignment: .topTrailing) {
+                    image.resizedToFit(24,24)
+                    
+                    if hasNotification {
+                        Circle()
+                            .frame(8, 8)
+                            .foregroundStyle(OColors.uiPrimary.swiftUIColor)
+                            .offset(x: 4, y: -4)
+                    }
+                }
+                .vPadding(trailingAdditionalIcon == nil ? 16 : 12)
+                .padding(.leading, trailingAdditionalIcon == nil ? 16 : 12)
+                .padding(.trailing, trailingAdditionalIcon == nil ? 20 : 12)
             }
         }
     }

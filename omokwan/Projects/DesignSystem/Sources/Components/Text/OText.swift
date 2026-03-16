@@ -21,7 +21,7 @@ public struct OText: View {
         token: Font.FontToken = .body_02,
         color: Color = OColors.text01.swiftUIColor,
         alignment: TextAlignment = .center,
-        lineLimit: Int = 1,
+        lineLimit: Int? = 1,
         letterSpace: CGFloat = 0,
         isUnderline: Bool = false
     ) {

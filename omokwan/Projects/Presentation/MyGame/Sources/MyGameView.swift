@@ -42,7 +42,8 @@ public struct MyGameView: View {
                     trailingIcon: OImages.icBell.swiftUIImage,
                     trailingIconAction: {
                         viewStore.send(.bellButtonTapped)
-                    }
+                    },
+                    hasNotification: viewStore.hasNotification
                 )
                 dateInfoView
                 StrokeDivider(color: OColors.stroke01.swiftUIColor)

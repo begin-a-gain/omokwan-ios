@@ -9,6 +9,7 @@ import Base
 import ComposableArchitecture
 import GameDetail
 import Domain
+import Notification
 
 @Reducer
 public struct MainCoordinatorFeature {
@@ -55,6 +56,8 @@ public struct MainCoordinatorFeature {
                 return accountDeleteNavigation(&state, accountDeleteAction)
             case .navigationPath(.element(id: _, action: PathAction.myPageGameDetail(let myPageGameDetailAction))):
                 return myPageGameDetailNavigation(&state, myPageGameDetailAction)
+            case .navigationPath(.element(id: _, action: PathAction.notification(let notificationAction))):
+                return notificationNavigation(&state, notificationAction)
             case .navigationPath:
                 return .none
             case .mainAction(let mainAction):
@@ -73,6 +76,9 @@ private extension MainCoordinatorFeature {
             return .none
         case .navigateToMyGameParticipate:
             state.navigationPath.append(.myGameParticipate(.init()))
+            return .none
+        case .navigateToNotification:
+            state.navigationPath.append(.notification(.init()))
             return .none
         case let .navigateToGameDetail(id, title, selectedDateString):
             state.navigationPath.append(
