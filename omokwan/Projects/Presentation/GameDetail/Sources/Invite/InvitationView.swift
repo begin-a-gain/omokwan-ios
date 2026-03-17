@@ -48,6 +48,21 @@ public struct InvitationView: View {
     private var invitationBody: some View {
         VStack(spacing: 0) {
             navigationBar
+            
+            if !store.selectedUserInfoList.isEmpty {
+                SelectedUserInfoRowView(
+                    userInfoList: store.selectedUserInfoList,
+                    action: { info in store.send(.userInfoRowCardTapped(info)) }
+                )
+                .padding(.top, 16)
+                .transition(
+                    .asymmetric(
+                        insertion: .move(edge: .top).combined(with: .opacity),
+                        removal: .move(edge: .top).combined(with: .opacity)
+                    )
+                )
+            }
+            
             searchView
                 .hPadding(20)
                 .vPadding(16)
@@ -61,6 +76,7 @@ public struct InvitationView: View {
             }
             .background(OColors.ui02.swiftUIColor)
         }
+        .animation(.easeInOut(duration: 0.22), value: store.selectedUserInfoList)
     }
     
     private var navigationBar: some View {

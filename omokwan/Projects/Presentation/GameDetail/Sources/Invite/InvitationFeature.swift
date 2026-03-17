@@ -38,7 +38,11 @@ public struct InvitationFeature {
         let currentUserCount: Int
         let maxParticipants: Int
         
-        var selectedUserInfoList: [GameUserInfo] = []
+        var selectedUserInfoList: [GameUserInfo] = [
+            .init(userID: 1, nickname: "가나다라"),
+            .init(userID: 2, nickname: "가나"),
+            .init(userID: 3, nickname: "가나라")
+        ]
         var allUserInfoList: [GameUserInfo] = [
             .init(userID: 1, nickname: "가나다라"),
             .init(userID: 2, nickname: "가나"),
