@@ -22,6 +22,7 @@ extension MainCoordinatorFeature {
         case myGameParticipate(MyGameParticipateFeature)
         case gameDetail(GameDetailFeature)
         case gameDetailSetting(GameDetailSettingFeature)
+        case invitation(InvitationFeature)
         case hostChange(HostChangeFeature)
         case editNickname(EditNicknameFeature)
         case accountDelete(AccountDeleteFeature)
