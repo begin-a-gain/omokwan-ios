@@ -24,7 +24,10 @@ extension MainCoordinatorFeature {
                 )
             )
             return .none
-        case .sendToast:
+        case .sendSaveToast:
+            _ = state.navigationPath.popLast()
+            return .none
+        case .sendExitToast:
             state.navigationPath.removeAll()
             return .none
         default:
