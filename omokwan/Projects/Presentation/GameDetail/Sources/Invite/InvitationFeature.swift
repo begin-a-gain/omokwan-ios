@@ -36,16 +36,21 @@ public struct InvitationFeature {
         let gameID: Int
         let gameUserInfos: [GameUserInfo]
         let maxParticipants: Int
+        
+        var searchText: String = ""
     }
     
-    public enum Action {
+    public enum Action: BindableAction {
         case onAppear
         case navigateToBack
+        case binding(BindingAction<State>)
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
     }
     
     public var body: some ReducerOf<Self> {
+        BindingReducer()
+        
         Scope(state: \.alertState, action: \.alertAction) {
             AlertFeature()
         }
@@ -55,6 +60,8 @@ public struct InvitationFeature {
             case .onAppear:
                 return .none
             case .navigateToBack:
+                return .none
+            case .binding:
                 return .none
             case .alertAction:
                 return .none
