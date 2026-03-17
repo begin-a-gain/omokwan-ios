@@ -8,6 +8,7 @@
 import SwiftUI
 import ComposableArchitecture
 import DesignSystem
+import Base
 
 public struct InvitationView: View {
     private let store: StoreOf<InvitationFeature>
@@ -22,6 +23,10 @@ public struct InvitationView: View {
             .onAppear {
                 store.send(.onAppear)
             }
+            .oLoading(isPresent: store.isLoading)
+            .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
+                alertView
+            }
     }
     
     private var invitationBody: some View {
@@ -35,6 +40,21 @@ public struct InvitationView: View {
             )
             
             Spacer()
+        }
+    }
+}
+
+private extension InvitationView {
+    var alertView: some View {
+        Group {
+            if let alertCase = store.alertCase {
+                switch alertCase {
+                case .error(let networkError):
+                    CommonErrorAlertView(networkError) {
+                        store.send(.alertAction(.dismiss))
+                    }
+                }
+            }
         }
     }
 }
