@@ -14,6 +14,8 @@ extension MainCoordinatorFeature {
         case .navigateToBack:
             _ = state.navigationPath.popLast()
             return .none
+        case .sendToast:
+            return .none
         default:
             return .none
         }

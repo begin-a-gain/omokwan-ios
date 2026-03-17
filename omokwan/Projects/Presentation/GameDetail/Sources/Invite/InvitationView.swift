@@ -9,6 +9,7 @@ import SwiftUI
 import ComposableArchitecture
 import DesignSystem
 import Base
+import Domain
 
 public struct InvitationView: View {
     @Bindable private var store: StoreOf<InvitationFeature>
@@ -18,33 +19,82 @@ public struct InvitationView: View {
     }
     
     public var body: some View {
-        invitationBody
-            .background(OColors.ui02.swiftUIColor)
-            .onAppear {
-                store.send(.onAppear)
-            }
-            .oLoading(isPresent: store.isLoading)
-            .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
-                alertView
-            }
+        ZStack {
+            invitationBody
+                .ignoresSafeArea(edges: .bottom)
+                .padding(.bottom, GameDetailConstants.bottomPadding)
+            
+            bottomShadowView
+                .height(DeviceInfo.shared.bottomTabBarHeight)
+                .greedyHeight(.bottom)
+                .ignoresSafeArea(edges: .bottom)
+
+            bottomButtonView
+                .padding(.bottom, DeviceInfo.shared.homeIndicatorHeight)
+                .height(DeviceInfo.shared.bottomTabBarHeight)
+                .greedyHeight(.bottom)
+                .ignoresSafeArea(edges: .bottom)
+        }
+        .background(OColors.uiBackground.swiftUIColor)
+        .onAppear {
+            store.send(.onAppear)
+        }
+        .oLoading(isPresent: store.isLoading)
+        .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
+            alertView
+        }
     }
     
     private var invitationBody: some View {
         VStack(spacing: 0) {
-            ONavigationBar(
-                title: "대국 초대하기",
-                leadingIcon: OImages.icArrowLeft.swiftUIImage,
-                leadingIconAction: {
-                    store.send(.navigateToBack)
-                }
-            )
+            navigationBar
             searchView
                 .hPadding(20)
                 .vPadding(16)
                 .background(OColors.uiBackground.swiftUIColor)
-
-            Spacer()
+            ScrollView {
+                if store.isShimmerLoading {
+                    shimmerView
+                } else {
+                    userCards
+                }
+            }
+            .background(OColors.ui02.swiftUIColor)
         }
+    }
+    
+    private var navigationBar: some View {
+        ONavigationBar(
+            title: "대국 초대하기",
+            leadingIcon: OImages.icArrowLeft.swiftUIImage,
+            leadingIconAction: {
+                store.send(.navigateToBack)
+            }
+        )
+    }
+}
+
+private extension InvitationView {
+    var bottomShadowView: some View {
+        RoundedCorner(radius: 16, corners: [.topLeft, .topRight])
+            .fill(OColors.oWhite.swiftUIColor)
+            .shadow(
+                color: OColors.oPrimary.swiftUIColor.opacity(0.3),
+                radius: 20,
+                x: 0, y: 0
+            )
+    }
+    
+    var bottomButtonView: some View {
+        OButton(
+            title: "초대하기",
+            status: store.isBottomButtonEnable ? .default : .disable,
+            type: .default
+        ) {
+            store.send(.inviteButtonTapped)
+        }
+        .vPadding(16)
+        .hPadding(20)
     }
 }
 
@@ -89,6 +139,39 @@ private extension InvitationView {
                     .foregroundStyle(OColors.icon01.swiftUIColor)
             }
         }
+    }
+}
+
+private extension InvitationView {
+    var shimmerView: some View {
+        VStack(spacing: 0) {
+            ForEach(0..<10, id: \.self) { _ in
+                UserInfoRowCardView(
+                    isLoading: true,
+                    element: .init(),
+                    selectedUserInfoList: []
+                )
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(20)
+    }
+    
+    var userCards: some View {
+        LazyVStack(spacing: 0) {
+            ForEach(Array(store.allUserInfoList.enumerated()), id: \.element.userID) { _, element in
+                UserInfoRowCardView(
+                    element: element,
+                    selectedUserInfoList: store.selectedUserInfoList,
+                    action: {
+                        store.send(.userInfoRowCardTapped(element))
+                    }
+                )
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .hPadding(20)
+        .padding(.top, 20)
     }
 }
 

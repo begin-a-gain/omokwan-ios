@@ -57,6 +57,8 @@ public struct RootFeature {
                 return handleGameDetailActionAtRoot(&state, gameDetailAction)
             case .root(.main(.navigationPath(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.gameDetailSetting(let gameDetailSettingAction))))):
                 return handleGameSettingActionAtRoot(&state, gameDetailSettingAction)
+            case .root(.main(.navigationPath(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.invitation(let invitationAction))))):
+                return handleInvitationActionAtRoot(&state, invitationAction)
             case .root(.main(.mainAction(let mainAction))):
                 return handleMainActionFromRoot(&state, mainAction)
             case .root(.main(.navigationPath(.element(id: _, action: MainCoordinatorFeature.MainPath.Action.hostChange(let hostChangeAction))))):
