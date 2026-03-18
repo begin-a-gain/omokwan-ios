@@ -189,6 +189,14 @@ extension EndPoint {
             requestBody: request
         )
     }
+    
+    static func getUsers(queryParameters: GameUserPagingRequest) -> EndPoint<T> {
+        return EndPoint(
+            path: .getUsers,
+            method: .GET,
+            queryParameters: queryParameters
+        )
+    }
 }
 
 // MARK: Notification
