@@ -87,9 +87,9 @@ private struct BottomTabItem: View {
     private func getImage(item: MainBottomTabItem) -> Image {
         switch item {
         case .myGame:
-            OImages.icStone24.swiftUIImage
+            OImages.icHome.swiftUIImage
         case .myPage:
-            OImages.icStone24.swiftUIImage
+            OImages.icMypage.swiftUIImage
         }
     }
 }
