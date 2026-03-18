@@ -42,6 +42,7 @@ struct UserAvatarInfoView: View {
                     .vPadding(16)
             }
         }
+        .background(OColors.uiBackground.swiftUIColor)
     }
     
     private var titleString: String {
