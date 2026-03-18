@@ -33,6 +33,7 @@ enum EndPointPath {
     case getNotiList
     case getNotiBadgeStatus
     case patchNotiRead
+    case getUsers
 
     var value: String {
         switch self {
@@ -90,6 +91,8 @@ enum EndPointPath {
             "/notifications/unread-status"
         case .patchNotiRead:
             "/notifications/read"
+        case .getUsers:
+            "/users"
         }
     }
 }

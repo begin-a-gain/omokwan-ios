@@ -27,6 +27,17 @@ extension MainCoordinatorFeature {
         case .sendToast:
             state.navigationPath.removeAll()
             return .none
+        case let .navigateToInvitation(gameID, gameUserInfos, maxParticipants):
+            state.navigationPath.append(
+                .invitation(
+                    .init(
+                        gameID: gameID,
+                        gameUserInfos: gameUserInfos,
+                        maxParticipants: maxParticipants
+                    )
+                )
+            )
+            return .none
         default:
             return .none
         }

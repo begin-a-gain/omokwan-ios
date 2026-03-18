@@ -38,6 +38,8 @@ public struct MainCoordinatorRootView: View {
                 GameDetailView(store: store)
             case .gameDetailSetting(let store):
                 GameDetailSettingView(store: store)
+            case .invitation(let store):
+                InvitationView(store: store)
             case .hostChange(let store):
                 HostChangeView(store: store)
             case .editNickname(let store):

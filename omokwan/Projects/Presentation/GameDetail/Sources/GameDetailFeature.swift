@@ -64,6 +64,7 @@ public struct GameDetailFeature {
         case navigateToBack
         case menuButtonTapped
         case navigateToSetting(Int, [GameUserInfo])
+        case navigateToInvitation(Int, [GameUserInfo], Int)
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
         
@@ -96,6 +97,8 @@ public struct GameDetailFeature {
                 return .send(.navigateToSetting(gameID, gameUserInfos))
             case .navigateToSetting:
                 return .none
+            case .navigateToInvitation:
+                return .none
             case .alertAction:
                 return .none
             case .showAlert(let alertCase):
@@ -104,8 +107,13 @@ public struct GameDetailFeature {
                 return .send(.alertAction(.present))
             case .avatarButtonTapped(let userID):
                 guard let userID else {
-                    // TODO: 초대 유도
-                    return .none
+                    return .send(
+                        .navigateToInvitation(
+                            state.gameID,
+                            state.gameUserInfos.compactMap { $0 },
+                            5 // TODO: 최대 인원 수 넘기기. 서버 필드 추가되면 작업
+                        )
+                    )
                 }
                 
                 state.isLoading = true

@@ -82,6 +82,7 @@ public struct GameDetailSettingFeature {
         case inviteButtonTapped
         case hostChangeButtonTapped
         case navigateToHostChange(Int, [GameUserInfo])
+        case navigateToInvitation(Int, [GameUserInfo], Int)
         case exitButtonTapped
         case maxNumOfPeopleSheet(PresentationAction<CommonMaxNumOfPeopleFeature.Action>)
         case categorySheet(PresentationAction<CommonCategoryFeature.Action>)
@@ -180,12 +181,20 @@ public struct GameDetailSettingFeature {
                 }
                 return .none
             case .inviteButtonTapped:
-                return .none
+                return .send(
+                    .navigateToInvitation(
+                        state.gameID,
+                        state.gameUserInfos,
+                        5 // TODO: 최대 인원 수 넘기기. 서버 필드 추가되면 작업
+                    )
+                )
             case .hostChangeButtonTapped:
                 let gameID = state.gameID
                 let gameUserInfos = state.gameUserInfos
                 return .send(.navigateToHostChange(gameID, gameUserInfos))
             case .navigateToHostChange:
+                return .none
+            case .navigateToInvitation:
                 return .none
             case .exitButtonTapped:
                 return .send(.showAlert(.exit))
