@@ -105,7 +105,7 @@ private extension GameOhterSettingView {
             selectAreaAction: {
                 privateRoomCodeAreaButtonAction?()
             },
-            additionalInfo: "코드 : \(privateRoomPassword ?? "-")",
+            additionalInfo: "비밀번호 : \(privateRoomPassword ?? "-")",
             isSelected: Binding(
                 get: { isPrivateRoom },
                 set: { _ in

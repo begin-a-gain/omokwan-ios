@@ -77,7 +77,7 @@ private extension MyGameParticipateView {
             Spacer().width(4)
             
             TextField(
-                "대국 이름, 대국 ID, 대국장으로 검색하기",
+                "대국 이름, 대국코드, 대국장으로 검색하기",
                 text: viewStore.$searchText
             )
             .multilineTextAlignment(.leading)
