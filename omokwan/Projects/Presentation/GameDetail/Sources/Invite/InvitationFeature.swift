@@ -62,6 +62,7 @@ public struct InvitationFeature {
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
         case inviteButtonTapped
+        case inviteCompleted(String)
         case fetchUserList(cursor: String?)
         case userListFetched(GameUserPagingInfo, isFirstPage: Bool)
         case userInfoRowCardTapped(GameUserInfo)
@@ -101,10 +102,23 @@ public struct InvitationFeature {
                 return .none
             case .showAlert(let alertCase):
                 state.isLoading = false
+                state.isShimmerLoading = false
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
             case .inviteButtonTapped:
-                return .none
+                state.isLoading = true
+                let gameID = state.gameID
+                let userIDs = state.selectedUserInfoList.map(\.userID)
+                let message = makeInviteSuccessMessage(state.selectedUserInfoList)
+                return .run { send in
+                    await send(inviteUsers(gameID: gameID, userIDs: userIDs, successMessage: message))
+                }
+            case .inviteCompleted(let message):
+                state.isLoading = false
+                return .concatenate([
+                    .send(.sendToast(message)),
+                    .send(.navigateToBack)
+                ])
             case .fetchUserList(let cursor):
                 if cursor == nil {
                     state.isShimmerLoading = true
@@ -161,5 +175,29 @@ private extension InvitationFeature {
         case .failure(let error):
             return .showAlert(.error(error))
         }
+    }
+    
+    func inviteUsers(
+        gameID: Int,
+        userIDs: [Int],
+        successMessage: String
+    ) async -> Action {
+        let response = await gameUseCase.inviteUsers(gameID, userIDs)
+        
+        switch response {
+        case .success:
+            return .inviteCompleted(successMessage)
+        case .failure(let error):
+            return .showAlert(.error(error))
+        }
+    }
+    
+    func makeInviteSuccessMessage(_ selectedUserInfoList: [GameUserInfo]) -> String {
+        if selectedUserInfoList.count == 1,
+           let nickname = selectedUserInfoList.first?.nickname {
+            return "‘\(nickname)’님을 대국에 초대했어요."
+        }
+        
+        return "\(selectedUserInfoList.count)명을 대국에 초대했어요."
     }
 }
