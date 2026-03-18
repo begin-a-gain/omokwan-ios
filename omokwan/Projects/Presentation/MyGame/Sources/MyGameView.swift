@@ -9,6 +9,7 @@ import SwiftUI
 import ComposableArchitecture
 import DesignSystem
 import Util
+import Base
 
 public struct MyGameView: View {
     private let store: StoreOf<MyGameFeature>
@@ -26,7 +27,7 @@ public struct MyGameView: View {
         }
         .sheet(store: store.scope(state: \.$myGameSheet, action: \.myGameSheet)) { store in
             MyGameSheetView(store: store)
-                .modifier(CommonSheetModifier(detent: [.medium]))
+                .modifier(CommonSheetModifier(detent: [.height(406 + DeviceInfo.shared.homeIndicatorHeight)]))
         }
     }
     

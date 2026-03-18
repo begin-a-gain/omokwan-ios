@@ -55,7 +55,7 @@ public struct MainView: View {
         .oLoading(isPresent: viewStore.isMainLoading)
         .sheet(store: store.scope(state: \.$mainSheet, action: \.mainSheet)) { store in
             MainSheetView(store: store)
-                .modifier(CommonSheetModifier(detent: [.medium]))
+                .modifier(CommonSheetModifier(detent: [.height(406 + DeviceInfo.shared.homeIndicatorHeight)]))
         }
         .onAppear {
             viewStore.send(.onAppear)
