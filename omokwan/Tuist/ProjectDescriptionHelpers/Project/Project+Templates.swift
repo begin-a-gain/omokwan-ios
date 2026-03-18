@@ -79,7 +79,8 @@ public extension Project {
             schemes: [],
             resourceSynthesizers: [
                 .assets(),
-                .fonts()
+                .fonts(),
+                .custom(name: "JSON", parser: .json, extensions: ["json"])
             ]
         )
     }
