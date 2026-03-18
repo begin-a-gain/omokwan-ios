@@ -8,13 +8,19 @@
 import ComposableArchitecture
 import Domain
 import Base
+import Foundation
 
 @Reducer
 public struct InvitationFeature {
+    @Dependency(\.gameUseCase) private var gameUseCase
+    @Dependency(\.mainQueue) private var mainQueue
+    
     public init() {}
     
     @ObservableState
     public struct State: Equatable {
+        enum SearchDebounceID { case nickname }
+        
         public enum AlertCase: Equatable {
             case error(NetworkError)
         }
@@ -38,20 +44,12 @@ public struct InvitationFeature {
         let currentUserCount: Int
         let maxParticipants: Int
         
-        var selectedUserInfoList: [GameUserInfo] = [
-            .init(userID: 1, nickname: "가나다라"),
-            .init(userID: 2, nickname: "가나"),
-            .init(userID: 3, nickname: "가나라")
-        ]
-        var allUserInfoList: [GameUserInfo] = [
-            .init(userID: 1, nickname: "가나다라"),
-            .init(userID: 2, nickname: "가나"),
-            .init(userID: 3, nickname: "가나라"),
-            .init(userID: 4, nickname: "가나다"),
-            .init(userID: 5, nickname: "가나다마바라")
-        ]
+        var selectedUserInfoList: [GameUserInfo] = []
+        var allUserInfoList: [GameUserInfo] = []
+        var nextCursor: String?
+        var hasNext: Bool = false
         
-        var searchText: String = ""
+        var nickname: String = ""
         var isBottomButtonEnable: Bool {
             !selectedUserInfoList.isEmpty
         }
@@ -64,12 +62,28 @@ public struct InvitationFeature {
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
         case inviteButtonTapped
+        case fetchUserList(cursor: String?)
+        case userListFetched(GameUserPagingInfo, isFirstPage: Bool)
         case userInfoRowCardTapped(GameUserInfo)
         case sendToast(String)
     }
     
     public var body: some ReducerOf<Self> {
         BindingReducer()
+            .onChange(of: \.nickname) { oldValue, newValue in
+                Reduce { state, action in
+                    if oldValue.isEmpty, newValue.isEmpty {
+                        return .none
+                    }
+                    
+                    return .send(.fetchUserList(cursor: nil))
+                        .debounce(
+                            id: State.SearchDebounceID.nickname,
+                            for: .milliseconds(400),
+                            scheduler: mainQueue
+                        )
+                }
+            }
         
         Scope(state: \.alertState, action: \.alertAction) {
             AlertFeature()
@@ -78,7 +92,7 @@ public struct InvitationFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                return .none
+                return .send(.fetchUserList(cursor: nil))
             case .navigateToBack:
                 return .none
             case .binding:
@@ -90,6 +104,27 @@ public struct InvitationFeature {
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
             case .inviteButtonTapped:
+                return .none
+            case .fetchUserList(let cursor):
+                if cursor == nil {
+                    state.isShimmerLoading = true
+                    state.nextCursor = nil
+                    state.hasNext = false
+                }
+                
+                return .run { [nickname = state.nickname] send in
+                    await send(fetchUsers(nickname, cursor))
+                }
+            case let .userListFetched(info, isFirstPage):
+                state.isShimmerLoading = false
+                state.nextCursor = info.nextCursor.isEmpty ? nil : info.nextCursor
+                state.hasNext = info.hasNext
+                
+                if isFirstPage {
+                    state.allUserInfoList = info.users
+                } else {
+                    state.allUserInfoList.append(contentsOf: info.users)
+                }
                 return .none
             case .userInfoRowCardTapped(let userInfo):
                 if let index = state.selectedUserInfoList.firstIndex(of: userInfo) {
@@ -107,6 +142,24 @@ public struct InvitationFeature {
             case .sendToast:
                 return .none
             }
+        }
+    }
+}
+
+private extension InvitationFeature {
+    func fetchUsers(_ nickname: String, _ cursor: String?) async -> Action {
+        let pagingSize = 20
+        let response = await gameUseCase.fetchUsers(
+            nickname.isEmpty ? nil : nickname,
+            cursor,
+            pagingSize
+        )
+        
+        switch response {
+        case .success(let info):
+            return .userListFetched(info, isFirstPage: cursor == nil)
+        case .failure(let error):
+            return .showAlert(.error(error))
         }
     }
 }

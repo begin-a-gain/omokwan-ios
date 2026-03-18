@@ -13,6 +13,7 @@ import Domain
 
 public struct InvitationView: View {
     @Bindable private var store: StoreOf<InvitationFeature>
+    @FocusState private var isSearchFieldFocused: Bool
     
     public init(store: StoreOf<InvitationFeature>) {
         self.store = store
@@ -125,14 +126,15 @@ private extension InvitationView {
                         
             TextField(
                 "이름으로 검색하기",
-                text: $store.searchText
+                text: $store.nickname
             )
+            .focused($isSearchFieldFocused)
             .multilineTextAlignment(.leading)
             .font(.suit(token: .body_01))
             .foregroundStyle(OColors.text01.swiftUIColor)
             .greedyWidth(.leading)
             
-            if !store.searchText.isEmpty {
+            if !store.nickname.isEmpty {
                 clearButtonView
             }
         }
@@ -147,7 +149,7 @@ private extension InvitationView {
             Spacer().width(12)
             
             Button {
-                store.send(.set(\.searchText, ""))
+                store.send(.set(\.nickname, ""))
             } label: {
                 OImages.icCancel.swiftUIImage
                     .renderingMode(.template)
@@ -180,14 +182,28 @@ private extension InvitationView {
                     element: element,
                     selectedUserInfoList: store.selectedUserInfoList,
                     action: {
+                        isSearchFieldFocused = false
                         store.send(.userInfoRowCardTapped(element))
                     }
                 )
             }
+            
+            if store.hasNext {
+                progressView
+            }
         }
         .clipShape(RoundedRectangle(cornerRadius: 8))
-        .hPadding(20)
-        .padding(.top, 20)
+        .padding(20)
+    }
+    
+    var progressView: some View {
+        ProgressView()
+            .controlSize(.large)
+            .tint(.blue)
+            .onAppear {
+                guard let nextCursor = store.nextCursor else { return }
+                store.send(.fetchUserList(cursor: nextCursor))
+            }
     }
 }
 
