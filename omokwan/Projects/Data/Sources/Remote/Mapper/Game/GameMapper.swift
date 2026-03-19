@@ -156,4 +156,21 @@ struct GameMapper {
             isPublic: response.isPublic ?? false
         )
     }
+    
+    static func toGameUserPagingInfo(_ response: GameUserPagingResponse?) throws -> GameUserPagingInfo {
+        guard let response = response else {
+            throw RemoteNetworkError.responseDataNilError
+        }
+
+        return GameUserPagingInfo(
+            users: (response.users ?? []).map { user in
+                GameUserInfo(
+                    userID: user.userId ?? 0,
+                    nickname: user.nickname ?? ""
+                )
+            },
+            nextCursor: response.nextCursor ?? "",
+            hasNext: response.hasNext ?? false
+        )
+    }
 }

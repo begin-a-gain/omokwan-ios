@@ -251,4 +251,21 @@ public struct GameRepository: GameRepositoryProtocol {
             return .failure(ErrorMapper.toNetworkError(error))
         }
     }
+    
+    public func getUsers(
+        nickname: String?,
+        cursor: String?,
+        size: Int
+    ) async -> Result<GameUserPagingInfo, NetworkError> {
+        do {
+            let queryParameters = GameUserPagingRequest(nickname: nickname, cursor: cursor, size: size)
+            let endPoint = EndPoint<RemoteResponseModel<GameUserPagingResponse>>.getUsers(
+                queryParameters: queryParameters
+            )
+            let response = try await apiService.call(endPoint)
+            return .success(try GameMapper.toGameUserPagingInfo(response.data))
+        } catch {
+            return .failure(ErrorMapper.toNetworkError(error))
+        }
+    }
 }

@@ -39,5 +39,6 @@ struct MyGameSheetView: View {
         .datePickerStyle(.wheel)
         .labelsHidden()
         .environment(\.locale, Locale(identifier: "ko_KR"))
+        .vPadding(34)
     }
 }

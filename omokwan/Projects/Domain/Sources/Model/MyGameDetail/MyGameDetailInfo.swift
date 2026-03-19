@@ -39,9 +39,9 @@ public struct GameUserInfo: Equatable {
     public let isHost: Bool
     
     public init(
-        userID: Int,
-        nickname: String,
-        isHost: Bool
+        userID: Int = -1,
+        nickname: String = "",
+        isHost: Bool = false
     ) {
         self.userID = userID
         self.nickname = nickname

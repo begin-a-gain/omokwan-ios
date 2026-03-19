@@ -64,8 +64,16 @@ struct PasswordFieldView: View {
             focusedField = .thousandsPlace
             refreshAction()
         }
-        .onChange(of: text) { value in
-            if !value.isEmpty {
+        .onChange(of: text) { oldValue, newValue in
+            let filtered = newValue.filter(\.isNumber)
+            let limited = String(filtered.prefix(1))
+            
+            if text != limited {
+                text = limited
+                return
+            }
+            
+            if !newValue.isEmpty {
                 switch focusedFieldType {
                 case .thousandsPlace:
                     focusedField = .hundredsPlace
@@ -88,3 +96,4 @@ struct PasswordFieldView: View {
         }
     }
 }
+

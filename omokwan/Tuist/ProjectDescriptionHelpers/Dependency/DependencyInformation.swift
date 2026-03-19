@@ -24,7 +24,8 @@ let dependencyInfo: [DependencyInformation: [DependencyInformation]] = [
     .GameDetail: [.Base],
     .MyPage: [.Base],
     .Util: [.FirebaseAnalytics],
-    .Notification: [.Base]
+    .Notification: [.Base],
+    .DesignSystem: [.Lottie]
 ]
 
 public enum DependencyInformation: String, Sendable {
@@ -51,6 +52,7 @@ public enum DependencyInformation: String, Sendable {
     case FirebaseAnalytics = "FirebaseAnalytics"
     case FirebaseCrashlytics = "FirebaseCrashlytics"
     case Notification = "Notification"
+    case Lottie = "Lottie"
 }
 
 public enum PresentationDependencyInformation: String, CaseIterable {

@@ -229,7 +229,7 @@ private extension MyGameAddView {
                     selectAreaAction: {
                         viewStore.send(.privateRoomCodeButtonTapped)
                     },
-                    additionalInfo: "코드 : \(viewStore.privateRoomPassword ?? "-")",
+                    additionalInfo: "비밀번호 : \(viewStore.privateRoomPassword ?? "-")",
                     isSelected: Binding(
                         get: { viewStore.isPrivateRoomSelected },
                         set: { newValue in

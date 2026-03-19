@@ -19,7 +19,7 @@ struct OLoadingModifier: ViewModifier {
             content
             if (isPresent) {
                 ZStack {
-                    ProgressView().controlSize(.large).tint(.blue)
+                    OLottieView(.omokLoading)
                 }.greedyFrame().background(OColors.oBlack.swiftUIColor.opacity(0.45))
             }
         }

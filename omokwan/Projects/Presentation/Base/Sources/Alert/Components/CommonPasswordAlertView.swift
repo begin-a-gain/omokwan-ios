@@ -50,7 +50,7 @@ public struct CommonPasswordAlertView: View {
             content: {
                 VStack(spacing: 16) {
                     OText(
-                        "대국 코드 설정",
+                        "대국 비밀번호 설정",
                         token: .headline
                     )
                     HStack(spacing: 8) {

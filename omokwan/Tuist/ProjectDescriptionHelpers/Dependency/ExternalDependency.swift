@@ -12,5 +12,6 @@ let externalDependency: [DependencyInformation] = [
     .KakaoSDKUser,
     .ComposableArchitecture,
     .FirebaseAnalytics,
-    .FirebaseCrashlytics
+    .FirebaseCrashlytics,
+    .Lottie
 ]

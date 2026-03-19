@@ -201,14 +201,16 @@ public struct MyGameAddFeature {
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
             case .passwordAlertConfirmButtonTapped:
-                guard let thousands = Int(state.thousandsPlace),
-                      let hundreds = Int(state.hundredsPlace),
-                      let tens = Int(state.tensPlace),
-                      let ones = Int(state.onesPlace)
-                else { return .none }
-                
-                let password = (1000 * thousands) + (100 * hundreds) + (10 * tens) + ones
-                state.privateRoomPassword = String(password)
+                guard let password = [
+                    state.thousandsPlace,
+                    state.hundredsPlace,
+                    state.tensPlace,
+                    state.onesPlace
+                ].passwordString else {
+                    return .none
+                }
+
+                state.privateRoomPassword = password
                 state.isPrivateRoomSelected = true
                 
                 return .send(.alertAction(.dismiss))

@@ -82,6 +82,7 @@ public struct GameDetailSettingFeature {
         case inviteButtonTapped
         case hostChangeButtonTapped
         case navigateToHostChange(Int, [GameUserInfo])
+        case navigateToInvitation(Int, [GameUserInfo], Int)
         case exitButtonTapped
         case maxNumOfPeopleSheet(PresentationAction<CommonMaxNumOfPeopleFeature.Action>)
         case categorySheet(PresentationAction<CommonCategoryFeature.Action>)
@@ -182,12 +183,20 @@ public struct GameDetailSettingFeature {
                 }
                 return .none
             case .inviteButtonTapped:
-                return .none
+                return .send(
+                    .navigateToInvitation(
+                        state.gameID,
+                        state.gameUserInfos,
+                        5 // TODO: 최대 인원 수 넘기기. 서버 필드 추가되면 작업
+                    )
+                )
             case .hostChangeButtonTapped:
                 let gameID = state.gameID
                 let gameUserInfos = state.gameUserInfos
                 return .send(.navigateToHostChange(gameID, gameUserInfos))
             case .navigateToHostChange:
+                return .none
+            case .navigateToInvitation:
                 return .none
             case .exitButtonTapped:
                 return .send(.showAlert(.exit))
@@ -203,14 +212,16 @@ public struct GameDetailSettingFeature {
             case .maxNumOfPeopleSheet(.dismiss):
                 return .none
             case .passwordAlertConfirmButtonTapped:
-                guard let thousands = Int(state.thousandsPlace),
-                      let hundreds = Int(state.hundredsPlace),
-                      let tens = Int(state.tensPlace),
-                      let ones = Int(state.onesPlace)
-                else { return .none }
+                guard let password = [
+                    state.thousandsPlace,
+                    state.hundredsPlace,
+                    state.tensPlace,
+                    state.onesPlace
+                ].passwordString else {
+                    return .none
+                }
                 
-                let password = (1000 * thousands) + (100 * hundreds) + (10 * tens) + ones
-                state.currentConfiguration.password = String(password)
+                state.currentConfiguration.password = password
                 state.currentConfiguration.isPublic = false
                 
                 return .send(.alertAction(.dismiss))
