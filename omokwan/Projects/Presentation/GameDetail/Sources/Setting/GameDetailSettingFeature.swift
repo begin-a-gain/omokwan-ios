@@ -74,6 +74,7 @@ public struct GameDetailSettingFeature {
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
         case binding(BindingAction<State>)
+        case gameCodeButtonTapped
         case maxNumOfPeopleButtonTapped
         case gameCategorySettingButtonTapped
         case privateRoomCodeButtonTapped
@@ -91,10 +92,13 @@ public struct GameDetailSettingFeature {
         case configurationFetched(GameDetailSettingConfiguration)
         case initialDataFetched([GameCategory], GameDetailSettingConfiguration)
         case saveButtonTapped
+        case saveCompleted
         case exitAlertButtonTapped
         case exitRoom
         case exitCompleted
-        case sendToast(String)
+        case sendCopyToast(String)
+        case sendSaveToast(String)
+        case sendExitToast(String)
     }
     
     public var body: some ReducerOf<Self> {
@@ -147,6 +151,8 @@ public struct GameDetailSettingFeature {
                 return .none
             case .binding:
                 return .none
+            case .gameCodeButtonTapped:
+                return .send(.sendCopyToast("클립보드에 복사되었어요."))
             case .maxNumOfPeopleButtonTapped:
                 state.maxNumOfPeopleSheet = .init(
                     selectedMaxNumOfPeopleCount: state.currentConfiguration.maxNumberOfPlayers
@@ -261,7 +267,15 @@ public struct GameDetailSettingFeature {
                 )
                 return .none
             case .saveButtonTapped:
-                return .none
+                state.isLoading = true
+                let gameID = state.gameID
+                let request = makeUpdateRequest(state.currentConfiguration)
+                return .run { send in
+                    await send(updateGameDetailSetting(gameID, request))
+                }
+            case .saveCompleted:
+                state.isLoading = false
+                return .send(.sendSaveToast("대국 정보가 변경되었어요."))
             case .exitAlertButtonTapped:
                 state.alertCase = nil
                 
@@ -282,8 +296,12 @@ public struct GameDetailSettingFeature {
             case .exitCompleted:
                 state.isLoading = false
                 let title = state.gameTitle
-                return .send(.sendToast(title))
-            case .sendToast:
+                return .send(.sendExitToast("‘\(title)’에서 나왔어요. 다음에 다시 도전해 보세요!"))
+            case .sendCopyToast:
+                return .none
+            case .sendSaveToast:
+                return .none
+            case .sendExitToast:
                 return .none
             }
         }
@@ -341,6 +359,20 @@ private extension GameDetailSettingFeature {
             return .showAlert(.error(error))
         }
     }
+    
+    func updateGameDetailSetting(
+        _ gameID: Int,
+        _ request: GameDetailSettingRequestDTO
+    ) async -> Action {
+        let response = await gameUseCase.updateGameDetailSetting(gameID, request)
+        
+        switch response {
+        case .success:
+            return .saveCompleted
+        case .failure(let error):
+            return .showAlert(.error(error))
+        }
+    }
 }
 
 private extension GameDetailSettingFeature {
@@ -355,6 +387,16 @@ private extension GameDetailSettingFeature {
         state.gameTitleValidStatus = .valid
         state.selectedCategory = state.categories.find(
             for: Int(configuration.categoryCode) ?? -1
+        )
+    }
+    
+    func makeUpdateRequest(_ config: GameDetailSettingConfiguration) -> GameDetailSettingRequestDTO {
+        GameDetailSettingRequestDTO(
+            name: config.title,
+            maxParticipants: config.maxNumberOfPlayers,
+            category: config.categoryCode,
+            password: config.isPublic ? nil : config.password,
+            isPublic: config.isPublic
         )
     }
 }

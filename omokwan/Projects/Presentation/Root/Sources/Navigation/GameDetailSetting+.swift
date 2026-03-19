@@ -14,8 +14,8 @@ extension RootFeature {
         _ action: GameDetailSettingFeature.Action
     ) -> Effect<Action> {
         switch action {
-        case .sendToast(let title):
-            state.toastMessage = "‘\(title)’에서 나왔어요. 다음에 다시 도전해 보세요!"
+        case .sendCopyToast(let message), .sendSaveToast(let message), .sendExitToast(let message):
+            state.toastMessage = message
             state.isToastPresented = true
             return .none
         default:
