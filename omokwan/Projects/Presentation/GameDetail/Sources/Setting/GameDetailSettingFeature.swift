@@ -210,14 +210,16 @@ public struct GameDetailSettingFeature {
             case .maxNumOfPeopleSheet(.dismiss):
                 return .none
             case .passwordAlertConfirmButtonTapped:
-                guard let thousands = Int(state.thousandsPlace),
-                      let hundreds = Int(state.hundredsPlace),
-                      let tens = Int(state.tensPlace),
-                      let ones = Int(state.onesPlace)
-                else { return .none }
+                guard let password = [
+                    state.thousandsPlace,
+                    state.hundredsPlace,
+                    state.tensPlace,
+                    state.onesPlace
+                ].passwordString else {
+                    return .none
+                }
                 
-                let password = (1000 * thousands) + (100 * hundreds) + (10 * tens) + ones
-                state.currentConfiguration.password = String(password)
+                state.currentConfiguration.password = password
                 state.currentConfiguration.isPublic = false
                 
                 return .send(.alertAction(.dismiss))

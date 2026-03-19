@@ -222,17 +222,18 @@ public struct MyGameParticipateFeature {
             case .passwordAlertCancelButtonTapped:
                 return .send(.alertAction(.dismiss))
             case .passwordAlertConfirmButtonTapped(let roomInfo):
-                guard let thousands = Int(state.thousandsPlace),
-                      let hundreds = Int(state.hundredsPlace),
-                      let tens = Int(state.tensPlace),
-                      let ones = Int(state.onesPlace)
-                else { return .none }
-                
-                let password = (1000 * thousands) + (100 * hundreds) + (10 * tens) + ones
+                guard let password = [
+                    state.thousandsPlace,
+                    state.hundredsPlace,
+                    state.tensPlace,
+                    state.onesPlace
+                ].passwordString else {
+                    return .none
+                }
                 
                 return .merge([
                     .send(.alertAction(.dismiss)),
-                    .send(.participateRoom(roomInfo, String(password)))
+                    .send(.participateRoom(roomInfo, password))
                 ])
             case .initialDataFetchFailed(let error):
                 return .merge([
