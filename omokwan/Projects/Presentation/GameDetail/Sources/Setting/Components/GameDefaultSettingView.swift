@@ -14,6 +14,7 @@ struct GameDefaultSettingView: View {
     private let dayDescription: String
     private let maxNumOfPeople: Int
     private let canChangeMaxNumOfPeopleSetting: Bool
+    private let gameCodeButtonAction: (() -> Void)?
     private let maxNumOfPeopleButtonAction: (() -> Void)?
     
     init(
@@ -22,6 +23,7 @@ struct GameDefaultSettingView: View {
         dayDescription: String,
         maxNumOfPeople: Int,
         canChangeMaxNumOfPeopleSetting: Bool,
+        gameCodeButtonAction: (() -> Void)? = nil,
         maxNumOfPeopleButtonAction: (() -> Void)? = nil
     ) {
         self.daysInProgress = daysInProgress
@@ -29,6 +31,7 @@ struct GameDefaultSettingView: View {
         self.dayDescription = dayDescription
         self.maxNumOfPeople = maxNumOfPeople
         self.canChangeMaxNumOfPeopleSetting = canChangeMaxNumOfPeopleSetting
+        self.gameCodeButtonAction = gameCodeButtonAction
         self.maxNumOfPeopleButtonAction = maxNumOfPeopleButtonAction
     }
     
@@ -80,6 +83,7 @@ private extension GameDefaultSettingView {
             Spacer()
             Button {
                 UIPasteboard.general.string = gameCode
+                gameCodeButtonAction?()
             } label: {
                 OText(
                     gameCode,

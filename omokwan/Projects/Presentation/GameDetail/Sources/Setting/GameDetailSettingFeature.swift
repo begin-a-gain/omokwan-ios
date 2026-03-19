@@ -74,6 +74,7 @@ public struct GameDetailSettingFeature {
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
         case binding(BindingAction<State>)
+        case gameCodeButtonTapped
         case maxNumOfPeopleButtonTapped
         case gameCategorySettingButtonTapped
         case privateRoomCodeButtonTapped
@@ -95,6 +96,7 @@ public struct GameDetailSettingFeature {
         case exitAlertButtonTapped
         case exitRoom
         case exitCompleted
+        case sendCopyToast(String)
         case sendSaveToast(String)
         case sendExitToast(String)
     }
@@ -149,6 +151,8 @@ public struct GameDetailSettingFeature {
                 return .none
             case .binding:
                 return .none
+            case .gameCodeButtonTapped:
+                return .send(.sendCopyToast("클립보드에 복사되었어요."))
             case .maxNumOfPeopleButtonTapped:
                 state.maxNumOfPeopleSheet = .init(
                     selectedMaxNumOfPeopleCount: state.currentConfiguration.maxNumberOfPlayers
@@ -293,6 +297,8 @@ public struct GameDetailSettingFeature {
                 state.isLoading = false
                 let title = state.gameTitle
                 return .send(.sendExitToast("‘\(title)’에서 나왔어요. 다음에 다시 도전해 보세요!"))
+            case .sendCopyToast:
+                return .none
             case .sendSaveToast:
                 return .none
             case .sendExitToast:

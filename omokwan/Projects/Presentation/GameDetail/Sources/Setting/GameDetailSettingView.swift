@@ -110,6 +110,9 @@ private extension GameDetailSettingView {
                     dayDescription: viewStore.currentConfiguration.dayDescription,
                     maxNumOfPeople: viewStore.currentConfiguration.maxNumberOfPlayers,
                     canChangeMaxNumOfPeopleSetting: viewStore.isHost,
+                    gameCodeButtonAction: {
+                        viewStore.send(.gameCodeButtonTapped)
+                    },
                     maxNumOfPeopleButtonAction: {
                         viewStore.send(.maxNumOfPeopleButtonTapped)
                     }

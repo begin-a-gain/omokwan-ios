@@ -14,7 +14,7 @@ extension RootFeature {
         _ action: GameDetailSettingFeature.Action
     ) -> Effect<Action> {
         switch action {
-        case .sendSaveToast(let message), .sendExitToast(let message):
+        case .sendCopyToast(let message), .sendSaveToast(let message), .sendExitToast(let message):
             state.toastMessage = message
             state.isToastPresented = true
             return .none
