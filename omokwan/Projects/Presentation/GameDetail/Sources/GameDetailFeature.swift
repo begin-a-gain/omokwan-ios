@@ -59,6 +59,7 @@ public struct GameDetailFeature {
         @Shared(.userInfo) var userInfo = UserInfo()
         var isComboSheetPresented: Bool = false
         var comboCount: Int = 0
+        var maxParticipants: Int = 5
     }
     
     public enum Action {
@@ -114,7 +115,7 @@ public struct GameDetailFeature {
                         .navigateToInvitation(
                             state.gameID,
                             state.gameUserInfos.compactMap { $0 },
-                            5 // TODO: 최대 인원 수 넘기기. 서버 필드 추가되면 작업
+                            state.maxParticipants
                         )
                     )
                 }
@@ -193,6 +194,7 @@ public struct GameDetailFeature {
                 case let .gameDetailInfoFetched(info, _):
                     state.isLoading = false
                     setGameUserInfo(&state, info.users)
+                    state.maxParticipants = info.matchInfo.maxParticipants
                     return .none
                 case let .comboAchieved(comboCount):
                     state.comboCount = comboCount

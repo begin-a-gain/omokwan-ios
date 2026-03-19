@@ -6,6 +6,7 @@
 //
 
 public struct MyGameDetailInfo {
+    public let matchInfo: MatchInfo
     public let users: [GameUserInfo]
     public let dates: [GameDetailDate]
     public let previousDateCursor: String
@@ -15,6 +16,7 @@ public struct MyGameDetailInfo {
     public let isTodayCompleted: Bool
     
     public init(
+        matchInfo: MatchInfo,
         users: [GameUserInfo],
         dates: [GameDetailDate],
         previousDateCursor: String,
@@ -23,6 +25,7 @@ public struct MyGameDetailInfo {
         needPreviousDatePaging: Bool,
         isTodayCompleted: Bool
     ) {
+        self.matchInfo = matchInfo
         self.users = users
         self.dates = dates
         self.previousDateCursor = previousDateCursor
@@ -30,6 +33,19 @@ public struct MyGameDetailInfo {
         self.needNextDatePaging = needNextDatePaging
         self.needPreviousDatePaging = needPreviousDatePaging
         self.isTodayCompleted = isTodayCompleted
+    }
+}
+
+public struct MatchInfo: Equatable {
+    public let matchName: String
+    public let maxParticipants: Int
+    
+    public init(
+        matchName: String,
+        maxParticipants: Int
+    ) {
+        self.matchName = matchName
+        self.maxParticipants = maxParticipants
     }
 }
 

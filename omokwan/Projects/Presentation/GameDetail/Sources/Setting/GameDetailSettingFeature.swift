@@ -191,7 +191,7 @@ public struct GameDetailSettingFeature {
                     .navigateToInvitation(
                         state.gameID,
                         state.gameUserInfos,
-                        5 // TODO: 최대 인원 수 넘기기. 서버 필드 추가되면 작업
+                        state.currentConfiguration.maxNumberOfPlayers
                     )
                 )
             case .hostChangeButtonTapped:
