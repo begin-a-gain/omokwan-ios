@@ -265,10 +265,7 @@ public struct GameDetailSettingFeature {
             case .saveButtonTapped:
                 state.isLoading = true
                 let gameID = state.gameID
-                let request = makeUpdateRequest(
-                    original: state.originalConfiguration,
-                    current: state.currentConfiguration
-                )
+                let request = makeUpdateRequest(state.currentConfiguration)
                 return .run { send in
                     await send(updateGameDetailSetting(gameID, request))
                 }
@@ -387,16 +384,13 @@ private extension GameDetailSettingFeature {
         )
     }
     
-    func makeUpdateRequest(
-        original: GameDetailSettingConfiguration,
-        current: GameDetailSettingConfiguration
-    ) -> GameDetailSettingRequestDTO {
+    func makeUpdateRequest(_ config: GameDetailSettingConfiguration) -> GameDetailSettingRequestDTO {
         GameDetailSettingRequestDTO(
-            name: original.title != current.title ? current.title : nil,
-            maxParticipants: original.maxNumberOfPlayers != current.maxNumberOfPlayers ? current.maxNumberOfPlayers : nil,
-            category: original.categoryCode != current.categoryCode ? current.categoryCode : nil,
-            password: original.password != current.password ? current.password : nil,
-            isPublic: original.isPublic != current.isPublic ? current.isPublic : nil
+            name: config.title,
+            maxParticipants: config.maxNumberOfPlayers,
+            category: config.categoryCode,
+            password: config.isPublic ? nil : config.password,
+            isPublic: config.isPublic
         )
     }
 }
