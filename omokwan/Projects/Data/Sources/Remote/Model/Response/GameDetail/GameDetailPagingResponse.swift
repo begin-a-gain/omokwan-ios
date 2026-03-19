@@ -8,6 +8,7 @@
 import Domain
 
 struct GameDetailPagingResponse: Decodable {
+    let match: MatchResponse?
     let users: [GameDetailPagingUserResponse]?
     let dates: [GameDetailPagingDateResponse]?
     let prevCursor: String?
@@ -15,6 +16,11 @@ struct GameDetailPagingResponse: Decodable {
     let hasPrev: Bool?
     let hasNext: Bool?
     let isTodayMatchCompleted: Bool?
+}
+
+struct MatchResponse: Decodable {
+    let matchName: String?
+    let maxParticipants: Int?
 }
 
 struct GameDetailPagingUserResponse: Decodable {

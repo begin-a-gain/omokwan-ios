@@ -59,6 +59,10 @@ struct GameMapper {
         }
         
         return MyGameDetailInfo(
+            matchInfo: .init(
+                matchName: response.match?.matchName ?? "",
+                maxParticipants: response.match?.maxParticipants ?? 0
+            ),
             users: response.users?.map {
                 $0.toDomain()
             } ?? [],
