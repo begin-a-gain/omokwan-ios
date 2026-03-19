@@ -57,6 +57,8 @@ public struct GameDetailFeature {
         
         @PresentationState var userAvatarInfoSheet: UserAvatarInfoFeature.State?
         @Shared(.userInfo) var userInfo = UserInfo()
+        var isComboSheetPresented: Bool = false
+        var comboCount: Int = 0
     }
     
     public enum Action {
@@ -80,6 +82,7 @@ public struct GameDetailFeature {
         case omokStatusUpdated(OmokStoneStatus)
         
         case stickyCalendarAction(StickyCalendarFeature.Action)
+        case setComboSheet(Bool)
     }
     
     public var body: some ReducerOf<Self> {
@@ -191,6 +194,10 @@ public struct GameDetailFeature {
                     state.isLoading = false
                     setGameUserInfo(&state, info.users)
                     return .none
+                case let .comboAchieved(comboCount):
+                    state.comboCount = comboCount
+                    state.isComboSheetPresented = true
+                    return .none
                 case .showAlert(let error):
                     return .send(.showAlert(.error(error)))
                 case .needRefresh:
@@ -206,6 +213,9 @@ public struct GameDetailFeature {
                     
                 setGameUserInfo(&state, filteredUserList)
                 return .send(.stickyCalendarAction(.needRefresh))
+            case .setComboSheet(let value):
+                state.isComboSheetPresented = value
+                return .none
             }
         }
         .ifLet(\.$userAvatarInfoSheet, action: \.userAvatarInfoSheet) {

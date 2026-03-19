@@ -73,6 +73,7 @@ public struct StickyCalendarFeature {
         case fetchInfoWithPaging(PagingCursor)
         case showAlert(NetworkError)
         case gameDetailInfoFetched(MyGameDetailInfo, PagingCursor)
+        case comboAchieved(Int)
         case setTopProgressVisible(Bool)
         case setSavedContentOffset(CGFloat)
         case setSavedContentHeight(CGFloat)
@@ -120,6 +121,8 @@ public struct StickyCalendarFeature {
             case let .gameDetailInfoFetched(info, pagingCursor):
                 setPagingInfo(&state, info, pagingCursor)
                 setDateUserStatusInfos(&state, info.dates)
+                return .none
+            case .comboAchieved:
                 return .none
             case .showAlert:
                 return .none
@@ -176,14 +179,16 @@ public struct StickyCalendarFeature {
                 }
                 
                 if todayMatchedIndex + 1 < flatMap.count {
-                    markOmokStatusWithPreviousData(
+                    if let action = markOmokStatusWithPreviousData(
                         state: &state,
                         todayGameDetailDate: currentMonthGameDetailDates[todaySameDateIndex],
                         currentMonthGameDetailDates: currentMonthGameDetailDates,
                         todaySameDateIndex: todaySameDateIndex,
                         todayMatchedIndex: todayMatchedIndex,
                         allGameDetailDates: flatMap
-                    )
+                    ) {
+                        return .send(action)
+                    }
                     return .none
                 } else {
                     markOmokStatusWithoutPreviousData(
@@ -333,7 +338,7 @@ private extension StickyCalendarFeature {
         todaySameDateIndex: Int,
         todayMatchedIndex: Int,
         allGameDetailDates: [GameDetailDate]
-    ) {
+    ) -> Action? {
         let previousGameDetailDate = allGameDetailDates[todayMatchedIndex + 1]
         var currentMonthGameDetailDates = currentMonthGameDetailDates
         var todayDate = currentMonthGameDetailDates[todaySameDateIndex]
@@ -350,6 +355,12 @@ private extension StickyCalendarFeature {
                 
                 currentMonthGameDetailDates[todaySameDateIndex] = todayDate
                 state.dateUserStatusInfos[state.todayYearMonth] = currentMonthGameDetailDates
+                state.shouldReloadToday = true
+                guard myUserStatus.streakCount.isMultiple(of: 5) else {
+                    return nil
+                }
+                let comboCount = myUserStatus.streakCount / 5
+                return .comboAchieved(comboCount)
             } else {
                 let streakCount = previousGameDetailDate.userStatus[0]?.streakCount ?? 0
                 if streakCount >= 4 {
@@ -374,6 +385,8 @@ private extension StickyCalendarFeature {
                         
                         state.dateUserStatusInfos[yearMonth] = monthDates
                     }
+                    state.shouldReloadToday = true
+                    return .comboAchieved(1)
                 } else {
                     todayDate.userStatus[0] = GameDetailUserStatus(
                         userID: myUserStatus.userID,
@@ -389,5 +402,6 @@ private extension StickyCalendarFeature {
         }
                 
         state.shouldReloadToday = true
+        return nil
     }
 }

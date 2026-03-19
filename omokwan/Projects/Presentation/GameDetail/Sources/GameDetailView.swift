@@ -58,6 +58,13 @@ public struct GameDetailView: View {
             UserAvatarInfoView(store: store)
                 .modifier(DynamicSheetModifier())
         }
+        .sheet(isPresented: Binding(
+            get: { viewStore.isComboSheetPresented },
+            set: { viewStore.send(.setComboSheet($0)) })
+        ) {
+            DetailComboSheetView(comboCount: viewStore.comboCount)
+                .modifier(CommonSheetModifier(detent: [.height(726 + DeviceInfo.shared.homeIndicatorHeight)]))
+        }
     }
     
     private var gameDetailBody: some View {
