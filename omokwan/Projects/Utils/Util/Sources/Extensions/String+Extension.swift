@@ -34,3 +34,14 @@ public extension String {
         return formatter.date(from: self)
     }
 }
+
+public extension Array where Element == String {
+    var passwordString: String? {
+        guard count == 4 else { return nil }
+        guard allSatisfy({ !$0.isEmpty && $0.count == 1 && $0.allSatisfy(\.isNumber) }) else {
+            return nil
+        }
+        
+        return joined()
+    }
+}
