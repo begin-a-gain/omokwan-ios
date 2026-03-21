@@ -16,6 +16,7 @@ public struct SplashFeature {
     @Dependency(\.serverUseCase) private var serverUseCase
     @Dependency(\.localUseCase) private var localUseCase
     @Dependency(\.firebaseUseCase) private var firebaseUseCase
+    @Dependency(\.permissionUseCase) private var permissionUseCase
 
     public init() {}
     
@@ -59,14 +60,14 @@ public struct SplashFeature {
                     .send(.checkAppTrackingPermission)
                 ])
             case .checkAppTrackingPermission:
-                let needTrackingAuthorization = firebaseUseCase.needTrackingAuthorization()
+                let needTrackingAuthorization = permissionUseCase.needTrackingAuthorization()
                 if needTrackingAuthorization {
                     return .run { send in
-                        let isAuthorized = await firebaseUseCase.requestTrackingAuthorizationAndCheckAuthorized()
+                        let isAuthorized = await permissionUseCase.requestTrackingAuthorizationAndCheckAuthorized()
                         await send(.setTrackingValueForAnalytics(isAuthorized))
                     }
                 } else {
-                    let isAuthorized = firebaseUseCase.isTrackingAuthorized()
+                    let isAuthorized = permissionUseCase.isTrackingAuthorized()
                     return .send(.setTrackingValueForAnalytics(isAuthorized))
                 }
             case .setTrackingValueForAnalytics(let isAuthorized):
