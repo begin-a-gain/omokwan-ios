@@ -19,9 +19,19 @@ public struct MyGameFeature {
     
     public struct State: Equatable {
         public init() {}
-        @BindingState var selectedDate: Date = .now
-        @PresentationState var myGameSheet: MyGameSheetFeature.State?
         
+        public enum AlertCase: Equatable {
+            case participateDoubleCheck(MyGameModel)
+            case password(MyGameModel)
+            case passwordError
+        }
+        
+        @BindingState var selectedDate: Date = .now
+        @BindingState public var thousandsPlace: String = ""
+        @BindingState public var hundredsPlace: String = ""
+        @BindingState public var tensPlace: String = ""
+        @BindingState public var onesPlace: String = ""
+        @PresentationState var myGameSheet: MyGameSheetFeature.State?
         var isDatePickerVisible: Bool = false
         var hasNotification: Bool = false
         var myGameList: [MyGameModel?] = Array(repeating: nil, count: 6)
@@ -51,6 +61,13 @@ public struct MyGameFeature {
         case quickCompleteButtonTapped(MyGameModel)
         case navigateToGameDetail(Int, String, String)
         case omokStatusUpdated(Int)
+        case passAlert(State.AlertCase)
+        case alertParticipateButtonTapped(MyGameModel)
+        case passwordAlertCancelButtonTapped
+        case passwordAlertConfirmButtonTapped(MyGameModel)
+        case participateRoom(MyGameModel, String?)
+        case participateCompleted(MyGameModel)
+        case sendToast(String)
     }
     
     public var body: some ReducerOf<Self> {
@@ -124,18 +141,21 @@ public struct MyGameFeature {
             case .passError:
                 return .none
             case .stoneTapped(let stoneInfo):
-                // TODO: 추방 당한, 셀프로 나간, 끝난 대국에 대한 API가 나오면 그 때 세부 작업. 현재는 detail로 이동만.
-                let dateString = state.selectedDate.formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
-                return .send(.navigateToGameDetail(stoneInfo.gameID, stoneInfo.name, dateString))
+                return validateParticipateStatus(stoneInfo, selectedDate: state.selectedDate)
             case .quickCompleteButtonTapped(let stoneInfo):
-                switch stoneInfo.myGameCompleteStatus {
-                case .inComplete:
-                    return .concatenate([
-                        .send(.setLoading(true)),
-                        .run { send in
-                            await send(updateTodayOmokStatus(stoneInfo.gameID))
-                        }
-                    ])
+                switch stoneInfo.participateStatus {
+                case .active:
+                    switch stoneInfo.myGameCompleteStatus {
+                    case .inComplete:
+                        return .concatenate([
+                            .send(.setLoading(true)),
+                            .run { send in
+                                await send(updateTodayOmokStatus(stoneInfo.gameID))
+                            }
+                        ])
+                    default:
+                        return .none
+                    }
                 default:
                     return .none
                 }
@@ -151,11 +171,48 @@ public struct MyGameFeature {
                         participants: game.participants,
                         maxParticipants: game.maxParticipants,
                         myGameCompleteStatus: .complete,
+                        participateStatus: game.participateStatus,
                         isPrivateRoom: game.isPrivateRoom
                     )
                 }
                 return .send(.setLoading(false))
+            case .passAlert:
+                return .send(.setLoading(false))
+            case .alertParticipateButtonTapped(let stoneInfo):
+                if stoneInfo.isPrivateRoom {
+                    return .send(.passAlert(.password(stoneInfo)))
+                }
+                
+                return .send(.participateRoom(stoneInfo, nil))
+            case .passwordAlertCancelButtonTapped:
+                return .none
+            case .passwordAlertConfirmButtonTapped(let stoneInfo):
+                guard let password = [
+                    state.thousandsPlace,
+                    state.hundredsPlace,
+                    state.tensPlace,
+                    state.onesPlace
+                ].passwordString else {
+                    return .none
+                }
+                
+                return .send(.participateRoom(stoneInfo, password))
+            case let .participateRoom(stoneInfo, password):
+                return .concatenate([
+                    .send(.setLoading(true)),
+                    .run { send in
+                        await send(participateRoom(stoneInfo, password))
+                    }
+                ])
+            case .participateCompleted(let stoneInfo):
+                let dateString = state.selectedDate.formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
+                return .concatenate([
+                    .send(.setLoading(false)),
+                    .send(.navigateToGameDetail(stoneInfo.gameID, stoneInfo.name, dateString))
+                ])
             case .navigateToGameDetail:
+                return .none
+            case .sendToast:
                 return .none
             }
         }
@@ -240,6 +297,33 @@ private extension MyGameFeature {
             return .omokStatusUpdated(gameID)
         case .failure(let error):
             return .passError(error)
+        }
+    }
+    
+    func participateRoom(_ stoneInfo: MyGameModel, _ password: String?) async -> Action {
+        let response = await gameUseCase.participateRoom(stoneInfo.gameID, password)
+        
+        switch response {
+        case .success(let isParticipateSuccess):
+            return isParticipateSuccess
+                ? .participateCompleted(stoneInfo)
+                : .passAlert(.passwordError)
+        case .failure(let error):
+            return .passError(error)
+        }
+    }
+    
+    func validateParticipateStatus(_ stoneInfo: MyGameModel, selectedDate: Date) -> Effect<Action> {
+        switch stoneInfo.participateStatus {
+        case .active:
+            let dateString = selectedDate.formattedString(format: DateFormatConstants.yearMonthDayRequestFormat)
+            return .send(.navigateToGameDetail(stoneInfo.gameID, stoneInfo.name, dateString))
+        case .kicked:
+            return .send(.sendToast("더 이상 참여할 수 없는 대국이에요."))
+        case .left:
+            return .send(.passAlert(.participateDoubleCheck(stoneInfo)))
+        case .done:
+            return .send(.sendToast("끝난 대국이에요"))
         }
     }
 }

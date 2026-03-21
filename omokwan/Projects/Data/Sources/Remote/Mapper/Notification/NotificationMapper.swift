@@ -17,6 +17,7 @@ struct NotificationMapper {
         
         return notifications.compactMap {
             guard let notificationId = $0.notificationId,
+                  let matchId = $0.matchId,
                   let type = NotificationType(rawValue: $0.type ?? ""),
                   let createdDateString = $0.occurredAt,
                   let createdDate = createdDateString.toDate() else {
@@ -25,6 +26,8 @@ struct NotificationMapper {
             
             return NotificationInfo(
                 id: notificationId,
+                gameID: matchId,
+                isPublic: $0.isPublic ?? false,
                 isRead: $0.isRead ?? false,
                 createdDate: createdDate,
                 type: type,

@@ -310,9 +310,8 @@ private extension StickyScrollViewController {
             let isPreviousProgressVisible = isLastSection && store.needPreviousDatePaging
             if isPreviousProgressVisible {
                 footerView.contentConfiguration = UIHostingConfiguration {
-                    ProgressView()
-                        .frame(height: 64)
-                        .frame(maxWidth: .infinity)
+                    OLottieView(.omokLoading)
+                        .frame(64, 64)
                 }
             }
         }

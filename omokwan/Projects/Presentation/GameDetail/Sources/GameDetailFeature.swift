@@ -193,8 +193,8 @@ public struct GameDetailFeature {
                 switch stickyAction {
                 case let .gameDetailInfoFetched(info, _):
                     state.isLoading = false
-                    setGameUserInfo(&state, info.users)
                     state.maxParticipants = info.matchInfo.maxParticipants
+                    setGameUserInfo(&state, info.users)
                     return .none
                 case let .comboAchieved(comboCount):
                     state.comboCount = comboCount
@@ -281,7 +281,7 @@ private extension GameDetailFeature {
         
         var newInfos: [GameUserInfo?] = infos.map { $0 }
         
-        if newInfos.count < 5 {
+        if newInfos.count < 5, newInfos.count != state.maxParticipants {
             newInfos.append(nil)
         }
         

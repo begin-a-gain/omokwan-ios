@@ -34,6 +34,7 @@ struct GameMapper {
                 participants: gameInfo.participants ?? 0,
                 maxParticipants: gameInfo.maxParticipants ?? 0,
                 myGameCompleteStatus: completeStatus,
+                participateStatus: ParticipateStatus(rawValue: gameInfo.participantStatus ?? "") ?? .done,
                 isPrivateRoom: gameInfo.public == false
             )
         }

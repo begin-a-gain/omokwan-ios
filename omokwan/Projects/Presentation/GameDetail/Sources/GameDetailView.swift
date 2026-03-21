@@ -89,8 +89,8 @@ public struct GameDetailView: View {
                 )
 
                 if calendarStore.isTopProgressVisible {
-                    ProgressView()
-                        .height(64, .top)
+                    OLottieView(.omokLoading)
+                        .frame(64, 64, .top)
                 }
             }
             .padding(.bottom, 8)
