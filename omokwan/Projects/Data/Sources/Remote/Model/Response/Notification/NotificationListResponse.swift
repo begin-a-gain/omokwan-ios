@@ -13,6 +13,7 @@ struct NotificationListResponse: Decodable {
 
 struct NotificationResponse: Decodable {
     let notificationId: Int?
+    let matchId: Int?
     let type: String?
     let isRead: Bool?
     let occurredAt: String?

@@ -9,6 +9,7 @@ import Foundation
 
 public struct NotificationInfo: Equatable {
     public let id: Int
+    public let gameID: Int
     public let isRead: Bool
     public let createdDate: Date
     public let type: NotificationType
@@ -19,6 +20,7 @@ public struct NotificationInfo: Equatable {
     
     public init(
         id: Int = 0,
+        gameID: Int = 0,
         isRead: Bool = true,
         createdDate: Date = .now,
         type: NotificationType = .joined,
@@ -28,6 +30,7 @@ public struct NotificationInfo: Equatable {
         newHostName: String? = nil
     ) {
         self.id = id
+        self.gameID = gameID
         self.isRead = isRead
         self.createdDate = createdDate
         self.type = type
