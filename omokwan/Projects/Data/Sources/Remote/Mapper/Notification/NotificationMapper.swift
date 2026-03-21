@@ -27,6 +27,7 @@ struct NotificationMapper {
             return NotificationInfo(
                 id: notificationId,
                 gameID: matchId,
+                isPublic: $0.isPublic ?? false,
                 isRead: $0.isRead ?? false,
                 createdDate: createdDate,
                 type: type,

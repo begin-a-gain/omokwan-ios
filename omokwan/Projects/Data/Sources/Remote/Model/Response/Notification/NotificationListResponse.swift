@@ -14,6 +14,7 @@ struct NotificationListResponse: Decodable {
 struct NotificationResponse: Decodable {
     let notificationId: Int?
     let matchId: Int?
+    let isPublic: Bool?
     let type: String?
     let isRead: Bool?
     let occurredAt: String?
