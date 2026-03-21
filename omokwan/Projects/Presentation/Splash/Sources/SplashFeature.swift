@@ -59,14 +59,14 @@ public struct SplashFeature {
                     .send(.checkAppTrackingPermission)
                 ])
             case .checkAppTrackingPermission:
-                let needTrackingAuthorization = firebaseUseCase.needTrackingAuthorization
+                let needTrackingAuthorization = firebaseUseCase.needTrackingAuthorization()
                 if needTrackingAuthorization {
                     return .run { send in
                         let isAuthorized = await firebaseUseCase.requestTrackingAuthorizationAndCheckAuthorized()
                         await send(.setTrackingValueForAnalytics(isAuthorized))
                     }
                 } else {
-                    let isAuthorized = firebaseUseCase.isTrackingAuthorized
+                    let isAuthorized = firebaseUseCase.isTrackingAuthorized()
                     return .send(.setTrackingValueForAnalytics(isAuthorized))
                 }
             case .setTrackingValueForAnalytics(let isAuthorized):

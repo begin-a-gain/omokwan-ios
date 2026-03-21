@@ -14,12 +14,14 @@ extension DIContainer {
         registerKeyChainStorage()
         registerApiServiceDependency()
         registerSocialService()
+        registerFirebaseService()
         registerAccountDependency()
         registerSocialDependency()
         registerServerDependency()
         registerGameDependency()
         registerLocalStorageDependency()
         registerNotificationDependency()
+        registerFirebaseDependency()
     }
     
     private func registerKeyChainStorage() {
@@ -43,6 +45,12 @@ extension DIContainer {
     private func registerSocialService() {
         container.register(SocialService.self) { _ in
             SocialService()
+        }
+    }
+    
+    private func registerFirebaseService() {
+        container.register(FirebaseService.self) { _ in
+            FirebaseService()
         }
     }
     
@@ -85,6 +93,13 @@ extension DIContainer {
         container.register(NotificationRepositoryProtocol.self) { resolver in
             let apiService: ApiService = resolver.resolve()
             return NotificationRepository(apiService: apiService)
+        }
+    }
+    
+    private func registerFirebaseDependency() {
+        container.register(FirebaseRepositoryProtocol.self) { resolver in
+            let firebaseService: FirebaseService = resolver.resolve()
+            return FirebaseRepository(firebaseService: firebaseService)
         }
     }
 }

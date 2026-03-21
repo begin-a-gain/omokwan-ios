@@ -7,33 +7,37 @@
 
 import DI
 import Dependencies
-import AppTrackingTransparency
 
 public struct FirebaseUseCase {
-    public var needTrackingAuthorization: Bool {
-        if #available(iOS 14, *) {
-            let status = ATTrackingManager.trackingAuthorizationStatus
-            return status == .notDetermined
-        }
-        return false // iOS 14 미만은 권한 불필요
-    }
-    public var isTrackingAuthorized: Bool {
-        if #available(iOS 14, *) {
-            let status = ATTrackingManager.trackingAuthorizationStatus
-            return status == .authorized
-        }
-        return true // iOS 14 미만은 권한 불필요
-    }
-    
-    @available(iOS 14, *)
-    public func requestTrackingAuthorizationAndCheckAuthorized() async -> Bool {
-        let status = await ATTrackingManager.requestTrackingAuthorization()
-        return status == .authorized
-    }
+    public let needTrackingAuthorization: () -> Bool
+    public let isTrackingAuthorized: () -> Bool
+    public let requestTrackingAuthorizationAndCheckAuthorized: () async -> Bool
 }
 
 extension FirebaseUseCase: DependencyKey {
-    public static let liveValue = FirebaseUseCase()
+    public static var liveValue: FirebaseUseCase = {
+        let repository: FirebaseRepositoryProtocol = DIContainer.shared.resolve()
+        
+        return .init(
+            needTrackingAuthorization: {
+                repository.needTrackingAuthorization()
+            },
+            isTrackingAuthorized: {
+                repository.isTrackingAuthorized()
+            },
+            requestTrackingAuthorizationAndCheckAuthorized: {
+                await repository.requestTrackingAuthorizationAndCheckAuthorized()
+            }
+        )
+    }()
+}
+
+extension FirebaseUseCase {
+    public static var mockValue: FirebaseUseCase = .init(
+        needTrackingAuthorization: { false },
+        isTrackingAuthorized: { true },
+        requestTrackingAuthorizationAndCheckAuthorized: { true }
+    )
 }
 
 extension DependencyValues {
