@@ -6,7 +6,6 @@
 //
 
 public protocol FirebaseRepositoryProtocol {
-    func needTrackingAuthorization() -> Bool
-    func isTrackingAuthorized() -> Bool
-    func requestTrackingAuthorizationAndCheckAuthorized() async -> Bool
+    func setupRemoteConfig() async
+    func getValue(forKey key: String, type: RemoteConfigValueType) -> RemoteConfigResultData
 }

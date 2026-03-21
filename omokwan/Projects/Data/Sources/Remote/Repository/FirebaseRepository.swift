@@ -14,15 +14,11 @@ public struct FirebaseRepository: FirebaseRepositoryProtocol {
         self.firebaseService = firebaseService
     }
     
-    public func needTrackingAuthorization() -> Bool {
-        firebaseService.needTrackingAuthorization()
+    public func setupRemoteConfig() async {
+        await firebaseService.setupRemoteConfig()
     }
     
-    public func isTrackingAuthorized() -> Bool {
-        firebaseService.isTrackingAuthorized()
-    }
-    
-    public func requestTrackingAuthorizationAndCheckAuthorized() async -> Bool {
-        await firebaseService.requestTrackingAuthorizationAndCheckAuthorized()
+    public func getValue(forKey key: String, type: RemoteConfigValueType) -> RemoteConfigResultData {
+        firebaseService.getValue(forKey: key, type: type)
     }
 }

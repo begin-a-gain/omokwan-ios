@@ -7,11 +7,11 @@
 
 import DI
 import Dependencies
+import Foundation
 
 public struct FirebaseUseCase {
-    public let needTrackingAuthorization: () -> Bool
-    public let isTrackingAuthorized: () -> Bool
-    public let requestTrackingAuthorizationAndCheckAuthorized: () async -> Bool
+    public let setupRemoteConfig: () async -> Void
+    public let getValue: (_ key: String, _ type: RemoteConfigValueType) -> RemoteConfigResultData
 }
 
 extension FirebaseUseCase: DependencyKey {
@@ -19,14 +19,11 @@ extension FirebaseUseCase: DependencyKey {
         let repository: FirebaseRepositoryProtocol = DIContainer.shared.resolve()
         
         return .init(
-            needTrackingAuthorization: {
-                repository.needTrackingAuthorization()
+            setupRemoteConfig: {
+                await repository.setupRemoteConfig()
             },
-            isTrackingAuthorized: {
-                repository.isTrackingAuthorized()
-            },
-            requestTrackingAuthorizationAndCheckAuthorized: {
-                await repository.requestTrackingAuthorizationAndCheckAuthorized()
+            getValue: { key, type in
+                repository.getValue(forKey: key, type: type)
             }
         )
     }()
@@ -34,9 +31,21 @@ extension FirebaseUseCase: DependencyKey {
 
 extension FirebaseUseCase {
     public static var mockValue: FirebaseUseCase = .init(
-        needTrackingAuthorization: { false },
-        isTrackingAuthorized: { true },
-        requestTrackingAuthorizationAndCheckAuthorized: { true }
+        setupRemoteConfig: {},
+        getValue: { _, type in
+            switch type {
+            case .bool:
+                return .bool(false)
+            case .string:
+                return .string("")
+            case .int:
+                return .int(0)
+            case .double:
+                return .double(0)
+            case .data:
+                return .data(Data())
+            }
+        }
     )
 }
 

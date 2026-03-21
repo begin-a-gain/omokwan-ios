@@ -26,6 +26,7 @@ public struct SplashFeature {
 
         public enum AlertCase: Equatable {
             case error(NetworkError)
+            case forceUpdate
         }
 
         @Shared(.userInfo) var userInfo = UserInfo()
@@ -47,17 +48,23 @@ public struct SplashFeature {
         case checkAppTrackingPermission
         case setTrackingValueForAnalytics(Bool)
         case healthCheck
+        case setupRemoteConfig
+        case checkForceUpdate
     }
     
     public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                state.isLoading = true
                 return .concatenate([
                     .run { send in
-                        try? await Task.sleep(for: .seconds(1))
+                        try? await Task.sleep(for: .seconds(1.5))
                     },
-                    .send(.checkAppTrackingPermission)
+                    .merge([
+                        .send(.checkAppTrackingPermission),
+                        .send(.setupRemoteConfig)
+                    ])
                 ])
             case .checkAppTrackingPermission:
                 let needTrackingAuthorization = permissionUseCase.needTrackingAuthorization()
@@ -72,9 +79,22 @@ public struct SplashFeature {
                 }
             case .setTrackingValueForAnalytics(let isAuthorized):
                 AnalyticsManager.shared.setAnalyticsEnabled(isAuthorized)
-                return .send(.healthCheck)
+                return .none
+            case .setupRemoteConfig:
+                return .run { send in
+                    await firebaseUseCase.setupRemoteConfig()
+                    await send(.checkForceUpdate)
+                }
+            case .checkForceUpdate:
+                let forceUpdateValue = firebaseUseCase.getValue(RemoteConfigKeys.forceUpdate.rawValue, .bool)
+                if case let .bool(needForceUpdate) = forceUpdateValue {
+                    return needForceUpdate
+                    ? .send(.showAlert(.forceUpdate))
+                    : .send(.healthCheck)
+                } else {
+                    return .send(.showAlert(.error(.unKnownError)))
+                }
             case .healthCheck:
-                state.isLoading = true
                 return .run { send in
                     await send(checkServerHealth())
                 }
