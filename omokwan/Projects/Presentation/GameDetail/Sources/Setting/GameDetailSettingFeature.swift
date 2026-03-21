@@ -394,7 +394,7 @@ private extension GameDetailSettingFeature {
         GameDetailSettingRequestDTO(
             name: config.title,
             maxParticipants: config.maxNumberOfPlayers,
-            category: config.categoryCode,
+            category: config.categoryCode.isEmpty ? nil : config.categoryCode,
             password: config.isPublic ? nil : config.password,
             isPublic: config.isPublic
         )

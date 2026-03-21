@@ -9,14 +9,14 @@
 public struct GameDetailSettingRequestDTO: Encodable {
     public let name: String
     public let maxParticipants: Int
-    public let category: String
+    public let category: String?
     public let password: String?
     public let isPublic: Bool
     
     public init(
         name: String,
         maxParticipants: Int,
-        category: String,
+        category: String?,
         password: String?,
         isPublic: Bool
     ) {
