@@ -12,5 +12,6 @@ struct GameInfoResponse: Decodable {
     let participants: Int?
     let maxParticipants: Int?
     let completed: Bool?
+    let participantStatus: String?
     let `public`: Bool?
 }

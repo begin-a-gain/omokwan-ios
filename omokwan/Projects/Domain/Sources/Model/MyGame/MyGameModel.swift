@@ -12,6 +12,7 @@ public struct MyGameModel: Equatable {
     public let participants: Int
     public let maxParticipants: Int
     public let myGameCompleteStatus: MyGameCompleteStatus
+    public let participateStatus: ParticipateStatus
     public let isPrivateRoom: Bool
     
     public init(
@@ -21,6 +22,7 @@ public struct MyGameModel: Equatable {
         participants: Int,
         maxParticipants: Int,
         myGameCompleteStatus: MyGameCompleteStatus,
+        participateStatus: ParticipateStatus,
         isPrivateRoom: Bool
     ) {
         self.gameID = gameID
@@ -29,6 +31,7 @@ public struct MyGameModel: Equatable {
         self.participants = participants
         self.maxParticipants = maxParticipants
         self.myGameCompleteStatus = myGameCompleteStatus
+        self.participateStatus = participateStatus
         self.isPrivateRoom = isPrivateRoom
     }
 }
@@ -37,4 +40,11 @@ public enum MyGameCompleteStatus {
     case complete
     case inComplete
     case inCompleteWithSkip
+}
+
+public enum ParticipateStatus: String {
+    case active = "ACTIVE"
+    case left = "LEFT"
+    case kicked = "KICKED"
+    case done = "DONE"
 }
