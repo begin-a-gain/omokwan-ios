@@ -22,6 +22,7 @@ public struct MainFeature {
         public enum AlertCase: Equatable {
             case error(NetworkError)
             case logout
+            case myGame(MyGameFeature.State.AlertCase)
         }
         var alertCase: AlertCase?
         var alertState: AlertFeature.State = .init()
@@ -44,6 +45,7 @@ public struct MainFeature {
         case navigateToMyGameParticipate
         case navigateToNotification
         case navigateToGameDetail(Int, String, String)
+        case sendToast(String)
         case myGameAction(MyGameFeature.Action)
         case myPageAction(MyPageFeature.Action)
         case alertAction(AlertFeature.Action)
@@ -110,6 +112,8 @@ public struct MainFeature {
                 return .none
             case .navigateToGameDetail:
                 return .none
+            case .sendToast:
+                return .none
             case .addGameButtonTapped:
                 state.mainSheet = .init()
                 return .none
@@ -165,10 +169,14 @@ private extension MainFeature {
             return .none
         case .passError(let networkError):
             return .send(.showAlert(.error(networkError)))
+        case .passAlert(let alertCase):
+            return .send(.showAlert(.myGame(alertCase)))
         case .navigateToNotification:
             return .send(.navigateToNotification)
         case let .navigateToGameDetail(id, title, selectedDateString):
             return .send(.navigateToGameDetail(id, title, selectedDateString))
+        case .sendToast(let message):
+            return .send(.sendToast(message))
         default:
             return .none
         }

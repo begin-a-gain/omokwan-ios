@@ -24,6 +24,10 @@ extension RootFeature {
             state.toastMessage = "닉네임이 변경 되었어요."
             state.isToastPresented = true
             return .none
+        case .sendToast(let message):
+            state.toastMessage = message
+            state.isToastPresented = true
+            return .none
         default:
             return .none
         }

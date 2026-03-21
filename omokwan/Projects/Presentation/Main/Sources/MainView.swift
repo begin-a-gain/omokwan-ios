@@ -11,10 +11,12 @@ import ComposableArchitecture
 import MyGame
 import MyPage
 import Base
+import Domain
 
 public struct MainView: View {
     private let store: StoreOf<MainFeature>
     @ObservedObject private var viewStore: ViewStoreOf<MainFeature>
+    @FocusState private var passwordFocusedField: PasswordField?
 
     public init(store: StoreOf<MainFeature>) {
         self.store = store
@@ -119,8 +121,66 @@ private extension MainView {
                     }
                 case .logout:
                     logoutAlertView
+                case .myGame(let alertCase):
+                    myGameAlertView(alertCase)
                 }
             }
+        }
+    }
+    
+    @ViewBuilder
+    func myGameAlertView(_ alertCase: MyGameFeature.State.AlertCase) -> some View {
+        switch alertCase {
+        case .participateDoubleCheck(let stoneInfo):
+            OAlert(
+                type: .default,
+                title: "대국에 다시 참여할까요?",
+                content: "'\(stoneInfo.name)' 대국을 다시 시작해보세요.",
+                primaryButtonAction: {
+                    viewStore.send(.alertAction(.dismiss))
+                },
+                secondaryButtonAction: {
+                    viewStore.send(.alertAction(.dismiss))
+                    viewStore.send(.myGameAction(.alertParticipateButtonTapped(stoneInfo)))
+                }
+            )
+        case .password(let stoneInfo):
+            CommonPasswordAlertView(
+                focusedField: $passwordFocusedField,
+                thousandsPlaceText: Binding(
+                    get: { viewStore.myGameState.thousandsPlace },
+                    set: { viewStore.send(.myGameAction(.set(\.$thousandsPlace, $0))) }
+                ),
+                hundredsPlaceText: Binding(
+                    get: { viewStore.myGameState.hundredsPlace },
+                    set: { viewStore.send(.myGameAction(.set(\.$hundredsPlace, $0))) }
+                ),
+                tensPlaceText: Binding(
+                    get: { viewStore.myGameState.tensPlace },
+                    set: { viewStore.send(.myGameAction(.set(\.$tensPlace, $0))) }
+                ),
+                onesPlaceText: Binding(
+                    get: { viewStore.myGameState.onesPlace },
+                    set: { viewStore.send(.myGameAction(.set(\.$onesPlace, $0))) }
+                ),
+                primaryButtonAction: {
+                    viewStore.send(.alertAction(.dismiss))
+                    viewStore.send(.myGameAction(.passwordAlertCancelButtonTapped))
+                },
+                secondaryButtonAction: {
+                    viewStore.send(.alertAction(.dismiss))
+                    viewStore.send(.myGameAction(.passwordAlertConfirmButtonTapped(stoneInfo)))
+                }
+            )
+        case .passwordError:
+            OAlert(
+                type: .defaultOnlyOK,
+                title: "비밀번호 오류",
+                content: "다시 확인해주세요.",
+                primaryButtonAction: {
+                    viewStore.send(.alertAction(.dismiss))
+                }
+            )
         }
     }
     
@@ -140,3 +200,4 @@ private extension MainView {
         )
     }
 }
+
