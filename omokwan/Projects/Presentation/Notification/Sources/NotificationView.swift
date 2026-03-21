@@ -12,7 +12,8 @@ import Domain
 import Base
 
 public struct NotificationView: View {
-    private let store: StoreOf<NotificationFeature>
+    @Bindable private var store: StoreOf<NotificationFeature>
+    @FocusState private var passwordFocusedField: PasswordField?
     
     public init(store: StoreOf<NotificationFeature>) {
         self.store = store
@@ -170,6 +171,10 @@ private extension NotificationView {
                     }
                 case .participateDoubleCheck(let notificationInfo):
                     participateDoubleCheckAlertView(notificationInfo)
+                case .password(let notificationInfo):
+                    passwordAlertView(notificationInfo)
+                case .passwordError:
+                    passwordErrorAlertView
                 }
             }
         }
@@ -186,6 +191,29 @@ private extension NotificationView {
             secondaryButtonTitle: "참여하기",
             secondaryButtonAction: {
                 store.send(.alertParticipateButtonTapped(notificationInfo))
+            }
+        )
+    }
+    
+    func passwordAlertView(_ notificationInfo: NotificationInfo) -> some View {
+        CommonPasswordAlertView(
+            focusedField: $passwordFocusedField,
+            thousandsPlaceText: $store.thousandsPlace,
+            hundredsPlaceText: $store.hundredsPlace,
+            tensPlaceText: $store.tensPlace,
+            onesPlaceText: $store.onesPlace,
+            primaryButtonAction: { store.send(.passwordAlertCancelButtonTapped) },
+            secondaryButtonAction: { store.send(.passwordAlertConfirmButtonTapped(notificationInfo)) }
+        )
+    }
+    
+    var passwordErrorAlertView: some View {
+        OAlert(
+            type: .defaultOnlyOK,
+            title: "비밀번호 오류",
+            content: "다시 확인해주세요.",
+            primaryButtonAction: {
+                store.send(.alertAction(.dismiss))
             }
         )
     }

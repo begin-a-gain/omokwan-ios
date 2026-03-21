@@ -14,6 +14,7 @@ import Foundation
 @Reducer
 public struct NotificationFeature {
     @Dependency(\.notificationUseCase) private var notificationUseCase
+    @Dependency(\.gameUseCase) private var gameUseCase
     
     public init() {}
     
@@ -24,6 +25,8 @@ public struct NotificationFeature {
         public enum AlertCase: Equatable {
             case error(NetworkError)
             case participateDoubleCheck(NotificationInfo)
+            case password(NotificationInfo)
+            case passwordError
         }
         
         var alertCase: AlertCase?
@@ -31,6 +34,10 @@ public struct NotificationFeature {
         var isLoading: Bool = false
         var isProgressLoading: Bool = false
         var selectedFilter: NotificationFilter = .all
+        var thousandsPlace: String = ""
+        var hundredsPlace: String = ""
+        var tensPlace: String = ""
+        var onesPlace: String = ""
         var unreadNotificationCount: Int {
             notifications.filter { !$0.isRead }.count
         }
@@ -40,10 +47,11 @@ public struct NotificationFeature {
         }
     }
     
-    public enum Action {
+    public enum Action: BindableAction {
         case onAppear
         case navigateToBack
         case navigateToGameDetail(Int, String, String)
+        case binding(BindingAction<State>)
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
         case notificationsFetched([NotificationInfo])
@@ -53,14 +61,20 @@ public struct NotificationFeature {
         case fetchNotificationInfo
         case notificationCardTapped(NotificationInfo)
         case alertParticipateButtonTapped(NotificationInfo)
+        case passwordAlertCancelButtonTapped
+        case passwordAlertConfirmButtonTapped(NotificationInfo)
         case readNotification(NotificationInfo)
         case notificationReadSucceeded(NotificationInfo)
+        case participateNotification(NotificationInfo, String?)
+        case participateCompleted(NotificationInfo)
         case readAllNotifications
         case allNotificationsReadSucceeded
         case setProgressLoading(Bool)
     }
     
     public var body: some ReducerOf<Self> {
+        BindingReducer()
+        
         Scope(state: \.alertState, action: \.alertAction) {
             AlertFeature()
         }
@@ -104,15 +118,43 @@ public struct NotificationFeature {
                 
                 return .send(.readNotification(notificationInfo))
             case .alertParticipateButtonTapped(let notificationInfo):
-                return .concatenate([
+                if notificationInfo.isPublic {
+                    return .merge([
+                        .send(.alertAction(.dismiss)),
+                        .send(.participateNotification(notificationInfo, nil))
+                    ])
+                }
+                
+                state.alertCase = .password(notificationInfo)
+                return .none
+            case .passwordAlertCancelButtonTapped:
+                return .send(.alertAction(.dismiss))
+            case .passwordAlertConfirmButtonTapped(let notificationInfo):
+                guard let password = [
+                    state.thousandsPlace,
+                    state.hundredsPlace,
+                    state.tensPlace,
+                    state.onesPlace
+                ].passwordString else {
+                    return .none
+                }
+                
+                return .merge([
                     .send(.alertAction(.dismiss)),
-                    .send(.readNotification(notificationInfo))
+                    .send(.participateNotification(notificationInfo, password))
                 ])
             case .readNotification(let notificationInfo):
                 return .concatenate([
                     .send(.setProgressLoading(true)),
                     .run { send in
                         await send(readNotification(notificationInfo))
+                    }
+                ])
+            case let .participateNotification(notificationInfo, password):
+                return .concatenate([
+                    .send(.setProgressLoading(true)),
+                    .run { send in
+                        await send(participateNotification(notificationInfo, password))
                     }
                 ])
             case .readAllNotifications:
@@ -129,15 +171,18 @@ public struct NotificationFeature {
                     format: DateFormatConstants.yearMonthDayRequestFormat
                 )
                 
-                // TODO: 여기 noti id말고, gameID를 넘겨야하는데, 서버에서 아직 작업이 되지 않음. 작업이 완료될 시 gameID로 바꾸도록.
                 return .concatenate([
                     .send(.setProgressLoading(false)),
-                    .send(.navigateToGameDetail(notificationInfo.id, notificationInfo.title, selectedDateString))
+                    .send(.navigateToGameDetail(notificationInfo.gameID, notificationInfo.title, selectedDateString))
                 ])
+            case .participateCompleted(let notificationInfo):
+                return .send(.notificationReadSucceeded(notificationInfo))
             case .allNotificationsReadSucceeded:
                 state.notifications = state.notifications.map {
                     NotificationInfo(
                         id: $0.id,
+                        gameID: $0.gameID,
+                        isPublic: $0.isPublic,
                         isRead: true,
                         createdDate: $0.createdDate,
                         type: $0.type,
@@ -152,6 +197,8 @@ public struct NotificationFeature {
                 state.isProgressLoading = value
                 return .none
             case .alertAction:
+                return .none
+            case .binding:
                 return .none
             }
         }
@@ -192,6 +239,26 @@ private extension NotificationFeature {
         }
     }
     
+    func participateNotification(_ notificationInfo: NotificationInfo, _ password: String?) async -> Action {
+        let readResponse = await notificationUseCase.patchNotificationRead(notificationInfo.id)
+        
+        switch readResponse {
+        case .success:
+            let response = await gameUseCase.participateRoom(notificationInfo.gameID, password)
+            
+            switch response {
+            case .success(let isParticipateSuccess):
+                return isParticipateSuccess
+                    ? .participateCompleted(notificationInfo)
+                    : .showAlert(.passwordError)
+            case .failure(let error):
+                return .showAlert(.error(error))
+            }
+        case .failure(let error):
+            return .showAlert(.error(error))
+        }
+    }
+    
     func updateNotificationStatus(_ id: Int, state: inout State) {
         guard let index = state.notifications.firstIndex(where: { $0.id == id }) else {
             return
@@ -200,6 +267,8 @@ private extension NotificationFeature {
         let notification = state.notifications[index]
         state.notifications[index] = NotificationInfo(
             id: notification.id,
+            gameID: notification.gameID,
+            isPublic: notification.isPublic,
             isRead: true,
             createdDate: notification.createdDate,
             type: notification.type,
