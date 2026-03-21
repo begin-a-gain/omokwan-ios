@@ -197,9 +197,8 @@ private extension InvitationView {
     }
     
     var progressView: some View {
-        ProgressView()
-            .controlSize(.large)
-            .tint(.blue)
+        OLottieView(.omokLoading)
+            .frame(64, 64)
             .onAppear {
                 guard let nextCursor = store.nextCursor else { return }
                 store.send(.fetchUserList(cursor: nextCursor))

@@ -209,9 +209,8 @@ private extension MyGameParticipateView {
     }
     
     var progressView: some View {
-        ProgressView()
-            .controlSize(.large)
-            .tint(.blue)
+        OLottieView(.omokLoading)
+            .frame(64, 64)
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     viewStore.send(.fetchInfoList(pageNumber: viewStore.currentPage + 1))
