@@ -46,6 +46,36 @@ extension AccountUseCase: DependencyKey {
     }()
 }
 
+extension AccountUseCase {
+    public static let mockValue: AccountUseCase = .init(
+        signIn: { provider, accessToken in
+            return .success(AccountFixtures.successResult)
+        },
+        checkNicknameDuplicated: { nickname in
+            if ["admin", "tester", "dongjun"].contains(nickname.lowercased()) {
+                return .success(AccountFixtures.nicknameValid)
+            } else {
+                return .success(AccountFixtures.nicknameDuplicatedAndValid)
+            }
+        },
+        updateNickname: { nickname in
+            guard nickname.count >= 2 else {
+                return .failure(.clientError)
+            }
+            return .success(())
+        },
+        fetchUserInfo: {
+            return .success(.init())
+        },
+        sendDeletionSurvey: { reasons, otherReasonText in
+            return .success(())
+        },
+        deleteUserAccount: {
+            return .success(())
+        }
+    )
+}
+
 extension DependencyValues {
     public var accountUseCase: AccountUseCase {
         get { self[AccountUseCase.self] }
