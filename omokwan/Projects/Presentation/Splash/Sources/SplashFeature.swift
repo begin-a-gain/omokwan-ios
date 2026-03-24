@@ -9,6 +9,7 @@ import ComposableArchitecture
 import Domain
 import Base
 import Util
+import Foundation
 
 @Reducer
 public struct SplashFeature {
@@ -27,6 +28,7 @@ public struct SplashFeature {
         public enum AlertCase: Equatable {
             case error(NetworkError)
             case forceUpdate
+            case notice(NoticePopupInfo)
         }
 
         @Shared(.userInfo) var userInfo = UserInfo()
@@ -50,6 +52,8 @@ public struct SplashFeature {
         case healthCheck
         case setupRemoteConfig
         case checkForceUpdate
+        case checkNotice
+        case noticeConfirmButtonTapped
     }
     
     public var body: some ReducerOf<Self> {
@@ -59,7 +63,7 @@ public struct SplashFeature {
                 state.isLoading = true
                 return .concatenate([
                     .run { send in
-                        try? await Task.sleep(for: .seconds(1.5))
+                        try? await Task.sleep(for: .seconds(1.0))
                     },
                     .merge([
                         .send(.checkAppTrackingPermission),
@@ -87,14 +91,28 @@ public struct SplashFeature {
                 }
             case .checkForceUpdate:
                 let forceUpdateValue = firebaseUseCase.getValue(RemoteConfigKeys.forceUpdate.rawValue, .bool)
-                if case let .bool(needForceUpdate) = forceUpdateValue {
-                    return needForceUpdate
-                    ? .send(.showAlert(.forceUpdate))
-                    : .send(.healthCheck)
-                } else {
+                
+                guard case let .bool(needForceUpdate) = forceUpdateValue else {
                     return .send(.showAlert(.error(.unKnownError)))
                 }
+                
+                return needForceUpdate
+                    ? .send(.showAlert(.forceUpdate))
+                    : .send(.checkNotice)
+            case .checkNotice:
+                let noticeValue = firebaseUseCase.getValue(RemoteConfigKeys.notice.rawValue, .string)
+                
+                guard case let .string(noticeString) = noticeValue else {
+                    return .send(.showAlert(.error(.unKnownError)))
+                }
+                
+                guard let notice = decodeNoticePopupInfo(noticeString), !notice.isEmpty else {
+                    return .send(.healthCheck)
+                }
+                
+                return .send(.showAlert(.notice(notice)))
             case .healthCheck:
+                state.isLoading = true
                 return .run { send in
                     await send(checkServerHealth())
                 }
@@ -126,6 +144,11 @@ public struct SplashFeature {
                 state.isLoading = false
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
+            case .noticeConfirmButtonTapped:
+                return .concatenate([
+                    .send(.alertAction(.dismiss)),
+                    .send(.healthCheck)
+                ])
             case .userInfoFetchFailed:
                 state.isLoading = false
                 return .send(.navigateToSignIn)
@@ -160,5 +183,13 @@ private extension SplashFeature {
     
     func setUserInfo(_ state: inout State, _ info: UserInfo) {
         state.userInfo = info
+    }
+    
+    func decodeNoticePopupInfo(_ noticeString: String) -> NoticePopupInfo? {
+        guard let data = noticeString.data(using: .utf8) else {
+            return nil
+        }
+        
+        return try? JSONDecoder().decode(NoticePopupInfo.self, from: data)
     }
 }
