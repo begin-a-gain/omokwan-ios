@@ -9,6 +9,7 @@ import ComposableArchitecture
 import Domain
 import Base
 import Util
+import Foundation
 
 @Reducer
 public struct SplashFeature {
@@ -16,6 +17,7 @@ public struct SplashFeature {
     @Dependency(\.serverUseCase) private var serverUseCase
     @Dependency(\.localUseCase) private var localUseCase
     @Dependency(\.firebaseUseCase) private var firebaseUseCase
+    @Dependency(\.permissionUseCase) private var permissionUseCase
 
     public init() {}
     
@@ -25,6 +27,8 @@ public struct SplashFeature {
 
         public enum AlertCase: Equatable {
             case error(NetworkError)
+            case forceUpdate
+            case notice(NoticePopupInfo)
         }
 
         @Shared(.userInfo) var userInfo = UserInfo()
@@ -46,32 +50,67 @@ public struct SplashFeature {
         case checkAppTrackingPermission
         case setTrackingValueForAnalytics(Bool)
         case healthCheck
+        case setupRemoteConfig
+        case checkForceUpdate
+        case checkNotice
+        case noticeConfirmButtonTapped
     }
     
     public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                state.isLoading = true
                 return .concatenate([
                     .run { send in
-                        try? await Task.sleep(for: .seconds(1))
+                        try? await Task.sleep(for: .seconds(1.0))
                     },
-                    .send(.checkAppTrackingPermission)
+                    .merge([
+                        .send(.checkAppTrackingPermission),
+                        .send(.setupRemoteConfig)
+                    ])
                 ])
             case .checkAppTrackingPermission:
-                let needTrackingAuthorization = firebaseUseCase.needTrackingAuthorization
+                let needTrackingAuthorization = permissionUseCase.needTrackingAuthorization()
                 if needTrackingAuthorization {
                     return .run { send in
-                        let isAuthorized = await firebaseUseCase.requestTrackingAuthorizationAndCheckAuthorized()
+                        let isAuthorized = await permissionUseCase.requestTrackingAuthorizationAndCheckAuthorized()
                         await send(.setTrackingValueForAnalytics(isAuthorized))
                     }
                 } else {
-                    let isAuthorized = firebaseUseCase.isTrackingAuthorized
+                    let isAuthorized = permissionUseCase.isTrackingAuthorized()
                     return .send(.setTrackingValueForAnalytics(isAuthorized))
                 }
             case .setTrackingValueForAnalytics(let isAuthorized):
                 AnalyticsManager.shared.setAnalyticsEnabled(isAuthorized)
-                return .send(.healthCheck)
+                return .none
+            case .setupRemoteConfig:
+                return .run { send in
+                    await firebaseUseCase.setupRemoteConfig()
+                    await send(.checkForceUpdate)
+                }
+            case .checkForceUpdate:
+                let forceUpdateValue = firebaseUseCase.getValue(RemoteConfigKeys.forceUpdate.rawValue, .bool)
+                
+                guard case let .bool(needForceUpdate) = forceUpdateValue else {
+                    return .send(.showAlert(.error(.unKnownError)))
+                }
+                
+                return needForceUpdate
+                    ? .send(.showAlert(.forceUpdate))
+                    : .send(.checkNotice)
+            case .checkNotice:
+                let noticeValue = firebaseUseCase.getValue(RemoteConfigKeys.notice.rawValue, .string)
+                
+                guard case let .string(noticeString) = noticeValue else {
+                    return .send(.showAlert(.error(.unKnownError)))
+                }
+                
+                guard let notice = decodeNoticePopupInfo(noticeString), !notice.isEmpty else {
+                    return .send(.healthCheck)
+                }
+                
+                return .send(.showAlert(.notice(notice)))
             case .healthCheck:
                 state.isLoading = true
                 return .run { send in
@@ -105,6 +144,11 @@ public struct SplashFeature {
                 state.isLoading = false
                 state.alertCase = alertCase
                 return .send(.alertAction(.present))
+            case .noticeConfirmButtonTapped:
+                return .concatenate([
+                    .send(.alertAction(.dismiss)),
+                    .send(.healthCheck)
+                ])
             case .userInfoFetchFailed:
                 state.isLoading = false
                 return .send(.navigateToSignIn)
@@ -139,5 +183,13 @@ private extension SplashFeature {
     
     func setUserInfo(_ state: inout State, _ info: UserInfo) {
         state.userInfo = info
+    }
+    
+    func decodeNoticePopupInfo(_ noticeString: String) -> NoticePopupInfo? {
+        guard let data = noticeString.data(using: .utf8) else {
+            return nil
+        }
+        
+        return try? JSONDecoder().decode(NoticePopupInfo.self, from: data)
     }
 }

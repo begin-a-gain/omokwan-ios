@@ -10,20 +10,30 @@ import SwiftUI
 struct OButtonModifier: ViewModifier {
     let type: OButtonType
     let status: OButtonStatus
+    let needCornerRadius: Bool
     
-    init(type: OButtonType, status: OButtonStatus) {
+    init(
+        type: OButtonType,
+        status: OButtonStatus,
+        needCornerRadius: Bool
+    ) {
         self.type = type
         self.status = status
+        self.needCornerRadius = needCornerRadius
     }
     
     func body(content: Content) -> some View {
-        switch type {
-        case .default, .text:
+        if needCornerRadius {
+            switch type {
+            case .default, .text:
+                content
+                    .cornerRadius(8)
+            case .outline:
+                content
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(strokeColor, lineWidth: 1.0))
+            }
+        } else {
             content
-                .cornerRadius(8)
-        case .outline:
-            content
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(strokeColor, lineWidth: 1.0))
         }
     }
     

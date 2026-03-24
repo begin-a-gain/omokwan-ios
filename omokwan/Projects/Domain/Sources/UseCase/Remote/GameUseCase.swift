@@ -153,6 +153,21 @@ extension GameUseCase {
         },
         kickOutUser: { gameID, userID in
             return .success(())
+        },
+        exitGame: { gameID in
+            return .success(())
+        },
+        fetchMyPageGameInfo: { userID in
+            return .success(GameFixtures.myPageGameInfo)
+        },
+        updateGameDetailSetting: { gameID, request in
+            return .success(())
+        },
+        inviteUsers: { gameID, userIDs in
+            return .success(())
+        },
+        fetchUsers: { nickname, nextCursor, size in
+            return .success(GameFixtures.userPagingInfo)
         }
     )
 }

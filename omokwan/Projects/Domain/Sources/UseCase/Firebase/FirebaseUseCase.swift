@@ -7,33 +7,46 @@
 
 import DI
 import Dependencies
-import AppTrackingTransparency
+import Foundation
 
 public struct FirebaseUseCase {
-    public var needTrackingAuthorization: Bool {
-        if #available(iOS 14, *) {
-            let status = ATTrackingManager.trackingAuthorizationStatus
-            return status == .notDetermined
-        }
-        return false // iOS 14 미만은 권한 불필요
-    }
-    public var isTrackingAuthorized: Bool {
-        if #available(iOS 14, *) {
-            let status = ATTrackingManager.trackingAuthorizationStatus
-            return status == .authorized
-        }
-        return true // iOS 14 미만은 권한 불필요
-    }
-    
-    @available(iOS 14, *)
-    public func requestTrackingAuthorizationAndCheckAuthorized() async -> Bool {
-        let status = await ATTrackingManager.requestTrackingAuthorization()
-        return status == .authorized
-    }
+    public let setupRemoteConfig: () async -> Void
+    public let getValue: (_ key: String, _ type: RemoteConfigValueType) -> RemoteConfigResultData
 }
 
 extension FirebaseUseCase: DependencyKey {
-    public static let liveValue = FirebaseUseCase()
+    public static var liveValue: FirebaseUseCase = {
+        let repository: FirebaseRepositoryProtocol = DIContainer.shared.resolve()
+        
+        return .init(
+            setupRemoteConfig: {
+                await repository.setupRemoteConfig()
+            },
+            getValue: { key, type in
+                repository.getValue(forKey: key, type: type)
+            }
+        )
+    }()
+}
+
+extension FirebaseUseCase {
+    public static var mockValue: FirebaseUseCase = .init(
+        setupRemoteConfig: {},
+        getValue: { _, type in
+            switch type {
+            case .bool:
+                return .bool(false)
+            case .string:
+                return .string("")
+            case .int:
+                return .int(0)
+            case .double:
+                return .double(0)
+            case .data:
+                return .data(Data())
+            }
+        }
+    )
 }
 
 extension DependencyValues {

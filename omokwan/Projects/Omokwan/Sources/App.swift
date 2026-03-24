@@ -14,7 +14,7 @@ import ComposableArchitecture
 @main
 struct RootApp: App {
     @UIApplicationDelegateAdaptor var delegate: AppDelegate
-    let isMockData = true // TODO: RemoteConfig Flag 혹은 Local Flag로 개발
+    let isMockData = false // TODO: RemoteConfig Flag 혹은 Local Flag로 개발
 
     init() {
         let kakaoAppKey = Bundle.main.infoDictionary?[AppKeys.KAKAOKEY] ?? ""

@@ -12,6 +12,7 @@ public struct OButton: View {
     let status: OButtonStatus
     let type: OButtonType
     let size: OButtonSize
+    let needCornerRadius: Bool
     let leadingImage: Image?
     let trailingImage: Image?
     let action: (() -> Void)?
@@ -30,6 +31,7 @@ public struct OButton: View {
         status: OButtonStatus,
         type: OButtonType,
         size: OButtonSize = .big,
+        needCornerRadius: Bool = true,
         leadingImage: Image? = nil,
         trailingImage: Image? = nil,
         action: (()-> Void)? = nil
@@ -38,6 +40,7 @@ public struct OButton: View {
         self.status = status
         self.type = type
         self.size = size
+        self.needCornerRadius = needCornerRadius
         self.leadingImage = leadingImage
         self.trailingImage = trailingImage
         self.action = action
@@ -78,8 +81,8 @@ public struct OButton: View {
             .greedyWidth()
             .disabled(status == .disable)
             .background(backgroundColor)
-            .modifier(OButtonModifier(type: type, status: status))
-            .cornerRadius(8)
+            .modifier(OButtonModifier(type: type, status: status, needCornerRadius: needCornerRadius))
+            .cornerRadius(needCornerRadius ? 8 : 0)
         }.disabled(status == .disable)
     }
     

@@ -17,6 +17,7 @@ public extension GameFixtures {
     ]
     
     static let detailInfo: MyGameDetailInfo = .init(
+        matchInfo: .init(matchName: "-", maxParticipants: 1),
         users: [],
         dates: [],
         previousDateCursor: "",
@@ -30,6 +31,8 @@ public extension GameFixtures {
         gameRoomInformation: [],
         hasNext: false
     )
+    
+    static let myPageGameInfo: MyPageGameInfo = .init()
 }
 
 public extension GameFixtures {
@@ -39,6 +42,12 @@ public extension GameFixtures {
         stones: 1000,
         participantDays: 1,
         isHost: true
+    )
+    
+    static let userPagingInfo: GameUserPagingInfo = .init(
+        users: [],
+        nextCursor: "",
+        hasNext: false
     )
 }
 

@@ -11,6 +11,7 @@ public struct OAlert: View {
     let type: OAlertType
     let title: String
     let content: String
+    let primaryButtonTitle: String
     let primaryButtonAction: () -> Void
     let secondaryButtonTitle: String?
     let secondaryButtonBackgroundColor: Color?
@@ -20,6 +21,7 @@ public struct OAlert: View {
         type: OAlertType,
         title: String,
         content: String,
+        primaryButtonTitle: String = "확인",
         primaryButtonAction: @escaping () -> Void,
         secondaryButtonTitle: String? = nil,
         secondaryButtonBackgroundColor: Color? = nil,
@@ -28,6 +30,7 @@ public struct OAlert: View {
         self.type = type
         self.title = title
         self.content = content
+        self.primaryButtonTitle = primaryButtonTitle
         self.primaryButtonAction = primaryButtonAction
         self.secondaryButtonTitle = secondaryButtonTitle
         self.secondaryButtonBackgroundColor = secondaryButtonBackgroundColor
@@ -43,7 +46,7 @@ public struct OAlert: View {
                     primaryButtonAction()
                 } label: {
                     OText(
-                        "확인",
+                        primaryButtonTitle,
                         token: .title_02,
                         color: OColors.textOn01.swiftUIColor
                     )
@@ -103,7 +106,7 @@ public struct OAlert: View {
                 OText(
                     content,
                     token: .body_long_02,
-                    lineLimit: 2
+                    lineLimit: nil
                 )
                 .greedyWidth()
             }

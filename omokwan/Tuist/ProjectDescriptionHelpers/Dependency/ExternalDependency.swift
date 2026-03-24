@@ -13,5 +13,7 @@ let externalDependency: [DependencyInformation] = [
     .ComposableArchitecture,
     .FirebaseAnalytics,
     .FirebaseCrashlytics,
-    .Lottie
+    .Lottie,
+    .FirebaseRemoteConfig,
+    .Dependencies
 ]
