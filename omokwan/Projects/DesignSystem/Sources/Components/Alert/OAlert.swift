@@ -106,7 +106,7 @@ public struct OAlert: View {
                 OText(
                     content,
                     token: .body_long_02,
-                    lineLimit: 2
+                    lineLimit: nil
                 )
                 .greedyWidth()
             }
