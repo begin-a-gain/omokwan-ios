@@ -7,4 +7,5 @@
 
 public enum RemoteConfigKeys: String {
     case forceUpdate = "ios_force_update_flag"
+    case notice = "notice_flag"
 }
