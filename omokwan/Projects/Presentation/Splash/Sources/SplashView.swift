@@ -11,6 +11,7 @@ import ComposableArchitecture
 import Base
 import Util
 import UIKit
+import Domain
 
 public struct SplashView: View {
     @Bindable private var store: StoreOf<SplashFeature>
@@ -64,6 +65,8 @@ private extension SplashView {
                     }
                 case .forceUpdate:
                     forceUpdateAlertView
+                case .notice(let notice):
+                    noticeAlertView(notice)
                 }
             }
         }
@@ -85,5 +88,14 @@ private extension SplashView {
     func openAppStore() {
         guard let url = URL(string: "itms-apps://itunes.apple.com") else { return }
         UIApplication.shared.open(url)
+    }
+    
+    func noticeAlertView(_ notice: NoticePopupInfo) -> some View {
+        NoticePopupView(
+            info: notice,
+            action: {
+                store.send(.noticeConfirmButtonTapped)
+            }
+        )
     }
 }
