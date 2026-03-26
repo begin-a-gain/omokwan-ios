@@ -79,6 +79,7 @@ public struct SignInFeature {
                 }
             case .appleLoginError(let error):
                 // TODO: 애플 에러 핸들링
+                state.isLoading = false
                 return .none
             case .navigateToSignUp:
                 return .none
