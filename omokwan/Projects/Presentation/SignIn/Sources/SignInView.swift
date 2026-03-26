@@ -9,9 +9,11 @@ import SwiftUI
 import DesignSystem
 import ComposableArchitecture
 import Base
+import Domain
 
 public struct SignInView: View {
     @Bindable private var store: StoreOf<SignInFeature>
+    @Environment(\.openURL) private var openURL
 
     public init(store: StoreOf<SignInFeature>) {
         self.store = store
@@ -68,7 +70,7 @@ public struct SignInView: View {
             )
             HStack(spacing: 12) {
                 Button {
-                    
+                    openTermsOfService()
                 } label: {
                     OText(
                         "이용약관",
@@ -78,7 +80,7 @@ public struct SignInView: View {
                     )
                 }
                 Button {
-                    
+                    openPrivacyPolicy()
                 } label: {
                     OText(
                         "개인정보처리방침",
@@ -137,5 +139,17 @@ private extension SignInView {
         
         return Text(text)
             .font(.suit(token: .body_light))
+    }
+}
+
+private extension SignInView {
+    func openTermsOfService() {
+        guard let url = URL(string: AppLinks.termsOfService.link) else { return }
+        openURL(url)
+    }
+    
+    func openPrivacyPolicy() {
+        guard let url = URL(string: AppLinks.privacyPolicy.link) else { return }
+        openURL(url)
     }
 }
