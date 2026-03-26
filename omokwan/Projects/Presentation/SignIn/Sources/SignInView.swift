@@ -9,6 +9,7 @@ import SwiftUI
 import DesignSystem
 import ComposableArchitecture
 import Base
+import Domain
 
 public struct SignInView: View {
     @Bindable private var store: StoreOf<SignInFeature>
@@ -143,12 +144,12 @@ private extension SignInView {
 
 private extension SignInView {
     func openTermsOfService() {
-        guard let url = URL(string: "https://www.notion.so/32d2d47341bb80a3947bc2e79f86c679?source=copy_link") else { return }
+        guard let url = URL(string: AppLinks.termsOfService.link) else { return }
         openURL(url)
     }
     
     func openPrivacyPolicy() {
-        guard let url = URL(string: "https://www.notion.so/32d2d47341bb806688c7d006d65a498e?source=copy_link") else { return }
+        guard let url = URL(string: AppLinks.privacyPolicy.link) else { return }
         openURL(url)
     }
 }

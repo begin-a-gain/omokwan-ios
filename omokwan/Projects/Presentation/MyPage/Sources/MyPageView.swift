@@ -9,11 +9,13 @@ import ComposableArchitecture
 import SwiftUI
 import DesignSystem
 import Util
+import Domain
 
 public struct MyPageView: View {
     private let store: StoreOf<MyPageFeature>
     @ObservedObject private var viewStore: ViewStoreOf<MyPageFeature>
-    
+    @Environment(\.openURL) private var openURL
+
     public init(store: StoreOf<MyPageFeature>) {
         self.store = store
         viewStore = ViewStore(store) { $0 }
@@ -157,11 +159,13 @@ private extension MyPageView {
                     )
                     titleContentButton(
                         title: "이용약관",
-                        isShowArrowButton: true
+                        isShowArrowButton: true,
+                        buttonAction: { openTermsOfService() }
                     )
                     titleContentButton(
                         title: "개인정보처리방침",
-                        isShowArrowButton: true
+                        isShowArrowButton: true,
+                        buttonAction: { openPrivacyPolicy() }
                     )
                 }
             }
@@ -240,5 +244,17 @@ private extension MyPageView {
         Rectangle()
             .frame(width: 2, height: 16)
             .foregroundColor(OColors.stroke03.swiftUIColor)
+    }
+}
+
+private extension MyPageView {
+    func openTermsOfService() {
+        guard let url = URL(string: AppLinks.termsOfService.link) else { return }
+        openURL(url)
+    }
+    
+    func openPrivacyPolicy() {
+        guard let url = URL(string: AppLinks.privacyPolicy.link) else { return }
+        openURL(url)
     }
 }
