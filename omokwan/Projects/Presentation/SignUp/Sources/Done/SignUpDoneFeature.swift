@@ -8,11 +8,11 @@
 import ComposableArchitecture
 import Domain
 import Base
-import Util
 
 @Reducer
 public struct SignUpDoneFeature {
     @Dependency(\.accountUseCase) private var accountUseCase
+    @Dependency(\.analyticsUseCase) private var analyticsUseCase
 
     public init() {}
     
@@ -54,13 +54,7 @@ public struct SignUpDoneFeature {
             case .userInfoFetched(let userInfo):
                 state.isLoading = false
                 setUserInfo(&state, userInfo)
-                AnalyticsManager.shared.logEvent(
-                    "sign_up_successful",
-                    parameters: [
-                        "screen_name": "sign_up_done_view",
-                        "description": "[\(state.provider.rawValue)]로 회원가입 완료"
-                    ]
-                )
+                analyticsUseCase.track(.signUpSuccess(provider: state.provider.rawValue))
                 return .send(.navigateToMain)
             case .signInAgain(let networkError):
                 state.isLoading = false
@@ -95,6 +89,6 @@ private extension SignUpDoneFeature {
     
     func setUserInfo(_ state: inout State, _ info: UserInfo) {
         state.userInfo = info
-        AnalyticsManager.shared.setUserId(state.userInfo.nickname)
+        analyticsUseCase.setUserId(state.userInfo.nickname)
     }
 }

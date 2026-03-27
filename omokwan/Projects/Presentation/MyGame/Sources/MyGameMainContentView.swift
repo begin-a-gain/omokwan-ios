@@ -9,10 +9,12 @@ import SwiftUI
 import ComposableArchitecture
 import DesignSystem
 import Domain
+import Dependencies
 
 struct MyGameMainContentView: View {
     let store: StoreOf<MyGameFeature>
     @ObservedObject var viewStore: ViewStoreOf<MyGameFeature>
+    @Dependency(\.analyticsUseCase) private var analyticsUseCase
     
     private let columns = [
         GridItem(.flexible()),
@@ -69,9 +71,11 @@ struct MyGameMainContentView: View {
                 item: item,
                 stoneTapAction: { info in
                     viewStore.send(.stoneTapped(info))
+                    analyticsUseCase.track(.enterDetailFromMyGame)
                 },
                 quickCompleteAction: { info in
                     viewStore.send(.quickCompleteButtonTapped(info))
+                    analyticsUseCase.track(.quickCompleteButtonTap)
                 }
             )
         }
@@ -86,4 +90,3 @@ struct MyGameMainContentView: View {
         )
     }
 }
-

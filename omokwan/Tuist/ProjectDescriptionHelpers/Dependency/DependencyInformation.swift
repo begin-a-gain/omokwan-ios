@@ -10,7 +10,7 @@ import Foundation
 let dependencyInfo: [DependencyInformation: [DependencyInformation]] = [
     .Omokwan: [.Root, .DI, .Data, .KakaoSDKUser, .FirebaseAnalytics, .FirebaseCrashlytics],
     .Domain: [.DI, .Dependencies],
-    .Data: [.Domain, .KakaoSDKUser, .Util, .FirebaseRemoteConfig],
+    .Data: [.Domain, .KakaoSDKUser, .Util, .FirebaseAnalytics, .FirebaseRemoteConfig],
     .Root: [.SignIn, .SignUp, .Main, .Splash],
     .Splash: [.Base],
     .SignIn: [.Base, .SignUp],
@@ -23,7 +23,7 @@ let dependencyInfo: [DependencyInformation: [DependencyInformation]] = [
     .MyGameParticipate: [.Base],
     .GameDetail: [.Base],
     .MyPage: [.Base],
-    .Util: [.FirebaseAnalytics],
+    .Util: [],
     .Notification: [.Base],
     .DesignSystem: [.Lottie]
 ]

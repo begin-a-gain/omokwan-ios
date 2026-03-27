@@ -8,7 +8,6 @@
 import ComposableArchitecture
 import Domain
 import Base
-import Util
 import Foundation
 
 @Reducer
@@ -18,6 +17,7 @@ public struct SplashFeature {
     @Dependency(\.localUseCase) private var localUseCase
     @Dependency(\.firebaseUseCase) private var firebaseUseCase
     @Dependency(\.permissionUseCase) private var permissionUseCase
+    @Dependency(\.analyticsUseCase) private var analyticsUseCase
 
     public init() {}
     
@@ -60,6 +60,7 @@ public struct SplashFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                analyticsUseCase.track(.appEntry)
                 state.isLoading = true
                 return .concatenate([
                     .run { send in
@@ -82,7 +83,7 @@ public struct SplashFeature {
                     return .send(.setTrackingValueForAnalytics(isAuthorized))
                 }
             case .setTrackingValueForAnalytics(let isAuthorized):
-                AnalyticsManager.shared.setAnalyticsEnabled(isAuthorized)
+                analyticsUseCase.setAnalyticsEnabled(isAuthorized)
                 return .none
             case .setupRemoteConfig:
                 return .run { send in
@@ -132,7 +133,8 @@ public struct SplashFeature {
             case .userInfoFetched(let userInfo):
                 state.isLoading = false
                 setUserInfo(&state, userInfo)
-                AnalyticsManager.shared.setUserId(userInfo.nickname)
+                analyticsUseCase.setUserId(userInfo.nickname)
+                analyticsUseCase.track(.autoSignInSuccess)
                 return .send(.navigateToMain)
             case .navigateToMain:
                 return .none

@@ -9,7 +9,6 @@ import SwiftUI
 import DesignSystem
 import ComposableArchitecture
 import Base
-import Util
 import UIKit
 import Domain
 
@@ -29,13 +28,6 @@ public struct SplashView: View {
             }
             .onAppear {
                 store.send(.onAppear)
-                AnalyticsManager.shared.logEvent(
-                    "app_entry",
-                    parameters: [
-                        "screen_name": "splash_view",
-                        "description": "앱 초기 실행"
-                    ]
-                )
             }
     }
     

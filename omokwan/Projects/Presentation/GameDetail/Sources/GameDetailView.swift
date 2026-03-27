@@ -8,13 +8,14 @@
 import ComposableArchitecture
 import SwiftUI
 import DesignSystem
-import Util
 import Base
+import Dependencies
 
 public struct GameDetailView: View {
     private let store: StoreOf<GameDetailFeature>
     private let calendarStore: StoreOf<StickyCalendarFeature>
     @ObservedObject private var viewStore: ViewStoreOf<GameDetailFeature>
+    @Dependency(\.analyticsUseCase) private var analyticsUseCase
     private let availableWidth: CGFloat
     private let hPadding: CGFloat = 20
     
@@ -127,6 +128,7 @@ private extension GameDetailView {
             type: .default
         ) {
             viewStore.send(.updateTodayOmokStatus)
+            analyticsUseCase.track(.putStone)
         }
         .vPadding(16)
         .hPadding(20)
@@ -179,6 +181,7 @@ private extension GameDetailView {
                 viewStore.send(
                     .kickOutAlertButtonTapped(nickname, userID)
                 )
+                analyticsUseCase.track(.kickUser)
             }
         )
     }

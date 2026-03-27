@@ -8,13 +8,13 @@
 import Domain
 import Base
 import ComposableArchitecture
-import Util
 
 @Reducer
 public struct SignInFeature {
     @Dependency(\.socialUseCase) private var socialUseCase
     @Dependency(\.accountUseCase) private var accountUseCase
     @Dependency(\.localUseCase) private var localUseCase
+    @Dependency(\.analyticsUseCase) private var analyticsUseCase
 
     public init() {}
     
@@ -93,13 +93,7 @@ public struct SignInFeature {
             case let .userInfoFetched(userInfo, provider):
                 state.isLoading = false
                 setUserInfo(&state, userInfo)
-                AnalyticsManager.shared.logEvent(
-                    "sign_in_successful",
-                    parameters: [
-                        "screen_name": "sign_in_view",
-                        "description": "[\(provider)]로 로그인 완료"
-                    ]
-                )
+                analyticsUseCase.track(.signInSuccess(provider: provider.rawValue))
                 return .send(.navigateToMain)
             case .navigateToMain:
                 return .none
@@ -167,6 +161,6 @@ private extension SignInFeature {
     
     func setUserInfo(_ state: inout State, _ info: UserInfo) {
         state.userInfo = info
-        AnalyticsManager.shared.setUserId(state.userInfo.nickname)
+        analyticsUseCase.setUserId(state.userInfo.nickname)
     }
 }
