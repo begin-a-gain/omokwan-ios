@@ -22,7 +22,7 @@ public struct MyGameParticipateFeature {
     public struct State: Equatable {
         public init() {}
 
-        enum FetchTrigger: Equatable {
+        public enum FetchTrigger: Equatable {
             case initial
             case filter
             case pagination
