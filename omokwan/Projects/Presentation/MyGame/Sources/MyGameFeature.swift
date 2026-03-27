@@ -14,6 +14,7 @@ import Util
 public struct MyGameFeature {
     @Dependency(\.gameUseCase) private var gameUseCase
     @Dependency(\.notificationUseCase) private var notificationUseCase
+    @Dependency(\.analyticsUseCase) private var analyticsUseCase
 
     public init() {}
     
@@ -123,6 +124,7 @@ public struct MyGameFeature {
                     return .none
                 }
             case .bellButtonTapped:
+                analyticsUseCase.track(.notificationButtonTap)
                 return .send(.navigateToNotification)
             case .gameCreated(let title):
                 // TODO: 대국 생성 완료 토스트 생성

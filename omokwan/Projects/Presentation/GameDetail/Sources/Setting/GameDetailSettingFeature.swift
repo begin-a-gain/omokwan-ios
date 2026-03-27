@@ -14,6 +14,7 @@ import Base
 @Reducer
 public struct GameDetailSettingFeature {
     @Dependency(\.gameUseCase) private var gameUseCase
+    @Dependency(\.analyticsUseCase) private var analyticsUseCase
 
     public init() {}
     
@@ -295,6 +296,7 @@ public struct GameDetailSettingFeature {
                 }
             case .exitCompleted:
                 state.isLoading = false
+                analyticsUseCase.track(.gameSelfExit)
                 let title = state.gameTitle
                 return .send(.sendExitToast("‘\(title)’에서 나왔어요. 다음에 다시 도전해 보세요!"))
             case .sendCopyToast:

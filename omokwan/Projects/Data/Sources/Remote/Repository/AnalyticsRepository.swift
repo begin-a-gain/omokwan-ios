@@ -50,6 +50,13 @@ public struct AnalyticsRepository: AnalyticsRepositoryProtocol {
             )
         case .enterDetailFromMyGame:
             analyticsService.logButtonTap("my_game_stone_button", screen: "my_game_view")
+            analyticsService.logEvent(
+                "enter_to_detail",
+                parameters: [
+                    "screen_name": "my_game_view",
+                    "description": "메인 화면에서 디테일 화면 이동"
+                ]
+            )
         case .quickCompleteButtonTap:
             analyticsService.logButtonTap("quick_complete_button", screen: "my_game_view")
         case .putStone:
@@ -72,6 +79,49 @@ public struct AnalyticsRepository: AnalyticsRepositoryProtocol {
                 parameters: [
                     "screen_name": "account_delete_view",
                     "description": "회원 탈퇴 처리 완료"
+                ]
+            )
+        case .gameSelfExit:
+            analyticsService.logEvent(
+                "self_exit",
+                parameters: [
+                    "screen_name": "game_detail_setting_view",
+                    "description": "대국 셀프 나가기 완료"
+                ]
+            )
+        case .participateSuccessFromParticipate:
+            analyticsService.logEvent(
+                "participate_success",
+                parameters: [
+                    "screen_name": "my_game_participate_view",
+                    "description": "대국 참여 완료"
+                ]
+            )
+        case .notificationButtonTap:
+            analyticsService.logButtonTap("notification_button", screen: "my_game_view")
+        case .notificationReadAllSuccess:
+            analyticsService.logEvent(
+                "notification_read_all_success",
+                parameters: [
+                    "screen_name": "notification_view",
+                    "description": "알림 모두 읽기 처리 완료"
+                ]
+            )
+        case .participateSuccessFromNotification:
+            analyticsService.logEvent(
+                "participate_success",
+                parameters: [
+                    "screen_name": "notification_view",
+                    "description": "알림 화면에서 대국 참여 완료"
+                ]
+            )
+        case .enterDetailFromNotification:
+            analyticsService.logButtonTap("notification_card_button", screen: "notification_view")
+            analyticsService.logEvent(
+                "enter_to_detail",
+                parameters: [
+                    "screen_name": "notification_view",
+                    "description": "알림 화면에서 디테일 화면 이동"
                 ]
             )
         }

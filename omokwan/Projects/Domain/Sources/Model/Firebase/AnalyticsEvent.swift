@@ -17,4 +17,10 @@ public enum AnalyticsEvent: Equatable {
     case logout
     case accountDeleteEntryTap
     case accountDeleteSuccess
+    case gameSelfExit
+    case participateSuccessFromParticipate
+    case notificationButtonTap
+    case notificationReadAllSuccess
+    case participateSuccessFromNotification
+    case enterDetailFromNotification
 }

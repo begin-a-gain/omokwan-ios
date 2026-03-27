@@ -15,6 +15,7 @@ import Util
 public struct MyGameParticipateFeature {
     @Dependency(\.gameUseCase) private var gameUseCase
     @Dependency(\.mainQueue) private var mainQueue
+    @Dependency(\.analyticsUseCase) private var analyticsUseCase
 
     public init() {}
     
@@ -290,6 +291,7 @@ public struct MyGameParticipateFeature {
                 }
             case .participateCompleted(let roomInfo):
                 state.isLoadingProgress = false
+                analyticsUseCase.track(.participateSuccessFromParticipate)
                 let selectedDateString = Date.now.formattedString(
                     format: DateFormatConstants.yearMonthDayRequestFormat
                 )
