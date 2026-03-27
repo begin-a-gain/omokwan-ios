@@ -14,4 +14,7 @@ public enum AnalyticsEvent: Equatable {
     case quickCompleteButtonTap
     case putStone
     case kickUser
+    case logout
+    case accountDeleteEntryTap
+    case accountDeleteSuccess
 }

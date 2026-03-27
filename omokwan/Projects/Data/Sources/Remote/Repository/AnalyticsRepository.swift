@@ -62,6 +62,18 @@ public struct AnalyticsRepository: AnalyticsRepositoryProtocol {
                     "description": "디테일 화면에서 강퇴"
                 ]
             )
+        case .logout:
+            analyticsService.logButtonTap("logout_button", screen: "my_page_view")
+        case .accountDeleteEntryTap:
+            analyticsService.logButtonTap("account_delete_button", screen: "my_page_view")
+        case .accountDeleteSuccess:
+            analyticsService.logEvent(
+                "delete_account",
+                parameters: [
+                    "screen_name": "account_delete_view",
+                    "description": "회원 탈퇴 처리 완료"
+                ]
+            )
         }
     }
 

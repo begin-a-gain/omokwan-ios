@@ -12,6 +12,7 @@ import Base
 @Reducer
 public struct MyPageFeature {
     @Dependency(\.gameUseCase) private var gameUseCase
+    @Dependency(\.analyticsUseCase) private var analyticsUseCase
 
     public init() {}
     
@@ -55,10 +56,12 @@ public struct MyPageFeature {
             case .nicknameTapped:
                 return .send(.navigateToEditNickname)
             case .logoutButtonTapped:
+                analyticsUseCase.track(.logout)
                 return .none
             case .navigateToEditNickname:
                 return .none
             case .deleteAccountButtonTapped:
+                analyticsUseCase.track(.accountDeleteEntryTap)
                 return .send(.navigateToAccountDelete)
             case .navigateToAccountDelete:
                 return .none
