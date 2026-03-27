@@ -93,6 +93,7 @@ public struct MyGameFeature {
                     return .none
                 }
                 
+                analyticsUseCase.track(.calendarPreviousButtonTap)
                 state.selectedDate = date
                 return .send(.fetchGameInfo)
             case .dateArrowRightButtonTapped:
@@ -100,6 +101,7 @@ public struct MyGameFeature {
                     return .none
                 }
                 
+                analyticsUseCase.track(.calendarNextButtonTap)
                 state.selectedDate = date
                 return .send(.fetchGameInfo)
             case .datePickerButtonTapped:
@@ -114,6 +116,7 @@ public struct MyGameFeature {
                 case .presented(let sheetAction):
                     switch sheetAction {
                     case .dismissSheetWithData(let date):
+                        analyticsUseCase.track(.setCalendar)
                         state.myGameSheet = nil
                         state.selectedDate = date
                         return .send(.fetchGameInfo)

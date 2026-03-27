@@ -132,6 +132,18 @@ public struct AnalyticsRepository: AnalyticsRepositoryProtocol {
                     "description": "대국 참여하기 화면에서 검색으로 대국 찾기"
                 ]
             )
+        case .setCalendar:
+            analyticsService.logEvent(
+                "set_calendar",
+                parameters: [
+                    "screen_name": "my_game_view",
+                    "description": "달력 날짜 설정"
+                ]
+            )
+        case .calendarPreviousButtonTap:
+            analyticsService.logButtonTap("calendar_previous_button", screen: "my_game_view")
+        case .calendarNextButtonTap:
+            analyticsService.logButtonTap("calendar_next_button", screen: "my_game_view")
         }
     }
 

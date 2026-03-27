@@ -24,4 +24,7 @@ public enum AnalyticsEvent: Equatable {
     case participateSuccessFromNotification
     case enterDetailFromNotification
     case search
+    case setCalendar
+    case calendarPreviousButtonTap
+    case calendarNextButtonTap
 }
