@@ -10,17 +10,22 @@ import DesignSystem
 
 struct GameManagementSettingView: View {
     private let isHost: Bool
+    private let allUserCount: Int
     private let inviteButtonAction: () -> Void
     private let hostChangeButtonAction: (() -> Void)?
+    private let isHostChangeVisible: Bool
     
     init(
         isHost: Bool,
+        allUserCount: Int,
         inviteButtonAction: @escaping () -> Void,
         hostChangeButtonAction: (() -> Void)? = nil
     ) {
         self.isHost = isHost
+        self.allUserCount = allUserCount
         self.inviteButtonAction = inviteButtonAction
         self.hostChangeButtonAction = hostChangeButtonAction
+        self.isHostChangeVisible = allUserCount > 1 && isHost
     }
     
     var body: some View {
@@ -34,7 +39,7 @@ struct GameManagementSettingView: View {
             VStack(spacing: 0) {
                 inviteView
                 
-                if isHost {
+                if isHostChangeVisible {
                     StrokeDivider(color: OColors.stroke02.swiftUIColor)
                     gameHostChangeView
                 }

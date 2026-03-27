@@ -136,6 +136,7 @@ private extension GameDetailSettingView {
                 
                 GameManagementSettingView(
                     isHost: viewStore.isHost,
+                    allUserCount: viewStore.gameUserInfos.count,
                     inviteButtonAction: {
                         viewStore.send(.inviteButtonTapped)
                     },
