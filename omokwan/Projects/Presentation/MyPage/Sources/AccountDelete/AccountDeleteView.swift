@@ -32,6 +32,7 @@ public struct AccountDeleteView: View {
             .oAlert(self.store.scope(state: \.alertState, action: \.alertAction)) {
                 alertView
             }
+            .swipeBackDisabled(true)
     }
     
     private var accountDeleteBody: some View {
