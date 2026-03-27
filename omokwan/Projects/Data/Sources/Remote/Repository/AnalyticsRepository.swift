@@ -124,6 +124,14 @@ public struct AnalyticsRepository: AnalyticsRepositoryProtocol {
                     "description": "알림 화면에서 디테일 화면 이동"
                 ]
             )
+        case .search:
+            analyticsService.logEvent(
+                "search_to_participate",
+                parameters: [
+                    "screen_name": "my_game_participate_view",
+                    "description": "대국 참여하기 화면에서 검색으로 대국 찾기"
+                ]
+            )
         }
     }
 

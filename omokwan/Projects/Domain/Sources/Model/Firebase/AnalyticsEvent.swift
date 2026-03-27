@@ -23,4 +23,5 @@ public enum AnalyticsEvent: Equatable {
     case notificationReadAllSuccess
     case participateSuccessFromNotification
     case enterDetailFromNotification
+    case search
 }

@@ -213,7 +213,7 @@ private extension MyGameParticipateView {
             .frame(64, 64)
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    viewStore.send(.fetchInfoList(pageNumber: viewStore.currentPage + 1))
+                    viewStore.send(.fetchInfoList(pageNumber: viewStore.currentPage + 1, trigger: .pagination))
                 }
             }
     }
