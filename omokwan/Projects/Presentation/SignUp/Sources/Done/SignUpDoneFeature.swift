@@ -18,7 +18,9 @@ public struct SignUpDoneFeature {
     
     @ObservableState
     public struct State {
-        public init() {}
+        public init(provider: SocialSignProvider) {
+            self.provider = provider
+        }
 
         public enum AlertCase: Equatable {
             case error(NetworkError)
@@ -29,6 +31,7 @@ public struct SignUpDoneFeature {
         var isLoading: Bool = false
         var alertCase: AlertCase?
         var alertState: AlertFeature.State = .init()
+        let provider: SocialSignProvider
     }
     
     public enum Action {
@@ -51,12 +54,11 @@ public struct SignUpDoneFeature {
             case .userInfoFetched(let userInfo):
                 state.isLoading = false
                 setUserInfo(&state, userInfo)
-                AnalyticsManager.shared.setUserId(userInfo.nickname)
                 AnalyticsManager.shared.logEvent(
-                    "sign_up_done",
+                    "sign_up_successful",
                     parameters: [
-                        "screen_name": "회원가입완료",
-                        "description": "회원가입 유저명: \(userInfo.nickname)"
+                        "screen_name": "sign_up_done_view",
+                        "description": "[\(state.provider.rawValue)]로 회원가입 완료"
                     ]
                 )
                 return .send(.navigateToMain)
@@ -93,5 +95,6 @@ private extension SignUpDoneFeature {
     
     func setUserInfo(_ state: inout State, _ info: UserInfo) {
         state.userInfo = info
+        AnalyticsManager.shared.setUserId(state.userInfo.nickname)
     }
 }

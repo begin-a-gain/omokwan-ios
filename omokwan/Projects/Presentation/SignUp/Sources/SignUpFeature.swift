@@ -19,7 +19,9 @@ public struct SignUpFeature {
     public init() {}
     
     public struct State: Equatable{
-        public init() {}
+        public init(provider: SocialSignProvider) {
+            self.provider = provider
+        }
         
         fileprivate enum DebounceID {
             case nickname
@@ -44,6 +46,7 @@ public struct SignUpFeature {
         @BindingState var nickname: String = ""
         var isLoading: Bool = false
         var nicknameValidStatus: NicknameValidStatus?
+        let provider: SocialSignProvider
     }
     
     public enum Action: BindableAction {
@@ -53,7 +56,7 @@ public struct SignUpFeature {
         case validNickname(NicknameDuplicateValidation)
         case checkNicknameValidation(String)
         case nicknameUpdateCompleted
-        case navigateToSignUpDone
+        case navigateToSignUpDone(SocialSignProvider)
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
     }
@@ -108,7 +111,7 @@ public struct SignUpFeature {
                 return .none
             case .nicknameUpdateCompleted:
                 state.isLoading = false
-                return .send(.navigateToSignUpDone)
+                return .send(.navigateToSignUpDone(state.provider))
             case .navigateToSignUpDone:
                 return .none
             case .alertAction:

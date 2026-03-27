@@ -39,10 +39,10 @@ public struct SignInFeature {
         case appleButtonTapped
         case receiveAppleTokenSuccessfully(String)
         case appleLoginError(AppleSignInError)
-        case navigateToSignUp
-        case shouldSignUp
-        case fetchUserInfo
-        case userInfoFetched(UserInfo)
+        case navigateToSignUp(SocialSignProvider)
+        case shouldSignUp(SocialSignProvider)
+        case fetchUserInfo(SocialSignProvider)
+        case userInfoFetched(UserInfo, SocialSignProvider)
         case navigateToMain
         case alertAction(AlertFeature.Action)
         case showAlert(State.AlertCase)
@@ -83,17 +83,23 @@ public struct SignInFeature {
                 return .none
             case .navigateToSignUp:
                 return .none
-            case .shouldSignUp:
+            case .shouldSignUp(let provider):
                 state.isLoading = false
-                return .send(.navigateToSignUp)
-            case .fetchUserInfo:
+                return .send(.navigateToSignUp(provider))
+            case .fetchUserInfo(let provider):
                 return .run { send in
-                    await send(fetchUserInfo())
+                    await send(fetchUserInfo(provider))
                 }
-            case .userInfoFetched(let userInfo):
+            case let .userInfoFetched(userInfo, provider):
                 state.isLoading = false
                 setUserInfo(&state, userInfo)
-                AnalyticsManager.shared.setUserId(userInfo.nickname)
+                AnalyticsManager.shared.logEvent(
+                    "sign_in_successful",
+                    parameters: [
+                        "screen_name": "sign_in_view",
+                        "description": "[\(provider)]로 로그인 완료"
+                    ]
+                )
                 return .send(.navigateToMain)
             case .navigateToMain:
                 return .none
@@ -140,26 +146,27 @@ private extension SignInFeature {
             localUseCase.setSignUpCompleted(signInResult.signUpComplete)
             
             if signInResult.signUpComplete {
-                return .fetchUserInfo
+                return .fetchUserInfo(provider)
             } else {
-                return .shouldSignUp
+                return .shouldSignUp(provider)
             }
         case let .failure(error):
             return .showAlert(.error(error))
         }
     }
     
-    func fetchUserInfo() async -> Action {
+    func fetchUserInfo(_ provider: SocialSignProvider) async -> Action {
         let response = await accountUseCase.fetchUserInfo()
         switch response {
         case .success(let userInfo):
-            return .userInfoFetched(userInfo)
+            return .userInfoFetched(userInfo, provider)
         case .failure(let error):
             return .showAlert(.error(error))
         }
     }
     
     func setUserInfo(_ state: inout State, _ info: UserInfo) {
-        state.userInfo = info 
+        state.userInfo = info
+        AnalyticsManager.shared.setUserId(state.userInfo.nickname)
     }
 }
