@@ -22,3 +22,9 @@ public extension View {
         )
     }
 }
+
+public extension View {
+    func swipeBackDisabled(_ disabled: Bool) -> some View {
+        modifier(SwipeBackDisabledModifier(disabled: disabled))
+    }
+}
