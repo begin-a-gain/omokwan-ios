@@ -15,11 +15,19 @@ import Util
 public struct MyGameParticipateFeature {
     @Dependency(\.gameUseCase) private var gameUseCase
     @Dependency(\.mainQueue) private var mainQueue
+    @Dependency(\.analyticsUseCase) private var analyticsUseCase
 
     public init() {}
     
     public struct State: Equatable {
         public init() {}
+
+        enum FetchTrigger: Equatable {
+            case initial
+            case filter
+            case pagination
+            case search
+        }
         
         enum CancellableID {
             case initFetch
@@ -101,8 +109,8 @@ public struct MyGameParticipateFeature {
         case initialDataFetchFailed(NetworkError)
         case participateRoom(GameRoomInformation, String?)
         case participateCompleted(GameRoomInformation)
-        case gameInfoFetched(GameRoomInfo)
-        case fetchInfoList(pageNumber: Int)
+        case gameInfoFetched(GameRoomInfo, State.FetchTrigger)
+        case fetchInfoList(pageNumber: Int, trigger: State.FetchTrigger)
     }
     
     public var body: some ReducerOf<Self> {
@@ -110,7 +118,7 @@ public struct MyGameParticipateFeature {
             .onChange(of: \.searchText) { oldValue, newValue in
                 Reduce { state, action in
                     if oldValue.isEmpty, newValue.isEmpty { return .none }
-                    return .send(.fetchInfoList(pageNumber: 1))
+                    return .send(.fetchInfoList(pageNumber: 1, trigger: .search))
                         .debounce(
                             id: State.SearchDebounceID.id,
                             for: .milliseconds(500),
@@ -165,10 +173,10 @@ public struct MyGameParticipateFeature {
             case .resetFilterButtonTapped:
                 state.isAvailableParticipateRoomSelected = false
                 state.selectedCategoryList = []
-                return .send(.fetchInfoList(pageNumber: 1))
+                return .send(.fetchInfoList(pageNumber: 1, trigger: .filter))
             case .availableParticipateRoomFilterTapped:
                 state.isAvailableParticipateRoomSelected.toggle()
-                 return .send(.fetchInfoList(pageNumber: 1))
+                 return .send(.fetchInfoList(pageNumber: 1, trigger: .filter))
             case .categoryFilterTapped:
                 state.categorySheet = .init(
                     categories: state.categories,
@@ -177,7 +185,7 @@ public struct MyGameParticipateFeature {
                 return .none
             case .searchBarClearButtonTapped:
                 state.searchText = ""
-                return .send(.fetchInfoList(pageNumber: 1))
+                return .send(.fetchInfoList(pageNumber: 1, trigger: .initial))
             case .categorySheet(let categorySheetAction):
                 switch categorySheetAction {
                 case .presented(let sheetAction):
@@ -186,7 +194,7 @@ public struct MyGameParticipateFeature {
                         state.selectedCategoryList = selectedCategories
                         state.categorySheet = nil
                         
-                        return .send(.fetchInfoList(pageNumber: 1))
+                        return .send(.fetchInfoList(pageNumber: 1, trigger: .filter))
                     default:
                         return .none
                     }
@@ -240,15 +248,18 @@ public struct MyGameParticipateFeature {
                     .cancel(id: State.CancellableID.initFetch),
                     .send(.showAlert(.error(error)))
                 ])
-            case .gameInfoFetched(let info):
+            case let .gameInfoFetched(info, trigger):
                 if state.currentPage == 1 {
                     state.gameRoomInformationList = info.gameRoomInformation
                 } else {
                     state.gameRoomInformationList.append(contentsOf: info.gameRoomInformation)
                 }
                 state.hasNext = info.hasNext
+                if trigger == .search, !state.searchText.isEmpty {
+                    analyticsUseCase.track(.search)
+                }
                 return .none
-            case .fetchInfoList(let pageNumber):
+            case let .fetchInfoList(pageNumber, trigger):
                 state.currentPage = pageNumber
                 let request = GameRoomInformationRequestModel(
                     joinable: state.isAvailableParticipateRoomSelected ? true : nil,
@@ -268,7 +279,7 @@ public struct MyGameParticipateFeature {
                     .run { send in
                         do {
                             let result = try await fetchGameRoomInfo(request: request)
-                            await send(.gameInfoFetched(result))
+                            await send(.gameInfoFetched(result, trigger))
                         } catch let error as NetworkError {
                             await send(.showAlert(.error(error)))
                         } catch {
@@ -290,6 +301,7 @@ public struct MyGameParticipateFeature {
                 }
             case .participateCompleted(let roomInfo):
                 state.isLoadingProgress = false
+                analyticsUseCase.track(.participateSuccessFromParticipate)
                 let selectedDateString = Date.now.formattedString(
                     format: DateFormatConstants.yearMonthDayRequestFormat
                 )
@@ -315,7 +327,7 @@ private extension MyGameParticipateFeature {
             let (categoriesResult, roomInfoResult) = try await (categories, roomInformation)
 
             await send(.categoriesFetched(categoriesResult))
-            await send(.gameInfoFetched(roomInfoResult))
+            await send(.gameInfoFetched(roomInfoResult, .initial))
         } catch let error as NetworkError {
             await send(.handleInitDataError(.error(error)))
         } catch {

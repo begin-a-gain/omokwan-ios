@@ -14,6 +14,7 @@ import Util
 public struct MyGameFeature {
     @Dependency(\.gameUseCase) private var gameUseCase
     @Dependency(\.notificationUseCase) private var notificationUseCase
+    @Dependency(\.analyticsUseCase) private var analyticsUseCase
 
     public init() {}
     
@@ -92,6 +93,7 @@ public struct MyGameFeature {
                     return .none
                 }
                 
+                analyticsUseCase.track(.calendarPreviousButtonTap)
                 state.selectedDate = date
                 return .send(.fetchGameInfo)
             case .dateArrowRightButtonTapped:
@@ -99,6 +101,7 @@ public struct MyGameFeature {
                     return .none
                 }
                 
+                analyticsUseCase.track(.calendarNextButtonTap)
                 state.selectedDate = date
                 return .send(.fetchGameInfo)
             case .datePickerButtonTapped:
@@ -113,6 +116,7 @@ public struct MyGameFeature {
                 case .presented(let sheetAction):
                     switch sheetAction {
                     case .dismissSheetWithData(let date):
+                        analyticsUseCase.track(.setCalendar)
                         state.myGameSheet = nil
                         state.selectedDate = date
                         return .send(.fetchGameInfo)
@@ -123,6 +127,7 @@ public struct MyGameFeature {
                     return .none
                 }
             case .bellButtonTapped:
+                analyticsUseCase.track(.notificationButtonTap)
                 return .send(.navigateToNotification)
             case .gameCreated(let title):
                 // TODO: 대국 생성 완료 토스트 생성

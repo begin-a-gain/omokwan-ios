@@ -8,17 +8,19 @@
 import ComposableArchitecture
 import Domain
 import Base
-import Util
 
 @Reducer
 public struct SignUpDoneFeature {
     @Dependency(\.accountUseCase) private var accountUseCase
+    @Dependency(\.analyticsUseCase) private var analyticsUseCase
 
     public init() {}
     
     @ObservableState
     public struct State {
-        public init() {}
+        public init(provider: SocialSignProvider) {
+            self.provider = provider
+        }
 
         public enum AlertCase: Equatable {
             case error(NetworkError)
@@ -29,6 +31,7 @@ public struct SignUpDoneFeature {
         var isLoading: Bool = false
         var alertCase: AlertCase?
         var alertState: AlertFeature.State = .init()
+        let provider: SocialSignProvider
     }
     
     public enum Action {
@@ -51,14 +54,7 @@ public struct SignUpDoneFeature {
             case .userInfoFetched(let userInfo):
                 state.isLoading = false
                 setUserInfo(&state, userInfo)
-                AnalyticsManager.shared.setUserId(userInfo.nickname)
-                AnalyticsManager.shared.logEvent(
-                    "sign_up_done",
-                    parameters: [
-                        "screen_name": "회원가입완료",
-                        "description": "회원가입 유저명: \(userInfo.nickname)"
-                    ]
-                )
+                analyticsUseCase.track(.signUpSuccess(provider: state.provider.rawValue))
                 return .send(.navigateToMain)
             case .signInAgain(let networkError):
                 state.isLoading = false
@@ -93,5 +89,6 @@ private extension SignUpDoneFeature {
     
     func setUserInfo(_ state: inout State, _ info: UserInfo) {
         state.userInfo = info
+        analyticsUseCase.setUserId(state.userInfo.nickname)
     }
 }

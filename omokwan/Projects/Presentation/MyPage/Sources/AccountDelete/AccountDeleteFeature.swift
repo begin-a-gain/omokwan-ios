@@ -12,6 +12,7 @@ import Base
 @Reducer
 public struct AccountDeleteFeature {
     @Dependency(\.accountUseCase) private var accountUseCase
+    @Dependency(\.analyticsUseCase) private var analyticsUseCase
     
     public init() {}
     
@@ -105,6 +106,7 @@ public struct AccountDeleteFeature {
                     await send(sendSurvey(reasons: reasons, otherText: otherText))
                 }
             case .deleteCompleted:
+                analyticsUseCase.track(.accountDeleteSuccess)
                 state.isLoading = false
                 return .send(.showAlert(.deleteCompleted))
             case .deleteAccountAlertButtonTapped:

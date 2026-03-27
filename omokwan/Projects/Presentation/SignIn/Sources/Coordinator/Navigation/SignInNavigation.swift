@@ -11,8 +11,8 @@ import SignUp
 extension SignInCoordinatorFeature {
     func signInNavigation(_ state: inout State, _ action: SignInFeature.Action) -> Effect<Action> {
         switch action {
-        case .navigateToSignUp:
-            state.navigationPath.append(.signUp(SignUpFeature.State()))
+        case .navigateToSignUp(let provider):
+            state.navigationPath.append(.signUp(SignUpFeature.State(provider: provider)))
             return .none
         default:
             return .none

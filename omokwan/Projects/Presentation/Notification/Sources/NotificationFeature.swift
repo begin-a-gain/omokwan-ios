@@ -15,6 +15,7 @@ import Foundation
 public struct NotificationFeature {
     @Dependency(\.notificationUseCase) private var notificationUseCase
     @Dependency(\.gameUseCase) private var gameUseCase
+    @Dependency(\.analyticsUseCase) private var analyticsUseCase
     
     public init() {}
     
@@ -91,6 +92,7 @@ public struct NotificationFeature {
             case .navigateToBack:
                 return .none
             case .navigateToGameDetail:
+                analyticsUseCase.track(.enterDetailFromNotification)
                 return .none
             case .showAlert(let alertCase):
                 state.isLoading = false
@@ -176,8 +178,10 @@ public struct NotificationFeature {
                     .send(.navigateToGameDetail(notificationInfo.gameID, notificationInfo.title, selectedDateString))
                 ])
             case .participateCompleted(let notificationInfo):
+                analyticsUseCase.track(.participateSuccessFromNotification)
                 return .send(.notificationReadSucceeded(notificationInfo))
             case .allNotificationsReadSucceeded:
+                analyticsUseCase.track(.notificationReadAllSuccess)
                 state.notifications = state.notifications.map {
                     NotificationInfo(
                         id: $0.id,

@@ -11,8 +11,8 @@ import ComposableArchitecture
 extension RootFeature {
     func signUpNavigation(_ state: inout State, _ action: SignUpFeature.Action) -> Effect<Action> {
         switch action {
-        case .navigateToSignUpDone:
-            state.root = .signUpDone(.init())
+        case .navigateToSignUpDone(let provider):
+            state.root = .signUpDone(.init(provider: provider))
             return .none
         default:
             return .none
