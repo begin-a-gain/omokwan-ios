@@ -30,10 +30,10 @@ public struct SplashView: View {
             .onAppear {
                 store.send(.onAppear)
                 AnalyticsManager.shared.logEvent(
-                    "splash_view",
+                    "app_entry",
                     parameters: [
                         "screen_name": "splash_view",
-                        "description": "임시 테스트"
+                        "description": "앱 초기 실행"
                     ]
                 )
             }
