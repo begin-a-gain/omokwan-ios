@@ -20,7 +20,7 @@ case "${CONFIGURATION}" in
     "Dev")
         cp "${SRC_DIR}/GoogleService-Info-Dev.plist" "${DEST_DIR}/GoogleService-Info.plist"
         ;;
-    "Prod")
+    "Prod" | "Release")
         cp "${SRC_DIR}/GoogleService-Info-Prod.plist" "${DEST_DIR}/GoogleService-Info.plist"
         ;;
     *)
