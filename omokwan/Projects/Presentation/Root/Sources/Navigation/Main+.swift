@@ -39,6 +39,6 @@ extension RootFeature {
     }
     
     func clearUserInfo(_ state: inout State) {
-        state.userInfo = UserInfo()
+        state.$userInfo.withLock { $0 = UserInfo() }
     }
 }

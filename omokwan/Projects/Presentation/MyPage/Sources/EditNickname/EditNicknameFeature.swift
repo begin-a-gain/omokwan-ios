@@ -149,7 +149,7 @@ public struct EditNicknameFeature {
                 }
             case .nicknameUpdateCompleted:
                 state.isLoading = false
-                state.userInfo.nickname = state.nickname
+                state.$userInfo.withLock { $0.nickname = state.nickname }
                 return .none
             }
         }
