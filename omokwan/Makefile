@@ -17,6 +17,7 @@ clean:
 
 generate:
 	tuist install
+	./ci_scripts/post_clone/disable_tca_swift6_manifest.sh
 	tuist generate
 
 presentation:
