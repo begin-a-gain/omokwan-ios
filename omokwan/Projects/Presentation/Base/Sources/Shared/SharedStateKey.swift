@@ -8,7 +8,7 @@
 import ComposableArchitecture
 import Domain
 
-extension PersistenceKey where Self == InMemoryKey<UserInfo> {
+extension SharedKey where Self == InMemoryKey<UserInfo> {
     static public var userInfo: Self {
         inMemory("userInfo")
     }

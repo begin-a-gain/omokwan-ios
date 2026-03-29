@@ -88,7 +88,7 @@ private extension SignUpDoneFeature {
     }
     
     func setUserInfo(_ state: inout State, _ info: UserInfo) {
-        state.userInfo = info
+        state.$userInfo.withLock { $0 = info }
         analyticsUseCase.setUserId(state.userInfo.nickname)
     }
 }

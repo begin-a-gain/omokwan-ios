@@ -19,6 +19,7 @@ echo "📝 Creating Shared.xcconfig..."
 cat > XCConfig/Shared.xcconfig << 'EOF'
 ENABLE_USER_SCRIPT_SANDBOXING = NO
 OTHER_LDFLAGS = -ObjC
+SWIFT_VERSION = 5.0
 EOF
 
 # 파일 생성 확인

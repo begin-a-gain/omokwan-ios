@@ -184,7 +184,7 @@ private extension SplashFeature {
     }
     
     func setUserInfo(_ state: inout State, _ info: UserInfo) {
-        state.userInfo = info
+        state.$userInfo.withLock { $0 = info }
     }
     
     func decodeNoticePopupInfo(_ noticeString: String) -> NoticePopupInfo? {
