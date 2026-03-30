@@ -217,12 +217,14 @@ private extension MyGameAddView {
             .greedyWidth(.leading)
             VStack(spacing: 0) {
                 gameCategoryView
-                StrokeDivider(color: OColors.stroke02.swiftUIColor)
-                OInputToggleField(
-                    title: "리마인드 알림",
-                    additionalInfo: "오전 9:00",
-                    isSelected: viewStore.$isRemindAlarmSelected
-                )
+                if !viewStore.isReminderSettingHidden {
+                    StrokeDivider(color: OColors.stroke02.swiftUIColor)
+                    OInputToggleField(
+                        title: "리마인드 알림",
+                        additionalInfo: "오전 9:00",
+                        isSelected: viewStore.$isRemindAlarmSelected
+                    )
+                }
                 StrokeDivider(color: OColors.stroke02.swiftUIColor)
                 OInputToggleField(
                     title: "비공개",

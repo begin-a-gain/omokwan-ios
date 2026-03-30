@@ -14,6 +14,7 @@ import Base
 @Reducer
 public struct GameDetailSettingFeature {
     @Dependency(\.gameUseCase) private var gameUseCase
+    @Dependency(\.featureFlagUseCase) private var featureFlagUseCase
     @Dependency(\.analyticsUseCase) private var analyticsUseCase
 
     public init() {}
@@ -39,6 +40,7 @@ public struct GameDetailSettingFeature {
         
         @BindingState var gameTitle: String = ""
         var gameTitleValidStatus: GameNameValidStatus?
+        var isReminderSettingHidden: Bool = false
 
         var selectedCategory: GameCategory?
         var categories: [GameCategory] = []
@@ -113,6 +115,7 @@ public struct GameDetailSettingFeature {
             switch action {
             case .onAppear:
                 let gameID = state.gameID
+                state.isReminderSettingHidden = !featureFlagUseCase.isNotificationEnabled()
                 
                 state.isLoading = true
                 if state.categories.isEmpty {
