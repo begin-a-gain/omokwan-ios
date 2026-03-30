@@ -122,6 +122,7 @@ private extension GameDetailSettingView {
                     gameCategory: viewStore.selectedCategory,
                     privateRoomPassword: viewStore.currentConfiguration.password,
                     isPrivateRoom: !viewStore.currentConfiguration.isPublic,
+                    isReminderSettingHidden: viewStore.isReminderSettingHidden,
                     canChangeSetting: viewStore.isHost,
                     categoryButtonAction: {
                         viewStore.send(.gameCategorySettingButtonTapped)

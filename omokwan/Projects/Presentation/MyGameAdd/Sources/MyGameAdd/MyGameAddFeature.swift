@@ -13,6 +13,7 @@ import Util
 @Reducer
 public struct MyGameAddFeature {
     @Dependency(\.gameUseCase) private var gameUseCase
+    @Dependency(\.featureFlagUseCase) private var featureFlagUseCase
 
     public init() {}
     
@@ -36,6 +37,7 @@ public struct MyGameAddFeature {
         
         @BindingState var gameName: String = ""
         var gameNameValidStatus: GameNameValidStatus?
+        var isReminderSettingHidden: Bool = false
         var selectedRepeatDay: MyGameAddRepeatDayType = .weekday
         var directSelectionTypeList: [MyGameAddDirectSelectionDayType] = MyGameAddDirectSelectionDayType.allCases
         var isSelectedDirectSelectionList: [Bool] = Array(repeating: false, count: MyGameAddDirectSelectionDayType.allCases.count)
@@ -109,6 +111,7 @@ public struct MyGameAddFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                state.isReminderSettingHidden = !featureFlagUseCase.isNotificationFlagEnabled()
                 return .none
             case .navigateToBack:
                 return .none

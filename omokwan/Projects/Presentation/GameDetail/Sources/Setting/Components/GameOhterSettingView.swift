@@ -13,6 +13,7 @@ struct GameOhterSettingView: View {
     private let gameCategory: GameCategory?
     private let privateRoomPassword: String?
     private let isPrivateRoom: Bool
+    private let isReminderSettingHidden: Bool
     private let canChangeSetting: Bool
     
     private let categoryButtonAction: (() -> Void)?
@@ -23,6 +24,7 @@ struct GameOhterSettingView: View {
         gameCategory: GameCategory?,
         privateRoomPassword: String? = nil,
         isPrivateRoom: Bool,
+        isReminderSettingHidden: Bool,
         canChangeSetting: Bool,
         categoryButtonAction: (() -> Void)? = nil,
         privateRoomCodeAreaButtonAction: (() -> Void)? = nil,
@@ -31,6 +33,7 @@ struct GameOhterSettingView: View {
         self.gameCategory = gameCategory
         self.privateRoomPassword = privateRoomPassword
         self.isPrivateRoom = isPrivateRoom
+        self.isReminderSettingHidden = isReminderSettingHidden
         self.canChangeSetting = canChangeSetting
         self.categoryButtonAction = categoryButtonAction
         self.privateRoomCodeAreaButtonAction = privateRoomCodeAreaButtonAction
@@ -50,13 +53,15 @@ struct GameOhterSettingView: View {
                     gameCategoryView
                     StrokeDivider(color: OColors.stroke02.swiftUIColor)
                 }
-                
-                OInputToggleField(
-                    title: "리마인드 알림",
-                    additionalInfo: "오전 9:00",
-                    isSelected: .constant(false)
-                )
-                StrokeDivider(color: OColors.stroke02.swiftUIColor)
+
+                if !isReminderSettingHidden {
+                    OInputToggleField(
+                        title: "리마인드 알림",
+                        additionalInfo: "오전 9:00",
+                        isSelected: .constant(false)
+                    )
+                    StrokeDivider(color: OColors.stroke02.swiftUIColor)
+                }
                 privateRoomSection
             }
             .overlay(RoundedRectangle(cornerRadius: 8).stroke(OColors.stroke02.swiftUIColor, lineWidth: 1.0))

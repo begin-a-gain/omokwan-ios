@@ -15,6 +15,7 @@ extension DIContainer {
         registerApiServiceDependency()
         registerSocialService()
         registerFirebaseService()
+        registerFeatureFlagStore()
         registerAnalyticsService()
         registerAccountDependency()
         registerSocialDependency()
@@ -23,6 +24,7 @@ extension DIContainer {
         registerLocalStorageDependency()
         registerNotificationDependency()
         registerFirebaseDependency()
+        registerFeatureFlagDependency()
         registerAnalyticsDependency()
     }
     
@@ -53,6 +55,14 @@ extension DIContainer {
     private func registerFirebaseService() {
         container.register(FirebaseService.self) { _ in
             FirebaseService()
+        }
+    }
+
+    private func registerFeatureFlagStore() {
+        let featureFlagStore = FeatureFlagStore()
+
+        container.register(FeatureFlagStore.self) { _ in
+            featureFlagStore
         }
     }
 
@@ -108,6 +118,13 @@ extension DIContainer {
         container.register(FirebaseRepositoryProtocol.self) { resolver in
             let firebaseService: FirebaseService = resolver.resolve()
             return FirebaseRepository(firebaseService: firebaseService)
+        }
+    }
+
+    private func registerFeatureFlagDependency() {
+        container.register(FeatureFlagRepositoryProtocol.self) { resolver in
+            let featureFlagStore: FeatureFlagStore = resolver.resolve()
+            return FeatureFlagRepository(featureFlagStore: featureFlagStore)
         }
     }
 

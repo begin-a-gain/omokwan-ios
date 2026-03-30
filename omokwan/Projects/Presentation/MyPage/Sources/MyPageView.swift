@@ -35,9 +35,11 @@ public struct MyPageView: View {
                     myGameSection
                         .padding(.top, 20)
                         .padding(.bottom, 24)
-                    
-                    generalSection
-                        .padding(.bottom, 24)
+
+                    if !viewStore.isGeneralSectionHidden {
+                        generalSection
+                            .padding(.bottom, 24)
+                    }
                     
                     infoSection
                         .padding(.bottom, 20)

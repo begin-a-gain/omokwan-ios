@@ -10,6 +10,8 @@ import Domain
 
 @Reducer
 public struct UserAvatarInfoFeature {
+    @Dependency(\.featureFlagUseCase) private var featureFlagUseCase
+
     public init() {}
     
     public struct State: Equatable {
@@ -26,6 +28,7 @@ public struct UserAvatarInfoFeature {
         let detailUserInfo: DetailUserInfo
         let participantRole: ParticipantRole
         let userID: Int
+        var isShootStoneButtonHidden: Bool = false
     }
     
     public enum Action {
@@ -38,6 +41,7 @@ public struct UserAvatarInfoFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                state.isShootStoneButtonHidden = !featureFlagUseCase.isNotificationFlagEnabled()
                 return .none
             case .shootStoneButtonTapped:
                 return .none

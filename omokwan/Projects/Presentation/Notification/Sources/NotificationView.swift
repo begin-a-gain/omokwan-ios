@@ -65,9 +65,11 @@ public struct NotificationView: View {
             leadingIconAction: {
                 store.send(.navigateToBack)
             },
-            trailingIcon: OImages.icSetting.swiftUIImage,
+            trailingIcon: store.isSettingButtonHidden ? nil : OImages.icSetting.swiftUIImage,
             trailingIconAction:  {
-                store.send(.settingButtonTapped)
+                if !store.isSettingButtonHidden {
+                    store.send(.settingButtonTapped)
+                }
             }
         )
     }

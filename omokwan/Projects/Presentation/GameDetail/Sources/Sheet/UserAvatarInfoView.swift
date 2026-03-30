@@ -20,6 +20,9 @@ struct UserAvatarInfoView: View {
     
     var body: some View {
         userAvatarInfoBody
+            .onAppear {
+                viewStore.send(.onAppear)
+            }
     }
     
     private var userAvatarInfoBody: some View {
@@ -130,11 +133,17 @@ private extension UserAvatarInfoView {
             Spacer().height(40)
         case .host:
             VStack(spacing: 16) {
-                shootStoneButton
+                if !viewStore.isShootStoneButtonHidden {
+                    shootStoneButton
+                }
                 kickOutbutton
             }
         case .other:
-            shootStoneButton
+            if viewStore.isShootStoneButtonHidden {
+                Spacer().height(40)
+            } else {
+                shootStoneButton
+            }
         }
     }
     
