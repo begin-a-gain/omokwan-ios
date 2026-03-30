@@ -115,7 +115,7 @@ public struct GameDetailSettingFeature {
             switch action {
             case .onAppear:
                 let gameID = state.gameID
-                state.isReminderSettingHidden = !featureFlagUseCase.isNotificationEnabled()
+                state.isReminderSettingHidden = !featureFlagUseCase.isNotificationFlagEnabled()
                 
                 state.isLoading = true
                 if state.categories.isEmpty {

@@ -111,7 +111,7 @@ public struct MyGameAddFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                state.isReminderSettingHidden = !featureFlagUseCase.isNotificationEnabled()
+                state.isReminderSettingHidden = !featureFlagUseCase.isNotificationFlagEnabled()
                 return .none
             case .navigateToBack:
                 return .none
