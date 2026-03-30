@@ -339,31 +339,35 @@ private extension StickyCalendarFeature {
         todayMatchedIndex: Int,
         allGameDetailDates: [GameDetailDate]
     ) -> Action? {
+        guard todayMatchedIndex + 1 < allGameDetailDates.count else {
+            state.shouldReloadToday = true
+            return nil
+        }
+
         let previousGameDetailDate = allGameDetailDates[todayMatchedIndex + 1]
         var currentMonthGameDetailDates = currentMonthGameDetailDates
         var todayDate = currentMonthGameDetailDates[todaySameDateIndex]
         
         if let myUserStatus = todayDate.userStatus[0] {
+            let previousStreakCount = previousGameDetailDate.userStatus[0]?.streakCount ?? 0
+            let updatedStreakCount = previousStreakCount + 1
             let isCombo = previousGameDetailDate.userStatus[0]?.isCombo ?? false
             if isCombo {
                 todayDate.userStatus[0] = GameDetailUserStatus(
                     userID: myUserStatus.userID,
                     isCompleted: true,
-                    streakCount: myUserStatus.streakCount,
+                    streakCount: updatedStreakCount,
                     isCombo: true
                 )
                 
                 currentMonthGameDetailDates[todaySameDateIndex] = todayDate
                 state.dateUserStatusInfos[state.todayYearMonth] = currentMonthGameDetailDates
                 state.shouldReloadToday = true
-                guard myUserStatus.streakCount.isMultiple(of: 5) else {
-                    return nil
-                }
-                let comboCount = myUserStatus.streakCount / 5
+                guard updatedStreakCount.isMultiple(of: 5) else { return nil }
+                let comboCount = updatedStreakCount / 5
                 return .comboAchieved(comboCount)
             } else {
-                let streakCount = previousGameDetailDate.userStatus[0]?.streakCount ?? 0
-                if streakCount >= 4 {
+                if previousStreakCount >= 4 {
                     let comboRange = todayMatchedIndex...min(todayMatchedIndex + 4, allGameDetailDates.count - 1)
                     state.comboUpdatedDates = comboRange.map { allGameDetailDates[$0].originalDate }
 
@@ -391,7 +395,7 @@ private extension StickyCalendarFeature {
                     todayDate.userStatus[0] = GameDetailUserStatus(
                         userID: myUserStatus.userID,
                         isCompleted: true,
-                        streakCount: myUserStatus.streakCount,
+                        streakCount: updatedStreakCount,
                         isCombo: false
                     )
                     
