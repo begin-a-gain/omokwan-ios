@@ -15,6 +15,7 @@ import Foundation
 public struct NotificationFeature {
     @Dependency(\.notificationUseCase) private var notificationUseCase
     @Dependency(\.gameUseCase) private var gameUseCase
+    @Dependency(\.featureFlagUseCase) private var featureFlagUseCase
     @Dependency(\.analyticsUseCase) private var analyticsUseCase
     
     public init() {}
@@ -34,6 +35,7 @@ public struct NotificationFeature {
         var alertState: AlertFeature.State = .init()
         var isLoading: Bool = false
         var isProgressLoading: Bool = false
+        var isSettingButtonHidden: Bool = false
         var selectedFilter: NotificationFilter = .all
         var thousandsPlace: String = ""
         var hundredsPlace: String = ""
@@ -83,6 +85,7 @@ public struct NotificationFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                state.isSettingButtonHidden = !featureFlagUseCase.isNotificationFlagEnabled()
                 return .send(.fetchNotificationInfo)
             case .fetchNotificationInfo:
                 state.isLoading = true
