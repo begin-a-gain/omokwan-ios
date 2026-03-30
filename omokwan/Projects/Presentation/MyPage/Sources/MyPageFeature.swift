@@ -12,6 +12,7 @@ import Base
 @Reducer
 public struct MyPageFeature {
     @Dependency(\.gameUseCase) private var gameUseCase
+    @Dependency(\.featureFlagUseCase) private var featureFlagUseCase
     @Dependency(\.analyticsUseCase) private var analyticsUseCase
 
     public init() {}
@@ -23,6 +24,7 @@ public struct MyPageFeature {
         var info: MyPageGameInfo = .init()
         var isLoading: Bool = false
         var isInitFectehd: Bool = true
+        var isGeneralSectionHidden: Bool = false
     }
 
     public enum Action {
@@ -43,6 +45,7 @@ public struct MyPageFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                state.isGeneralSectionHidden = !featureFlagUseCase.isNotificationFlagEnabled()
                 let userID = state.userInfo.id
                 let isInitFectehd = state.isInitFectehd
                 if isInitFectehd { state.isInitFectehd = false }
