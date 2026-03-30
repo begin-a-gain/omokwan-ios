@@ -16,6 +16,7 @@ public struct SplashFeature {
     @Dependency(\.serverUseCase) private var serverUseCase
     @Dependency(\.localUseCase) private var localUseCase
     @Dependency(\.firebaseUseCase) private var firebaseUseCase
+    @Dependency(\.featureFlagUseCase) private var featureFlagUseCase
     @Dependency(\.permissionUseCase) private var permissionUseCase
     @Dependency(\.analyticsUseCase) private var analyticsUseCase
 
@@ -51,6 +52,7 @@ public struct SplashFeature {
         case setTrackingValueForAnalytics(Bool)
         case healthCheck
         case setupRemoteConfig
+        case cacheFeatureFlags
         case checkForceUpdate
         case checkNotice
         case noticeConfirmButtonTapped
@@ -88,8 +90,16 @@ public struct SplashFeature {
             case .setupRemoteConfig:
                 return .run { send in
                     await firebaseUseCase.setupRemoteConfig()
-                    await send(.checkForceUpdate)
                 }
+                .concatenate(
+                    with: .merge(
+                        .send(.cacheFeatureFlags),
+                        .send(.checkForceUpdate)
+                    )
+                )
+            case .cacheFeatureFlags:
+                cacheFeatureFlags()
+                return .none
             case .checkForceUpdate:
                 let forceUpdateValue = firebaseUseCase.getValue(RemoteConfigKeys.forceUpdate.rawValue, .bool)
                 
@@ -107,7 +117,8 @@ public struct SplashFeature {
                     return .send(.showAlert(.error(.unKnownError)))
                 }
                 
-                guard let notice = decodeNoticePopupInfo(noticeString), !notice.isEmpty else {
+                guard let notice = decodeRemoteConfigValue(noticeString, as: NoticePopupInfo.self),
+                      !notice.isEmpty else {
                     return .send(.healthCheck)
                 }
                 
@@ -187,11 +198,24 @@ private extension SplashFeature {
         state.$userInfo.withLock { $0 = info }
     }
     
-    func decodeNoticePopupInfo(_ noticeString: String) -> NoticePopupInfo? {
-        guard let data = noticeString.data(using: .utf8) else {
+    func cacheFeatureFlags() {
+        let featureFlagValue = firebaseUseCase.getValue(RemoteConfigKeys.featureFlag.rawValue, .string)
+
+        guard case let .string(featureFlagString) = featureFlagValue,
+              let featureFlagInfo = decodeRemoteConfigValue(featureFlagString, as: FeatureFlagInfo.self) else {
+            return
+        }
+
+        featureFlagUseCase.setFeatureFlags(featureFlagInfo)
+    }
+}
+
+private extension SplashFeature {
+    func decodeRemoteConfigValue<T: Decodable>(_ value: String, as type: T.Type) -> T? {
+        guard let data = value.data(using: .utf8) else {
             return nil
         }
-        
-        return try? JSONDecoder().decode(NoticePopupInfo.self, from: data)
+
+        return try? JSONDecoder().decode(type, from: data)
     }
 }

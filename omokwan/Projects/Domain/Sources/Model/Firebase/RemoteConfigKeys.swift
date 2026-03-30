@@ -8,4 +8,5 @@
 public enum RemoteConfigKeys: String {
     case forceUpdate = "force_update_flag"
     case notice = "notice_flag"
+    case featureFlag = "feature_flag"
 }
