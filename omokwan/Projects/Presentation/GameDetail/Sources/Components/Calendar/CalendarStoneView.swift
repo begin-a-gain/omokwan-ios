@@ -31,16 +31,16 @@ struct CalendarStoneView: View {
         let me = index == 0
         
         ZStack {
-            UserStatusStoneView(
-                userStatus: gameDetailDate.userStatus[index],
-                me: me,
-                itemSize: itemSize,
-                isToday: isToday
-            )
             UserStatusCrossLineView(
                 userStatus: gameDetailDate.userStatus[index],
                 me: me,
                 size: itemSize,
+                isToday: isToday
+            )
+            UserStatusStoneView(
+                userStatus: gameDetailDate.userStatus[index],
+                me: me,
+                itemSize: itemSize,
                 isToday: isToday
             )
         }
