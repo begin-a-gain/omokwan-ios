@@ -126,8 +126,8 @@ public struct InvitationFeature {
                     state.hasNext = false
                 }
                 
-                return .run { [nickname = state.nickname] send in
-                    await send(fetchUsers(nickname, cursor))
+                return .run { [gameID = state.gameID, nickname = state.nickname] send in
+                    await send(fetchUsers(gameID, nickname, cursor))
                 }
             case let .userListFetched(info, isFirstPage):
                 state.isShimmerLoading = false
@@ -161,9 +161,10 @@ public struct InvitationFeature {
 }
 
 private extension InvitationFeature {
-    func fetchUsers(_ nickname: String, _ cursor: String?) async -> Action {
+    func fetchUsers(_ gameID: Int, _ nickname: String, _ cursor: String?) async -> Action {
         let pagingSize = 20
         let response = await gameUseCase.fetchUsers(
+            gameID,
             nickname.isEmpty ? nil : nickname,
             cursor,
             pagingSize

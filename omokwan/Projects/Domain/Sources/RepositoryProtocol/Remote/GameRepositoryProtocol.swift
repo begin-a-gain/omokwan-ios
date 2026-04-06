@@ -22,5 +22,5 @@ public protocol GameRepositoryProtocol {
     func getMyPage(userID: Int) async -> Result<MyPageGameInfo, NetworkError>
     func putGameDetailSetting(gameID: Int, request: GameDetailSettingRequestDTO) async -> Result<Void, NetworkError>
     func postInviteUsers(gameID: Int, userIDs: [Int]) async -> Result<Void, NetworkError>
-    func getUsers(nickname: String?, cursor: String?, size: Int) async -> Result<GameUserPagingInfo, NetworkError>
+    func getUsers(gameID: Int, nickname: String?, cursor: String?, size: Int) async -> Result<GameUserPagingInfo, NetworkError>
 }

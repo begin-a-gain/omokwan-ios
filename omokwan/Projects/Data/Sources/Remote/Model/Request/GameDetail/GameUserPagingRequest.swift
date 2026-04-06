@@ -7,15 +7,18 @@
 //
 
 struct GameUserPagingRequest: Encodable {
+    let matchId: Int
     let nickname: String?
     let cursor: String?
     let size: Int?
     
     init(
+        matchId: Int,
         nickname: String?,
         cursor: String?,
         size: Int?
     ) {
+        self.matchId = matchId
         self.nickname = nickname
         self.cursor = cursor
         self.size = size

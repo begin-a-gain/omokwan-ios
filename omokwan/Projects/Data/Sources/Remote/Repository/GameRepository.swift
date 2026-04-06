@@ -253,12 +253,18 @@ public struct GameRepository: GameRepositoryProtocol {
     }
     
     public func getUsers(
+        gameID: Int,
         nickname: String?,
         cursor: String?,
         size: Int
     ) async -> Result<GameUserPagingInfo, NetworkError> {
         do {
-            let queryParameters = GameUserPagingRequest(nickname: nickname, cursor: cursor, size: size)
+            let queryParameters = GameUserPagingRequest(
+                matchId: gameID,
+                nickname: nickname,
+                cursor: cursor,
+                size: size
+            )
             let endPoint = EndPoint<RemoteResponseModel<GameUserPagingResponse>>.getUsers(
                 queryParameters: queryParameters
             )
