@@ -25,7 +25,7 @@ public struct GameUseCase {
     public let fetchMyPageGameInfo: (_ userID: Int) async -> Result<MyPageGameInfo, NetworkError>
     public let updateGameDetailSetting: (_ gameID: Int, _ request: GameDetailSettingRequestDTO) async -> Result<Void, NetworkError>
     public let inviteUsers: (_ gameID: Int, _ userIDs: [Int]) async -> Result<Void, NetworkError>
-    public let fetchUsers: (_ nickname: String?, _ cursor: String?, _ size: Int) async -> Result<GameUserPagingInfo, NetworkError>
+    public let fetchUsers: (_ gameID: Int, _ nickname: String?, _ cursor: String?, _ size: Int) async -> Result<GameUserPagingInfo, NetworkError>
 }
 
 extension GameUseCase: DependencyKey {
@@ -105,8 +105,9 @@ extension GameUseCase: DependencyKey {
                     userIDs: userIDs
                 )
             },
-            fetchUsers: { nickname, nextCursor, size in
+            fetchUsers: { gameID, nickname, nextCursor, size in
                 await repository.getUsers(
+                    gameID: gameID,
                     nickname: nickname,
                     cursor: nextCursor,
                     size: size
@@ -166,7 +167,7 @@ extension GameUseCase {
         inviteUsers: { gameID, userIDs in
             return .success(())
         },
-        fetchUsers: { nickname, nextCursor, size in
+        fetchUsers: { gameID, nickname, nextCursor, size in
             return .success(GameFixtures.userPagingInfo)
         }
     )
