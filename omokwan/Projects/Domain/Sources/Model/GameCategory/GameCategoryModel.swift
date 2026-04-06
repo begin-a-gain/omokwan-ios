@@ -1,0 +1,28 @@
+//
+//  GameCategoryModel.swift
+//  Domain
+//
+//  Created by 김동준 on 11/30/24
+//
+
+public struct GameCategory: Hashable {
+    public let code: String
+    public let category: String
+    public let emoji: String
+
+    public init(code: String, category: String, emoji: String) {
+        self.code = code
+        self.category = category
+        self.emoji = emoji
+    }
+}
+
+public extension Array where Element == GameCategory {
+    func find(for code: Int) -> GameCategory? {
+        first { $0.code == String(code) }
+    }
+    
+    func find(stringKey category: String) -> GameCategory? {
+        first { $0.category == category }
+    }
+}

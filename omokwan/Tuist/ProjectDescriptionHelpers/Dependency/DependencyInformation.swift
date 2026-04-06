@@ -8,19 +8,30 @@
 import Foundation
 
 let dependencyInfo: [DependencyInformation: [DependencyInformation]] = [
-    .App: [.Root, .DI, .Data, .KakaoSDKUser],
-    .Domain: [.DI],
-    .Data: [.Domain, .KakaoSDKUser],
-    .Root: [.SignIn, .Main],
-    .SignIn: [.Domain, .Base],
-    .Main: [],
+    .Omokwan: [.Root, .DI, .Data, .KakaoSDKUser, .FirebaseAnalytics, .FirebaseCrashlytics],
+    .Domain: [.DI, .Dependencies],
+    .Data: [.Domain, .KakaoSDKUser, .Util, .FirebaseAnalytics, .FirebaseRemoteConfig],
+    .Root: [.SignIn, .SignUp, .Main, .Splash],
+    .Splash: [.Base],
+    .SignIn: [.Base, .SignUp],
+    .SignUp: [.Base],
+    .Main: [.MyGame, .MyGameAdd, .MyGameParticipate, .GameDetail, .MyPage, .Notification],
     .DI: [.Swinject],
-    .Base: []
+    .Base: [.DesignSystem, .ComposableArchitecture, .Domain, .Util],
+    .MyGame: [.Base],
+    .MyGameAdd: [.Base],
+    .MyGameParticipate: [.Base],
+    .GameDetail: [.Base],
+    .MyPage: [.Base],
+    .Util: [],
+    .Notification: [.Base],
+    .DesignSystem: [.Lottie]
 ]
 
-public enum DependencyInformation: String {
-    case App = "App"
+public enum DependencyInformation: String, Sendable {
+    case Omokwan = "Omokwan"
     case SignIn = "SignIn"
+    case SignUp = "SignUp"
     case Domain = "Domain"
     case Data = "Data"
     case Root = "Root"
@@ -29,11 +40,38 @@ public enum DependencyInformation: String {
     case Swinject = "Swinject"
     case Base = "Base"
     case KakaoSDKUser = "KakaoSDKUser"
+    case DesignSystem = "DesignSystem"
+    case ComposableArchitecture = "ComposableArchitecture"
+    case MyGame = "MyGame"
+    case Util = "Util"
+    case MyGameAdd = "MyGameAdd"
+    case MyGameParticipate = "MyGameParticipate"
+    case GameDetail = "GameDetail"
+    case Splash = "Splash"
+    case MyPage = "MyPage"
+    case FirebaseAnalytics = "FirebaseAnalytics"
+    case FirebaseCrashlytics = "FirebaseCrashlytics"
+    case Notification = "Notification"
+    case Lottie = "Lottie"
+    case FirebaseRemoteConfig = "FirebaseRemoteConfig"
+    case Dependencies = "Dependencies"
 }
 
 public enum PresentationDependencyInformation: String, CaseIterable {
     case SignIn = "SignIn"
+    case SignUp = "SignUp"
     case Root = "Root"
     case Main = "Main"
     case Base = "Base"
+    case MyGame = "MyGame"
+    case MyGameAdd = "MyGameAdd"
+    case MyGameParticipate = "MyGameParticipate"
+    case GameDetail = "GameDetail"
+    case Splash = "Splash"
+    case MyPage = "MyPage"
+    case Notification = "Notification"
+}
+
+public enum UtilsDependencyInformation: String, CaseIterable {
+    case Util = "Util"
 }

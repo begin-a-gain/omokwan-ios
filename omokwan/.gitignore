@@ -73,3 +73,4 @@ Package.resolved
 .build/
 *graph.png
 *.xcconfig
+*GoogleService-Info*

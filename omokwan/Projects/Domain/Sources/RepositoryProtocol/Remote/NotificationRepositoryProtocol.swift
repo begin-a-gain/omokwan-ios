@@ -1,0 +1,12 @@
+//
+//  NotificationRepositoryProtocol.swift
+//  Domain
+//
+//  Created by jumy on 3/14/26.
+//
+
+public protocol NotificationRepositoryProtocol {
+    func getNotificationList(_ filter: NotificationFilter) async -> Result<[NotificationInfo], NetworkError>
+    func getNotificationBadgeStatus() async -> Result<NotificationBadgeStatus, NetworkError>
+    func patchNotificationRead(id: Int?) async -> Result<Void, NetworkError>
+}

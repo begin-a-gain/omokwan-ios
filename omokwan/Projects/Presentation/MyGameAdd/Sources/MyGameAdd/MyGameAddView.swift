@@ -1,0 +1,353 @@
+//
+//  MyGameAddView.swift
+//  MyGameAdd
+//
+//  Created by 김동준 on 11/30/24
+//
+
+import ComposableArchitecture
+import SwiftUI
+import DesignSystem
+import Base
+import Domain
+
+public struct MyGameAddView: View {
+    private let store: StoreOf<MyGameAddFeature>
+    @ObservedObject private var viewStore: ViewStoreOf<MyGameAddFeature>
+    @FocusState private var focusedField: MyGameAddTextFieldType?
+    @FocusState private var passwordFocusedField: PasswordField?
+    
+    private enum MyGameAddTextFieldType {
+        case gameName
+    }
+
+    public init(store: StoreOf<MyGameAddFeature>) {
+        self.store = store
+        self.viewStore = ViewStore(store, observe: { $0 })
+    }
+    
+    public var body: some View {
+        myGameAddBodyView
+        .onAppear {
+            viewStore.send(.onAppear)
+        }
+        .sheet(store: store.scope(state: \.$repeatDaySheet, action: \.repeatDaySheet)) { store in
+            MyGameRepeatDaySheetView(store: store)
+                .modifier(CommonSheetModifier(detent: [.medium]))
+        }
+        .sheet(store: store.scope(state: \.$maxNumOfPeopleSheet, action: \.maxNumOfPeopleSheet)) { store in
+            CommonMaxNumOfPeopleView(store: store)
+                .modifier(CommonSheetModifier(detent: [.medium]))
+        }
+        .sheet(store: store.scope(state: \.$gameCategorySheet, action: \.gameCategorySheet)) { store in
+            CommonCategoryView(store: store)
+                .modifier(CommonSheetModifier(detent: [.medium]))
+        }
+        .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
+            alertView
+        }
+        .oLoading(isPresent: viewStore.isLoading)
+    }
+    
+    private var myGameAddBodyView: some View {
+        VStack(spacing: 0) {
+            ONavigationBar(
+                title: "대국 만들기",
+                leadingIcon: OImages.icArrowLeft.swiftUIImage,
+                leadingIconAction: {
+                    viewStore.send(.backButtonTapped)
+                }
+            )
+            Spacer().height(24)
+            addGameInfoView
+            OButton(
+                title: "대국 시작하기",
+                status: viewStore.isStartButtonEnable ? .default : .disable,
+                type: .default,
+                action: {
+                    viewStore.send(.gameStartButtonTapped)
+                }
+            )
+            .hPadding(20)
+            .vPadding(16)
+        }
+    }
+}
+
+// MARK: info view
+private extension MyGameAddView {
+    var addGameInfoView: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                gameNameSection
+                Spacer().height(16)
+                defaultSetting
+                Spacer().height(24)
+                additionalSetting
+            }
+            .hPadding(20)
+        }
+    }
+}
+
+private extension MyGameAddView {
+    var gameNameSection: some View {
+        OTextField<MyGameAddTextFieldType>(
+            text: viewStore.$gameName,
+            focusedField: $focusedField,
+            focusedFieldType: .gameName,
+            label: "대국 이름",
+            isLabel: true,
+            placeholder: "대국 이름을 적어주세요.",
+            errorMessage: mappingGameNameErrorMessage(viewStore.gameNameValidStatus),
+            trailingIcon: OImages.icCancel.swiftUIImage,
+            trailingIconButtonAction: {
+                viewStore.send(.binding(.set(\.$gameName, "")))
+            }
+        )
+    }
+    
+    func mappingGameNameErrorMessage(_ status: GameNameValidStatus?) -> String {
+        guard let status = status else { return "" }
+        
+        return status.errorMessage
+    }
+}
+
+// MARK: Default Setting
+private extension MyGameAddView {
+    var defaultSetting: some View {
+        VStack(spacing: 6) {
+            OText(
+                "기본 설정",
+                token: .subtitle_02
+            )
+            .hPadding(16)
+            .greedyWidth(.leading)
+            VStack(spacing: 0) {
+                repeatDayView
+                StrokeDivider(color: OColors.stroke02.swiftUIColor)
+                maxNumOfPeopleView
+            }
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(OColors.stroke02.swiftUIColor, lineWidth: 1.0))
+        }
+    }
+}
+
+// MARK: Repeat Day
+private extension MyGameAddView {
+    var repeatDayView: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                HStack(spacing: 8) {
+                    OText(
+                        "반복 요일",
+                        token: .subtitle_03
+                    )
+                    Spacer()
+                    Button {
+                        viewStore.send(.repeatDayButtonTapped)
+                    } label: {
+                        HStack(spacing: 8) {
+                            OText(
+                                viewStore.selectedRepeatDay.rawValue,
+                                token: .subtitle_03,
+                                color: OColors.text02.swiftUIColor
+                            )
+                            OImages.icArrowRight.swiftUIImage.resizedToFit(16,16).vPadding(2)
+                        }
+                    }
+                }
+            }
+            .padding(16)
+            
+            if viewStore.selectedRepeatDay == .directSelection {
+                dayCircleButtonView
+            }
+        }
+    }
+    
+    var dayCircleButtonView: some View {
+        HStack(spacing: 0) {
+            ForEach(viewStore.directSelectionTypeList.indices, id: \.self) { index in
+                Button {
+                    viewStore.send(.directSelectionListButtonTapped(index))
+                } label: {
+                    OText(
+                        viewStore.directSelectionTypeList[index].rawValue,
+                        token: .subtitle_02,
+                        color: viewStore.isSelectedDirectSelectionList[index] ? OColors.textOn01.swiftUIColor : OColors.text02.swiftUIColor
+                    )
+                    .hPadding(12)
+                    .vPadding(10)
+                    .background(
+                        Circle().fill(viewStore.isSelectedDirectSelectionList[index] ? OColors.uiPrimary.swiftUIColor : OColors.uiBackground.swiftUIColor)
+                    )
+                    .modifier(DirectSelectionCircleCircleStrokeModifier(viewStore.isSelectedDirectSelectionList[index]))
+                }
+                if index != viewStore.directSelectionTypeList.count - 1 {
+                    Spacer()
+                }
+            }
+        }
+        .hPadding(16)
+        .padding(.bottom, 16)
+    }
+    
+    var maxNumOfPeopleView: some View {
+        OInputField(
+            title: "최대 인원 수",
+            value: "\(viewStore.maxNumOfPeople)",
+            buttonAction: {
+                viewStore.send(.maxNumOfPeopleButtonTapped)
+            }
+        )
+    }
+}
+
+// MARK: Additional Setting
+private extension MyGameAddView {
+    var additionalSetting: some View {
+        VStack(spacing: 6) {
+            OText(
+                "기타 설정",
+                token: .subtitle_02
+            )
+            .hPadding(16)
+            .greedyWidth(.leading)
+            VStack(spacing: 0) {
+                gameCategoryView
+                if !viewStore.isReminderSettingHidden {
+                    StrokeDivider(color: OColors.stroke02.swiftUIColor)
+                    OInputToggleField(
+                        title: "리마인드 알림",
+                        additionalInfo: "오전 9:00",
+                        isSelected: viewStore.$isRemindAlarmSelected
+                    )
+                }
+                StrokeDivider(color: OColors.stroke02.swiftUIColor)
+                OInputToggleField(
+                    title: "비공개",
+                    selectAreaAction: {
+                        viewStore.send(.privateRoomCodeButtonTapped)
+                    },
+                    additionalInfo: "비밀번호 : \(viewStore.privateRoomPassword ?? "-")",
+                    isSelected: Binding(
+                        get: { viewStore.isPrivateRoomSelected },
+                        set: { newValue in
+                            viewStore.send(.privateRoomToggleButtonTapped)
+                        }
+                    )
+                )
+            }
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(OColors.stroke02.swiftUIColor, lineWidth: 1.0))
+        }
+    }
+    
+    var gameCategoryView: some View {
+        OInputField(
+            title: "대국 카테고리",
+            value: selectedCategoryString,
+            buttonAction: {
+                viewStore.send(.gameCategorySettingButtonTapped)
+            }
+        )
+    }
+    
+    var selectedCategoryString: String {
+        if let category = viewStore.selectedCategory {
+            return category.category
+        } else {
+            return "선택"
+        }
+    }
+}
+
+private struct DirectSelectionCircleCircleStrokeModifier: ViewModifier {
+    let isSelected: Bool
+    
+    init(_ isSelected: Bool) {
+        self.isSelected = isSelected
+    }
+    
+    func body(content: Content) -> some View {
+        if isSelected {
+            content
+        } else {
+            content
+                .overlay(
+                    Circle()
+                        .stroke(OColors.stroke02.swiftUIColor, lineWidth: 1)
+                )
+        }
+    }
+}
+
+// MARK: About Alert
+private extension MyGameAddView {
+    var alertView: some View {
+        Group {
+            if let alertCase = viewStore.alertCase {
+                switch alertCase {
+                case .password:
+                    passwordAlertView
+                case .create:
+                    createAlertView
+                case .leave:
+                    leaveAlertView
+                case .error(let error):
+                    errorAlertView(error)
+                }
+            }
+        }
+    }
+    
+    var passwordAlertView: some View {
+        CommonPasswordAlertView(
+            focusedField: $passwordFocusedField,
+            thousandsPlaceText: viewStore.$thousandsPlace,
+            hundredsPlaceText: viewStore.$hundredsPlace,
+            tensPlaceText: viewStore.$tensPlace,
+            onesPlaceText: viewStore.$onesPlace,
+            primaryButtonAction: { viewStore.send(.passwordAlertCancelButtonTapped) },
+            secondaryButtonAction: { viewStore.send(.passwordAlertConfirmButtonTapped) }
+        )
+    }
+
+    var createAlertView: some View {
+        OAlert(
+            type: .default,
+            title: "대국 생성 하시겠습니까?",
+            content: "'\(viewStore.gameName)' 대국을 시작해보세요.",
+            primaryButtonAction: {
+                viewStore.send(.createAlertCancelButtonTapped)
+            },
+            secondaryButtonAction: {
+                viewStore.send(.createAlertConfirmButtonTapped)
+            }
+        )
+    }
+    
+    var leaveAlertView: some View {
+        OAlert(
+            type: .default,
+            title: "저장하지 않고 나가시겠습니까?",
+            content: """
+            모든 입력사항이 사라집니다.
+            대국 시작하기를 눌러 저장해주세요.
+            """,
+            primaryButtonAction: {
+                viewStore.send(.leaveAlertCloseButtonTapped)
+            },
+            secondaryButtonAction: {
+                viewStore.send(.leaveAlertLeaveButtonTapped)
+            }
+        )
+    }
+    
+    func errorAlertView(_ networkError: NetworkError) -> some View {
+        CommonErrorAlertView(networkError) {
+            viewStore.send(.alertAction(.dismiss))
+        }
+    }
+}

@@ -19,6 +19,8 @@ public extension Array where Element == TargetDependency {
                 return .external(name: name)
             } else if (PresentationDependencyInformation.allCases.map { $0.rawValue }.contains(name)) {
                 return .project(target: name, path: .relativeToRoot("Projects/Presentation/\(name)"))
+            } else if (UtilsDependencyInformation.allCases.map { $0.rawValue }.contains(name)) {
+                return .project(target: name, path: .relativeToRoot("Projects/Utils/\(name)"))
             } else {
                 return .project(target: name, path: .relativeToRoot("Projects/\(name)"))
             }

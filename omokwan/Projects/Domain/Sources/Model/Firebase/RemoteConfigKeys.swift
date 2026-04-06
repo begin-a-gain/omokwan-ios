@@ -1,0 +1,13 @@
+//
+//  RemoteConfigKeys.swift
+//  Data
+//
+//  Created by jumy on 3/21/26.
+//
+
+public enum RemoteConfigKeys: String {
+    case forceUpdate = "force_update_flag"
+    case notice = "notice_flag"
+    case featureFlag = "feature_flag"
+    case guestLogin = "guest_login_flag"
+}

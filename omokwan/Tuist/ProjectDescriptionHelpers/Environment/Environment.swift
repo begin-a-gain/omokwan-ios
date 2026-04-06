@@ -7,7 +7,7 @@
 
 import ProjectDescription
 
-public struct EnvironmentSettings {
+public struct EnvironmentSettings : Sendable{
     public let name: String
     public let organizationName: String
     public let deploymentTargets: DeploymentTargets
@@ -15,10 +15,26 @@ public struct EnvironmentSettings {
     public let destinations: Destinations
     
     public static let `default` = EnvironmentSettings(
-        name: "App",
+        name: "Omokwan",
         organizationName: "begin-a-gain",
-        deploymentTargets: .iOS("16.0"),
+        deploymentTargets: .iOS("17.0"),
         platform: .iOS,
         destinations: [.iPhone]
     )
+}
+
+public enum Environment: CaseIterable {
+    case dev
+    case prod
+    
+    public var name: String {
+        switch self {
+        case .dev: "Dev"
+        case .prod: "Prod"
+        }
+    }
+}
+
+public extension [Environment] {
+    static var all: Self { Environment.allCases }
 }
