@@ -17,7 +17,6 @@ public struct SplashFeature {
     @Dependency(\.localUseCase) private var localUseCase
     @Dependency(\.firebaseUseCase) private var firebaseUseCase
     @Dependency(\.featureFlagUseCase) private var featureFlagUseCase
-    @Dependency(\.permissionUseCase) private var permissionUseCase
     @Dependency(\.analyticsUseCase) private var analyticsUseCase
 
     public init() {}
@@ -48,8 +47,7 @@ public struct SplashFeature {
         case showAlert(State.AlertCase)
         case userInfoFetchFailed
         case checkSignUpDone
-        case checkAppTrackingPermission
-        case setTrackingValueForAnalytics(Bool)
+        case setAnalytics(Bool)
         case healthCheck
         case setupRemoteConfig
         case cacheFeatureFlags
@@ -69,22 +67,11 @@ public struct SplashFeature {
                         try? await Task.sleep(for: .seconds(1.0))
                     },
                     .merge([
-                        .send(.checkAppTrackingPermission),
+                        .send(.setAnalytics(true)),
                         .send(.setupRemoteConfig)
                     ])
                 ])
-            case .checkAppTrackingPermission:
-                let needTrackingAuthorization = permissionUseCase.needTrackingAuthorization()
-                if needTrackingAuthorization {
-                    return .run { send in
-                        let isAuthorized = await permissionUseCase.requestTrackingAuthorizationAndCheckAuthorized()
-                        await send(.setTrackingValueForAnalytics(isAuthorized))
-                    }
-                } else {
-                    let isAuthorized = permissionUseCase.isTrackingAuthorized()
-                    return .send(.setTrackingValueForAnalytics(isAuthorized))
-                }
-            case .setTrackingValueForAnalytics(let isAuthorized):
+            case .setAnalytics(let isAuthorized):
                 analyticsUseCase.setAnalyticsEnabled(isAuthorized)
                 return .none
             case .setupRemoteConfig:
