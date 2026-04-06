@@ -31,6 +31,12 @@ public struct AccountRepository: AccountRepositoryProtocol {
                     requestBody: AppleSignInRequest(identityToken: token)
                 )
                 response = try await apiService.call(endPoint)
+            case .test:
+                let endPoint = EndPoint<RemoteResponseModel<SignInResponse>>.postSignIn(
+                    provider: provider.rawValue,
+                    requestBody: TesterSignInRequest(token: nil)
+                )
+                response = try await apiService.call(endPoint)
             }
             return .success(try SignInMapper.toSignInResult(response.data))
         } catch {

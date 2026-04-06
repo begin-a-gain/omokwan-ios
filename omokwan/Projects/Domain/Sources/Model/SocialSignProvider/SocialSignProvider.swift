@@ -8,4 +8,5 @@
 public enum SocialSignProvider: String {
     case kakao
     case apple
+    case test
 }

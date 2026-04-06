@@ -12,3 +12,7 @@ struct KakaoSignInRequest: Encodable {
 struct AppleSignInRequest: Encodable {
     let identityToken: String
 }
+
+struct TesterSignInRequest: Encodable {
+    let token: String?
+}

@@ -14,6 +14,7 @@ import Domain
 public struct SignInView: View {
     @Bindable private var store: StoreOf<SignInFeature>
     @Environment(\.openURL) private var openURL
+    @FocusState private var passwordFocusedField: PasswordField?
 
     public init(store: StoreOf<SignInFeature>) {
         self.store = store
@@ -21,6 +22,7 @@ public struct SignInView: View {
     
     public var body: some View {
         signInBody
+            .onAppear { store.send(.onAppear) }
             .navigationBarBackButtonHidden(true)
             .oLoading(isPresent: store.isLoading)
             .oAlert(store.scope(state: \.alertState, action: \.alertAction)) {
@@ -104,6 +106,10 @@ private extension SignInView {
         Group {
             if let alertCase = store.alertCase {
                 switch alertCase {
+                case .password:
+                    passwordAlertView
+                case .passwordError:
+                    passwordErrorAlertView
                 case .error(let networkError):
                     CommonErrorAlertView(networkError) {
                         store.send(.alertAction(.dismiss))
@@ -111,6 +117,30 @@ private extension SignInView {
                 }
             }
         }
+    }
+
+    var passwordAlertView: some View {
+        CommonPasswordAlertView(
+            title: "테스터 로그인 비밀번호",
+            focusedField: $passwordFocusedField,
+            thousandsPlaceText: $store.thousandsPlace,
+            hundredsPlaceText: $store.hundredsPlace,
+            tensPlaceText: $store.tensPlace,
+            onesPlaceText: $store.onesPlace,
+            primaryButtonAction: { store.send(.passwordAlertCancelButtonTapped) },
+            secondaryButtonAction: { store.send(.passwordAlertConfirmButtonTapped) }
+        )
+    }
+
+    var passwordErrorAlertView: some View {
+        OAlert(
+            type: .defaultOnlyOK,
+            title: "비밀번호 오류",
+            content: "다시 확인해주세요.",
+            primaryButtonAction: {
+                store.send(.alertAction(.dismiss))
+            }
+        )
     }
 }
 
@@ -120,6 +150,9 @@ private extension SignInView {
             OImages.imgSplashLogo.swiftUIImage
                 .renderingMode(.template)
                 .foregroundStyle(OColors.uiPrimary.swiftUIColor)
+                .onTapGesture {
+                    store.send(.splashLogoTapped)
+                }
             
             titleText
         }
