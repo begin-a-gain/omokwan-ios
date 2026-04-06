@@ -114,17 +114,24 @@ public struct GameDetailView: View {
 private extension GameDetailView {
     var buttonTitle: String {
         switch viewStore.bottomButtonType {
-        case .possible:
+        case .possible, .impossible:
             "오목두기"
         case .alreadyDone:
             "오늘자 오목을 이미 두었어요."
         }
     }
     
+    var bottomButtonStatus: OButtonStatus {
+        switch viewStore.bottomButtonType {
+        case .possible: .default
+        case .alreadyDone, .impossible: .disable
+        }
+    }
+    
     var bottomButtonView: some View {
         OButton(
             title: buttonTitle,
-            status: viewStore.bottomButtonType == .possible ? .default : .disable,
+            status: bottomButtonStatus,
             type: .default
         ) {
             viewStore.send(.updateTodayOmokStatus)

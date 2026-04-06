@@ -39,6 +39,7 @@ public struct GameDetailFeature {
         enum BottomButtonType {
             case possible
             case alreadyDone
+            case impossible
         }
         
         var alertCase: AlertCase?
@@ -50,7 +51,13 @@ public struct GameDetailFeature {
         var gameUserInfos: [GameUserInfo?] = []
         var stickyCalendarState: StickyCalendarFeature.State
         var bottomButtonType: BottomButtonType {
-            stickyCalendarState.isTodayStoneCompleted
+            let hasTodayDate = stickyCalendarState.dateUserStatusInfos
+                .flatMap(\.value)
+                .contains { $0.originalDate == stickyCalendarState.nowDateString }
+
+            guard hasTodayDate else { return .impossible }
+
+            return stickyCalendarState.isTodayStoneCompleted
                 ? .alreadyDone
                 : .possible
         }
