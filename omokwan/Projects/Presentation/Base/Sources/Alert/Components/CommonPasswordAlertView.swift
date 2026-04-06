@@ -11,6 +11,7 @@ import DesignSystem
 
 public struct CommonPasswordAlertView: View {
     @FocusState.Binding private var focusedField: PasswordField?
+    private let title: String
     @Binding private var thousandsPlaceText: String
     @Binding private var hundredsPlaceText: String
     @Binding private var tensPlaceText: String
@@ -20,6 +21,7 @@ public struct CommonPasswordAlertView: View {
     private let secondaryButtonAction: () -> Void
 
     public init(
+        title: String = "대국 비밀번호 설정",
         focusedField: FocusState<PasswordField?>.Binding,
         thousandsPlaceText: Binding<String>,
         hundredsPlaceText: Binding<String>,
@@ -28,6 +30,7 @@ public struct CommonPasswordAlertView: View {
         primaryButtonAction: @escaping () -> Void,
         secondaryButtonAction: @escaping () -> Void
     ) {
+        self.title = title
         self._focusedField = focusedField
         self._thousandsPlaceText = thousandsPlaceText
         self._hundredsPlaceText = hundredsPlaceText
@@ -50,7 +53,7 @@ public struct CommonPasswordAlertView: View {
             content: {
                 VStack(spacing: 16) {
                     OText(
-                        "대국 비밀번호 설정",
+                        title,
                         token: .headline
                     )
                     HStack(spacing: 8) {

@@ -27,7 +27,7 @@ extension ApiService {
 
     func makeURL<T>(_ endPoint: EndPoint<T>) throws -> URL {
         guard var url = URL(
-            string: "http://\(BaseUrl.current)\(endPoint.path.value)"
+            string: "https://\(BaseUrl.current)\(endPoint.path.value)"
         ) else {
             throw RemoteNetworkError.requestURLNotExistError
         }

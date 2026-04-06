@@ -8,12 +8,14 @@
 import Domain
 import Base
 import ComposableArchitecture
+import Util
 
 @Reducer
 public struct SignInFeature {
     @Dependency(\.socialUseCase) private var socialUseCase
     @Dependency(\.accountUseCase) private var accountUseCase
     @Dependency(\.localUseCase) private var localUseCase
+    @Dependency(\.firebaseUseCase) private var firebaseUseCase
     @Dependency(\.analyticsUseCase) private var analyticsUseCase
 
     public init() {}
@@ -23,16 +25,31 @@ public struct SignInFeature {
         public init() {}
         
         public enum AlertCase: Equatable {
+            case password
+            case passwordError
             case error(NetworkError)
         }
         var alertCase: AlertCase?
         var alertState: AlertFeature.State = .init()
         
         var isLoading: Bool = false
+        var splashLogoTapCount: Int = 0
+        let guestLoginTriggeredCount: Int = 20
+        var isGuestLoginEnabled: Bool = false
+        var thousandsPlace: String = ""
+        var hundredsPlace: String = ""
+        var tensPlace: String = ""
+        var onesPlace: String = ""
         @Shared(.userInfo) var userInfo = UserInfo()
     }
     
-    public enum Action {
+    public enum Action: BindableAction {
+        case binding(BindingAction<State>)
+        case onAppear
+        case splashLogoTapped
+        case guestLoginTriggered
+        case passwordAlertCancelButtonTapped
+        case passwordAlertConfirmButtonTapped
         case kakaoButtonTapped
         case receiveKakaoTokenSuccessfully(String)
         case kakaoLoginError(KakaoSignInError)
@@ -49,8 +66,52 @@ public struct SignInFeature {
     }
     
     public var body: some ReducerOf<Self> {
+        BindingReducer()
+
         Reduce { state, action in
             switch action {
+            case .binding:
+                return .none
+            case .onAppear:
+                let guestLoginValue = firebaseUseCase.getValue(RemoteConfigKeys.guestLogin.rawValue, .bool)
+
+                if case let .bool(isEnabled) = guestLoginValue {
+                    state.isGuestLoginEnabled = isEnabled
+                }
+                return .none
+            case .splashLogoTapped:
+                state.splashLogoTapCount += 1
+
+                guard state.isGuestLoginEnabled,
+                      state.splashLogoTapCount >= state.guestLoginTriggeredCount else {
+                    return .none
+                }
+
+                state.splashLogoTapCount = 0
+                return .send(.guestLoginTriggered)
+            case .guestLoginTriggered:
+                return .send(.showAlert(.password))
+            case .passwordAlertCancelButtonTapped:
+                return .send(.alertAction(.dismiss))
+            case .passwordAlertConfirmButtonTapped:
+                guard let password = [
+                    state.thousandsPlace,
+                    state.hundredsPlace,
+                    state.tensPlace,
+                    state.onesPlace
+                ].passwordString else { return .none }
+
+                guard password == "7777" else {
+                    return .send(.showAlert(.passwordError))
+                }
+
+                state.isLoading = true
+                return .merge(
+                    .send(.alertAction(.dismiss)),
+                    .run { send in
+                        await send(signIn(provider: .test, token: ""))
+                    }
+                )
             case .kakaoButtonTapped:
                 state.isLoading = true
                 return .run { send in
