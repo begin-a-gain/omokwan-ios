@@ -71,14 +71,13 @@ private extension SplashView {
             content: "원활한 오목완 서비스 이용을 위해 최신 버전으로 업데이트 해주세요.",
             primaryButtonTitle: "업데이트",
             primaryButtonAction: {
-                // TODO: 오목완 앱스토어 주소 나오면 그걸로 수정
                 openAppStore()
             }
         )
     }
     
     func openAppStore() {
-        guard let url = URL(string: "itms-apps://itunes.apple.com") else { return }
+        guard let url = URL(string: AppLinks.appstore.link) else { return }
         UIApplication.shared.open(url)
     }
     
