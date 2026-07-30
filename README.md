@@ -5,7 +5,7 @@
 
 ## 🔗 스토어 링크  
 
-- [App Store](https://apps.apple.com/us/app/%EC%98%A4%EB%AA%A9%EC%99%84/id6761292354)  
+- [App Store](https://apps.apple.com/kr/app/%EC%98%A4%EB%AA%A9%EC%99%84/id6761292354)  
 
 ## App Images
 
